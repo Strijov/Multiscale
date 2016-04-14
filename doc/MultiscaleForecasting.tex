@@ -144,15 +144,125 @@ The feature set $\mathcal{J} = \mathop{\cup}\limits_k \mathcal{A}_k$ includes
 \end{enumerate}
 The object set  $\mathcal {I} = \mathop{\sqcup}\limits_k \mathcal{B}_k$ includes
 \begin{enumerate}[1)]
+\item the local history,
 \item parametric local models  and their residuals (including ones from previous iterations),
 \item DTW-shifted local history as a local forecasting procedure,
 \item aggregated subsets of time series.
 \end{enumerate}
 
-\subsection{Time series transformations}
-TODO
+Denote the generated feature vector as~$\vf$. This vector consists of concatenated row-vectors~$\vf=[\vf^\prime,\vf^{\prime\prime},\dots]$, which corresponds to time series local histories ~$\bs=[\bs^\prime,\bs^{\prime\prime},\dots]$, modified with set of transformations~$\mathfrak{G}$. The elements~$g:\bs\to\vf$ of this set are listed below.
+
+\subsection{Transformations of local history}
+The table~\ref{tb:primitives} lists the~time series transformation functions. There are non-parametric and parametric procedures to generate features. For the parametric functions~$g=g(\bb,s)$ the default values of the parameters~$\bb$ are assigned empirically.
+
+The parametric procedure request two optimization problem statements of the model parameters~$\bw$ and the primitive function parameters~$\bb$. The first one fixes the vector~$\hat\bb$, collected over all the primitive functions~$\{g\}$, which generate features~$\vf$:
+\[
+\hat\bw = \arg\min S\bigl(\bw|\fx(\bw,\bx),\by\bigr),\quad
+\text{where}
+\quad [\by,\bx] = \vf(\hat\bb,\bs).
+\]
+The second one optimizes the transformation parameters~$\hat\bb$ given obtained model parameters~$\bw$
+\[
+\hat\bb = \arg\min S\bigl(\bb|\fx(\hat\bw,\bx),\by\bigr).
+\]
+This procedure repeats two problems until vectors~$\hat\bw,\hat\bb$ converge. The initial values of vector~$\bb$ (are shown in table~\ref{tb:primitives}). Due to the various origins of the time series and their transformations the residual vector should be normalized:
+\[\veps^\prime = \frac{\hat\by^\prime-\by^\prime}{|\by^\prime| \cdot \|\by^\prime\|_2^1}.
+\]
+It does not change the number elements in the vectors,~$|\vf^\prime|=|\bs^\prime|$.
+
+\subsection{Convolutions, statistics and parameters of local history}
+The listed feature generation functions convolves time series, so they reduce the dimentionality $|\vf^\prime=\bg(\bs^\prime)|<|\bs^\prime|$.
+
+\subsection{Parameters of local history forecast}
+For the time series~$\bs^\prime$ construct the Hankel matrix with a~period~$k$ and shift~$p$, so~that for~$\bs = [s_1,\dots,s_T]$ the matrix
+\[
+\bH^* =
+\left[ \begin{array}{c|cc}
+s_T  & \dots & s_{T-k+1} \\
+\vdots & \ddots & \vdots \\
+s_{k+p} & \dots & s_{1+p}\\
+s_k & \dots & s_1 \\
+\end{array}
+\right],
+\text{~where~} 1\geqslant p \geqslant k .
+\]
+Reconstruct the regression to the first column of the matrix~$\bH^*=[\bh, \bH]$ and denote its least square parameters as the feature vector
+\[
+\boldsymbol{\phi}^\prime = \arg\min \| \bh-\bH \boldsymbol{\phi}\|_2^2.
+\]
+For the time series~$[\bs_i^\prime, \bs_i^{\prime\prime},\dots]$ use the parameters $[\boldsymbol{\phi}_i^\prime, \boldsymbol{\phi}_i^{\prime\prime}]$ as the features.
+
+\subsection{Distances to centroids of local clusters}
+This procedure applies the kernel trick to the time series. For given local history time series~$\bs^\prime_1,\dots,\bs^\prime_m$ compute $k$-means centroids~$\bc^\prime_1,\dots,\bc^\prime_P$.  With the selected $k$-means distance function~$\rho$ construct the feature vector
+\[
+\vf_i^\prime = [\rho(\bc^\prime_1,\bs_i^\prime),\dots,\rho(\bc^\prime_P,\bs_i^\prime)] \in \R_+^P.
+\]
+This $k$-means of another clustering procedure may use internal parameters, so that there are no parameters to be included to the feature vector or to the forecasting model.
+
+\begin{table}[!ht]
+\caption{List of primitive functions.}
+\label{tb:primitives}
+\begin{tabular}{|p{90pt}|c|p{50pt}|p{50pt}|p{50pt}|}
+\hline
+Function name	&		Formula		&	Output dimension	&	$\#$ of arguments	&	$\#$ of parameters	 \\ \hline
+Plus	&	$	x_1 + x_2	$	&	1	&	2	&	0	\\ \hline
+Minus	&	$	x_1 - x_2	$	&	1	&	2	&	0	\\ \hline
+Product	&	$	x_1 \cdot x_2	$	&	1	&	2	&	0	\\ \hline
+Division	&	$	\frac{x_1}{x_2}	$	&	1	&	2	&	0	\\ \hline
+Quadratic	&	$	w_2 x^2 + w_1 x + w_0	$	&	1	&	1	&	3	\\ \hline
+Cubic	&	$	w_3x^3 + w_2 x^2 + w_1 x + w_0	$	&	1	&	1	&	4	\\ \hline
+Linear	&	$	w_1 x + w_0	$	&	1	&	1	&	2	\\ \hline
+Add constant	&	$	x + w	$	&	1	&	1	&	1	\\ \hline
+Nonparametric sin	&	$	\sin(x)	$	&	1	&	1	&	0	\\ \hline
+Sin	&	$	\sin(w_0 + w_1x)	$	&	1	&	1	&	2	\\ \hline
+Square root	&	$	\sqrt{x}	$	&	1	&	1	&	0	\\ \hline
+Arctangent	&	$	\arctan{x}	$	&	1	&	1	&	0	\\ \hline
+Nonparametric log-sigmoid	&	$	1/(1 + \exp(-x))	$	&	1	&	1	&	0	\\ \hline
+Logarithmic	&	$	\ln{x}	$	&	1	&	1	&	0	\\ \hline
+Logarithmic sigmoid	&	$	1/(w_0 + \exp(-w_1x))	$	&	1	&	1	&	2	\\ \hline
+Exponent	&	$	\exp{x}	$	&	1	&	1	&	0	\\ \hline
+Normal	&	$	\frac{1}{w_1\sqrt{2\pi}}\exp\left(\frac{(x-w_2)^2}{2w_1^2}\right)	$	&	1	&	1	 &	 2	\\ \hline
+Hyperbolic tangent	&	$	\tanh(x)	$	&	1	&	1	&	0	\\ \hline
+Hyperbolic tangent sigmoid	&	$	\frac{2}{1 - \exp(-wx)} - 1	$	&	1	&	1	&	1	\\ \hline
+Multiply by constant	&	$	x\cdot w	$	&	1	&	1	&	1	\\ \hline
+Monomial	&	$	w_1 x^{w_2}	$	&	1	&	1	&	2	\\ \hline
+Weibull-2	&	$	w_1w_2x^{w_2-1}\exp{-w_1x^{w_2}}	$	&	1	&	1	&	2	\\ \hline
+Weibull-3	&	$	w_1w_2x^{w_2-1}\exp{-w_1(x-w_3)^{w_2}}	$	&	1	&	1	&	3	\\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[!ht]
+\caption{Growth rate of monotone functions.}
+\label{tb:monotone}
+\begin{tabular}{|p{90pt}|c|p{50pt}|p{50pt}|p{50pt}|p{60pt}|}
+\hline
+Function name	&		Formula		&	Output dimension	&	$\#$ of arguments	&	$\#$ of parameters	 &	Constraints	\\ \hline
+Exponential rate	&	$	\exp(w_1x + w_0)	$	&	1	&	1	&	2	&	$w_1 > 0$	\\ \hline
+Polynomial rate	&	$	\exp(w_1\ln x + w_0)	$	&	1	&	1	&	2	&	$w_1 > 1$	\\ \hline
+Sublinear polynomial rate	&	$\exp(w_1\ln x + w_0)$	&	1	&	1	&	2	&	$0 < w_1 < 1$	\\ \hline
+Logarithmic rate	&	$	w_1\ln x + w_0	$	&	1	&	1	&	2	&	$w_1 > 0$	\\ \hline
+Slow convergence	&	$	w_0 + w_1/x	$	&	1	&	1	&	2	&	$w_1 \neq 0$	\\ \hline
+Fast convergence	&	$	w_0 + w_1\cdot\exp(-x)	$	&	1	&	1	&	2	&	$w_1 \neq 0 $	\\ \hline
+Sigmoid	&	$	1/(w_0 + \exp(-w_1x))	$	&	1	&	1	&	2	&	$w_1 > 0$	\\ \hline
+\end{tabular}
+\end{table}
+
+
+\begin{table}[!hb]
+\caption{Variable number of parameters.}
+\label{tb:variable}
+\begin{tabular}{|p{90pt}|c|p{50pt}|p{50pt}|p{50pt}|}
+\hline
+Quasi-linear	&	$	\sum_{j=1}^n a_jg_j(x)	$	&	1	&	1	&	$n$	\\ \hline
+Sum of Gaussians	&	$	\sum_{j=1}^n a_j\exp(-\frac{(x-b_j)^2}{c_j})	$	&	1	&	1	&	 $3n$	 \\ \hline
+Polynomial	&	$	\sum_{j=0}^n a_jx^j	$	&	1	&	1	&	$n$	\\ \hline
+Rational polynomial	&	$	\frac{\sum_{j=0}^n a_jx^j}{x^m + \sum_{j=0}^{m-1}b_jx^j}	$	&	1	&	 1	 &	$n + m + 1$	\\ \hline
+\end{tabular}
+\end{table}
+
 
 \section{Feature selection}
+TODO
 
 \section{Mixture models}
 Let $D = (X, \by)$ denote the data, where $X = [\bx_1\T, \dots, \bx_i, \dots, \bx_m\T]\T$,
@@ -303,6 +413,11 @@ The goal of the experiment is to compare the following four approaches to the mu
 4) vector adaboost.
 The last two algorithms are modifications of \hl{[link]}. The modifications are needed to produce the vector of multiscale time series as their outputs. The experiment is performed on 1) non-modified autoregression data and on 2) data with additionally generated features as it is described in the corresponding section.
 
+\begin{figure}[!t]
+\centering\includegraphics[width=0.9\textwidth]{02_A0.png}
+\label{fg:IDEF}
+\caption{Multiscale forecasting pipeline.}
+\end{figure}
 
 \section{Appendix: Discrete genetic algorithm for feature selection (will be converted to bootstrap random linear multimodel algorithm)}
 \begin{enumerate}
