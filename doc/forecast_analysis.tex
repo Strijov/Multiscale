@@ -54,37 +54,36 @@ We consider the following testing procedure, given by the algorithm~\ref{alg:tra
   \KwResult{Forecasting quality: root-mean-squared error.}
  $n = 1$\;
  \While{$n < N$:}{
- define  $m = \lfloor M/N\rfloor$ $\bX^{*}_n = [\bx^{*}_{(n-1)m +1}, \dots, \bx^{*}_{nm}]\T$ \;
+ define  $m = \lfloor M/N\rfloor$, $\bX^{*}_n = [\bx^{*}_{(n-1)m +1}, \dots, \bx^{*}_{nm}]\T$ \;
   $\bX_{\text{train}}, \; \bX_{\text{test}}, \;\bX_{\text{val}} = TrainTestSplit(\bX^{*}_n, \alpha)$\; 
-  train forecasting model $\fx(\x, \hat{\w})$, using $\bX_{\text{train}}$ and $\bX_{\text{test}}$\;
-  obtain vector of residuals $\veps = [\varepsilon_{T}, \dots, \varepsilon_{T-K\Delta t - \dtr}]$ with respect to $\bX_{\text{val}}$:
-  \[\veps = \left[\begin{array}{c} \y_0 - \fx(\x_0, \hat{\w}) \\
-  \dots \\ \y_K - \fx(\x_K, \hat{\w}) \end{array} \right] ;\]
+  train forecasting model $\fx(\x, \hat{\w}_n)$, using $\bX_{\text{train}}$ and $\bX_{\text{test}}$\;
+  obtain vector of residuals $\veps = [\varepsilon_{T}, \dots, \varepsilon_{T- \dtr + 1}]$ with respect to $\bX_{\text{val}}$ \;
   compute forecasting quality:
-  \[ \text{RMSE}(n)  = \sqrt{\frac{1}{(K+1)\dtr} \sum_{t=0}^{(K+1)\dtr} \varepsilon_{T-t}^2};\]
+  \[ \text{RMSE}(n)  = \sqrt{\frac{1}{\dtr} \sum_{t=0}^{\dtr} \varepsilon_{T-t}^2};\]
   $n = n + 1$ \;
   }
   Average RMSE by data splits.
-  \medskip
+  \bigskip
  
 \textbf{\emph{TrainTestSplit()}}
  
 \KwData{Object-feature matrix $\bX \in \mathbb{R}^{m\times(\dtr+\dtp)}$. Train to test ratio $\alpha$.}
  \KwResult{Train, test, validation matrices $\bX^{*}_{\text{train}}$, $\bX^{*}_{\text{test}}$, $\bX^{*}_{\text{val}}$.}
  Set train set and test set sizes:
+ 
  $ \quad m_{\text{train}} = \lfloor\alpha(m-1)\rfloor$ \;
  $ \quad m_{\text{test}} = m - 1 - m_{\text{train}} $ \; %(1-\alpha)(m-1)
  Decompose matrix $\bX^{*}$ into train, test, validation matrices $\bX^{*}_{\text{train}}$, $\bX^{*}_{\text{test}}$, $\bX^{*}_{\text{val}}$:
  \[\bX^{*}_{\text{train}} = \left[\begin{array}{c} \x^{*}_{\text{val}} \in \mathbb{R}^{1\times (\dtr + \dtp)}\\
  \hline
- \bX^{*}_{m_{\text{train}}} \in \mathbb{R}^{m_{\text{train}} \times (\dtr + \dtp)} \\
+ \bX^{*}_{m_{\text{test}}} \in \mathbb{R}^{m_{\text{test}} \times (\dtr + \dtp)} \\
  \hline
- \bX^{*}_{m_{\text{train}}} \in \mathbb{R}^{m_{\text{test}} \times (\dtr + \dtp)} 
+ \bX^{*}_{m_{\text{train}}} \in \mathbb{R}^{m_{\text{train}} \times (\dtr + \dtp)} 
  \end{array}\right] = \left[\begin{array}{c|c} \y_{\text{val}} & \x_{\text{val}} \\
  \hline 
- \bY_{m_{\text{train}}} & \bX_{m_{\text{train}}}  \\
+ \bY_{m_{\text{test}}} & \bX_{m_{\text{test}}}  \\
  \hline
- \bY_{m_{\text{test}}}  & \bX_{m_{\text{test}}}
+ \bY_{m_{\text{train}}}  & \bX_{m_{\text{train}}}
  \end{array}\right]
  \]
  %$\bX^{*}_{\text{train}} = \left[\begin{array}{c|c} \y_1 & \x_1 \\ \dots &\dots, \\
