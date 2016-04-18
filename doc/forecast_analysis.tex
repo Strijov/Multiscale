@@ -1,0 +1,93 @@
+\documentclass[12pt]{article}
+\usepackage{a4wide}
+\usepackage{NotationStyle}
+\usepackage[]{algorithm2e}
+%\usepackage[noend]{algorithmic}
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,mathrsfs,mathtext}
+\usepackage{graphics,graphicx,epsfig}
+\usepackage{epstopdf}
+\usepackage{fancybox,fancyhdr}
+\usepackage{enumerate}
+\usepackage{array}
+\usepackage{color, soul}
+\usepackage[normalem]{ulem}
+
+\newcommand{\argmax}{\mathop{\rm arg\,max}\limits}
+\newcommand{\dtr}{\Delta t_\text{r}}
+\newcommand{\dtp}{\Delta t_\text{p}}
+
+\begin{document}
+\section{Forecast analysis}
+\subsection{Residuals}
+Suppose that a forecasting model $\fx$ was built, producing forecasts
+\[\hat{\y}_i = [\hat{s}(t_{i}), \dots, \hat{s}(t_{i}- \dtr)] = \fx(\x_i, \w).\]
+ %= [f(\hat{\x}_i^{(0)}, \w), f(\hat{\x}^{(1)}_i, \w), \dots, f(\hat{\x}^{(r)}_i, \w)], \]
+ 
+In traditional step-by-step forecasting scheme $(k+1)$-th component of $\y_i$ depends on the forecasts of the previous $k$ components.
+\[\hat{s}(t_{i}-k)  = f(\hat{\x}_i^{(k)}, \w), \quad k = 0,\dots, \dtr-1,\]
+where $\hat{\x}_i^{(k)}$ includes forecasts of $k$  components of $\y_i$:
+\[\hat{\x}_i^{(0)} = \x_i = [s(t_i - \dtr - 1), \dots, s(t_i - \dtr - \dtp)], \]
+\[\hat{\x}^{(1)} = [\hat{s}(t_i - \dtr), s(t_i - \dtr - 1), \dots, s(t_i - \dtr - \dtp + 1)], \]
+\[\dots\]
+\[\hat{\x}_i^{(k)} = [\underbrace{\hat{s}(t_i - \dtr + k-1), \dots, \hat{s}(t_i - \dtr)}_{k}, s(t_i - \dtr - 1), \dots, s(t_i - \dtr - \dtp + 1)], \]
+Then the vector $\veps \in \mathbb{R}^{\dtr}$ of model residuals at time stamp $t_i$ is given by
+\[\veps_i = {\y}_i - \hat{\y}_i.\]
+Let $\cB$ and $\cB_0$ denote the train set and the test set of indices $i$.
+Since there are such $i, \; i' \in \cB$ that $|t_i - t_{i'}| < \dtr$, vectors $\veps_i$ and $\veps_{i'}$ overlap or contain residuals for the same time stamp. In this case define the test vector of residuals as
+\[\veps(\cB) = \left\{\bar{\varepsilon}_t \left| t \in \bigcup_{i \in \cB} \{i-\dtr, \dots, i\} = \{t_{i_{\min}} - \dtr, \dots, t_{i_{\max}}\}\right.\right\}, \]
+where $\bar{\varepsilon}_t$ is the average residual for the time stamp $t$.
+
+\paragraph{Option 1.}
+In our forecasting scheme all $k$ components are obtained at one step, due to the way the matrix $\mathbf{X}^{*}$ is designed. Furthermore, to get rid of logical dependencies between components of subsequent vectors $\y_{i}$, $\y_{i+1}$ we consider the following testing procedure. The available history of the time series $\bs$ is split into several training blocks $\cB_k$, $|\cB| = (\dtr - 1)\dtp + \dtr$, separated from each other by $\dtp$ time points, which comprise target objects $(\x_k, \y_k)$ for the test set set.
+The complete procedure is given be the algorithm~\ref{alg:train_test_rmse}:
+
+\begin{algorithm}[ht]
+ \KwData{$\mathcal{D} = \{\bs, \bs', \dots\}, \;\bs = \{s(T), \dots, s(1)\}$. Parameters: number of testing procedures $N$, local history size $\dtp$, requested forecast length $\dtr$.}
+ \KwResult{Train-test matrix.}
+  \KwResult{Forecasting quality: root-mean-squared error.}
+ $n = 1$\;
+ \While{$n < N$:}{
+  $\bX_{\text{train}}, \bX_{\text{test}} = TrainTestSplit(\{\bs, \bs', \dots\}, \dtp, \dtr)$\; train forecasting model $\fx(\x, \hat{\w})$, using $\bX_{\text{train}}$\;
+  obtain vector of residuals $\veps = [\varepsilon_{T}, \dots, \varepsilon_{T-K\Delta t - \dtr}]$ with respect to $\bX_{\text{test}}$:
+  \[\veps = \left[\begin{array}{c} \y_0 - \fx(\x_0, \hat{\w}) \\
+  \dots \\ \y_K - \fx(\x_K, \hat{\w}) \end{array} \right] ;\]
+  compute forecasting quality:
+  \[ \text{RMSE}(n)  = \sqrt{\frac{1}{(K+1)\dtr} \sum_{t=0}^{(K+1)\dtr} \varepsilon_{T-t}^2};\]
+  $n = n + 1$ \;
+  }
+  Average RMSE by data splits.
+  \medskip
+ 
+\textbf{\emph{TrainTestSplit()}}
+ 
+\KwData{$\mathcal{D} = \{\bs, \bs', \dots\}, \;\bs = \{s(T), \dots, s(1)\}$. Parameters: local history size $\dtp$, requested forecast length $\dtr$. (For simplicity, let $T = M\dtp + \dtr$.)}
+ \KwResult{Train-test matrices $\bX^{*}_{\text{train}}$, $\bX^{*}_{\text{test}}$.}
+ Denote $\Delta T = (\dtr\dtp - \dtp + \dtr)$\;
+ $k = 0$, $K = \lfloor M/(\dtr-1)\rfloor -1$ \;
+ \While{$k < K$:}{
+  add $T - k\Delta T$ to $\cB_0$: \\
+  $\quad \y_k = [s(T - k\Delta T), \dots, s(T- k\Delta T)]$ \;
+  $\quad \x_k = [s(T - k\Delta T - \dtr - 1), \dots, s(T - k\Delta T - \dtr - \dtp)]$  \;
+  from $\cB_k = \{T-k\Delta T - 1, \dots, T-(k+1)\Delta T\}$ make matrix $\mathbf{X}^{*}_k$ \;
+  k = k + 1\;
+   }
+  Join matrices $\mathbf{X}^{*}_k$ vertically into a training matrix $\bX^{*}_{\text{train}}$\;
+  Join $(\x_k, \y_k),$ $k = 0, K-1$ into $\bX^{*}_{\text{test}}$.
+ \caption{Train-test split.}\label{alg:train_test_rmse}
+\end{algorithm}
+
+\subsection{Ensuring forecast model validity}
+A valid forecast model must the meet the following conditions:
+\begin{itemize}
+\item Mean of residuals equals to zero.
+\item Residuals are stationary.
+\item Residuals are not autocorrelated.
+\end{itemize}
+If the forecast does not meet any of these conditions, then it can be further improved by
+ simply adding a constant (minus residual mean) to the model, balancing variance or including more lags. Additionally, desirable properties are normality and homoscedasticity of residuals. These properties are not necessary for an adequate model, but allow to obtain theoretical estimations of the confidence interval.
+
+\subsection{Forecasting quality}
+
+
+\end{document} 
