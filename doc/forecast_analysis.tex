@@ -12,6 +12,10 @@
 \usepackage{array}
 \usepackage{color, soul}
 \usepackage[normalem]{ulem}
+\usepackage{arydshln}
+\setlength\dashlinedash{0.2pt}
+\setlength\dashlinegap{4.5pt}
+\setlength\arrayrulewidth{0.2pt}
 
 \newcommand{\argmax}{\mathop{\rm arg\,max}\limits}
 \newcommand{\dtr}{\Delta t_\text{r}}
@@ -26,10 +30,11 @@ Suppose a large set of time series~$\fD=\{\bs\}$ is given. The ``object-feature'
 \]
 where~$s(t)$ is an element of time series~$\bs$. Consider several strategies to decompose time series $\bs$ into segments $\Delta t_i = (t_i,\dots,t_i-\Delta t_\text{r}-\Delta t_\text{p})$ to construct  matrix $\bX^{*}$.
 \begin{enumerate}
-\item Row vectors $\bs_i$ cover time series without intersections between $\Delta t_i$:
-\[\{T_{\max}, \dots, 1\} = \bigsqcup_i \Delta t_i \Rightarrow |t_{i'} - t-i| \geq \dtr + \dtp.\]
+\item Row vectors $\bs_i$ cover time series without intersections. Let $\{T_{\max}, \dots, 1\}$ be the set of indices of tim series $\bs$, then thee strategy of selecting $t_i$ holds the following:
+\begin{equation}\label{eq:strategy1}\{T_{\max}, \dots, 1\} = \bigsqcup_{i=1}^{M} \Delta t_i.\end{equation}
+It follows from~\eqref{eq:strategy1} that $|t_{i+1} - t_i| > \dtr + \dtp$ for any $i = 1, \dots, M-1$.
 \item Row vectors $\bs_i = [\y_i, \x_i]$ overlap, but target parts  $\y_i$ do not intersect:
-    \[\{T_{\max}, \dots, 1\} = \bigsqcup_i (t_i,\dots,t_i-\Delta t_\text{r}) \Rightarrow |t_{i'} - t-i| \geq \dtr. \]
+    \begin{equation}\label{eq:strategy2}\{T_{\max}, \dots, 1\} = \bigsqcup_{i=1}{M-1} \{t_i,\dots,t_i-\Delta t_\text{r}\} \Rightarrow |t_{i+1} - t_i| > \dtr. \end{equation}
 \item For each time stamp $t_i$ of the least frequent regular sampling there is correspondent row vector $\bs_i$ in $\bX^{*}$:
     \[\{T_{\max}, \dots, 1\} = \bigcup_i t_i. \]
 \item Time intervals $\Delta t_i$ are selected randomly.
@@ -50,8 +55,7 @@ We consider the following testing procedure, given by the algorithm~\ref{alg:tra
 \textbf{\emph{ComputeForecastingErrors()}}
 
  \KwData{$\bX^{*} \in \mathbb{R}^{M\times(\dtr+\dtp)}$. Parameters: number of testing procedures $N$, train to test ratio $\alpha$.}
- \KwResult{Train-test matrix.}
-  \KwResult{Forecasting quality: root-mean-squared error.}
+ \KwResult{Forecasting quality: root-mean-squared error.}
  $n = 1$\;
  \While{$n < N$:}{
  define  $m = \lfloor M/N\rfloor$, $\bX^{*}_n = [\bx^{*}_{(n-1)m +1}, \dots, \bx^{*}_{nm}]\T$ \;
@@ -67,7 +71,7 @@ We consider the following testing procedure, given by the algorithm~\ref{alg:tra
  
 \textbf{\emph{TrainTestSplit()}}
  
-\KwData{Object-feature matrix $\bX \in \mathbb{R}^{m\times(\dtr+\dtp)}$. Train to test ratio $\alpha$.}
+\KwData{Object-feature matrix $\bX^{*} \in \mathbb{R}^{m\times(\dtr+\dtp)}$. Train to test ratio $\alpha$.}
  \KwResult{Train, test, validation matrices $\bX^{*}_{\text{train}}$, $\bX^{*}_{\text{test}}$, $\bX^{*}_{\text{val}}$.}
  Set train set and test set sizes:
  
@@ -77,12 +81,12 @@ We consider the following testing procedure, given by the algorithm~\ref{alg:tra
  \[\bX^{*}_{\text{train}} = \left[\begin{array}{c} \x^{*}_{\text{val}} \in \mathbb{R}^{1\times (\dtr + \dtp)}\\
  \hline
  \bX^{*}_{m_{\text{test}}} \in \mathbb{R}^{m_{\text{test}} \times (\dtr + \dtp)} \\
- \hline
+ \hdashline
  \bX^{*}_{m_{\text{train}}} \in \mathbb{R}^{m_{\text{train}} \times (\dtr + \dtp)} 
  \end{array}\right] = \left[\begin{array}{c|c} \y_{\text{val}} & \x_{\text{val}} \\
  \hline 
  \bY_{m_{\text{test}}} & \bX_{m_{\text{test}}}  \\
- \hline
+ \hdashline
  \bY_{m_{\text{train}}}  & \bX_{m_{\text{train}}}
  \end{array}\right]
  \]
@@ -94,7 +98,7 @@ We consider the following testing procedure, given by the algorithm~\ref{alg:tra
 \end{algorithm}
 
 \subsection{Ensuring forecast model validity}
-A valid forecast model must the meet the following conditions:
+A valid forecast model must meet the following conditions:
 \begin{itemize}
 \item Mean of residuals equals to zero.
 \item Residuals are stationary.
