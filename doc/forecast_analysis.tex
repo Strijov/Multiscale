@@ -54,11 +54,10 @@ We consider the following testing procedure, given by the algorithm~\ref{alg:tra
 \begin{algorithm}[!h]
 \textbf{\emph{ComputeForecastingErrors()}}
 
- \KwData{$\bX^{*} \in \mathbb{R}^{M\times(\dtr+\dtp)}$. Parameters: number of testing procedures $N$, train to test ratio $\alpha$.}
+ \KwData{$\bX^{*} \in \mathbb{R}^{M\times(\dtr+\dtp)}$. Parameters: sample size $m$, train to test ratio $\alpha$.}
  \KwResult{Forecasting quality: root-mean-squared error.}
- $n = 1$\;
- \While{$n < N$:}{
- define  $m = \lfloor M/N\rfloor$, $\bX^{*}_n = [\bx^{*}_{(n-1)m +1}, \dots, \bx^{*}_{nm}]\T$ \;
+ \While{$n \leq M - m$:}{
+ define, $\bX^{*}_n = [\bx^{*}_{n}, \dots, \bx^{*}_{m + n - 1}]\T$ \;
   $\bX_{\text{train}}, \; \bX_{\text{test}}, \;\bX_{\text{val}} = TrainTestSplit(\bX^{*}_n, \alpha)$\; 
   train forecasting model $\fx(\x, \hat{\w}_n)$, using $\bX_{\text{train}}$ and $\bX_{\text{test}}$\;
   obtain vector of residuals $\veps = [\varepsilon_{T}, \dots, \varepsilon_{T- \dtr + 1}]$ with respect to $\bX_{\text{val}}$ \;

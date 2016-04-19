@@ -1,0 +1,145 @@
+\documentclass[12pt]{article}
+\usepackage[english,russian]{babel}
+%\usepackage[T2A]{fontenc}
+\usepackage[cp1251]{inputenc}
+%\usepackage[utf8]{inputenx}
+%\usepackage{jmlda}
+\usepackage[]{cite}
+\usepackage[noend]{algorithmic}
+\usepackage{colortbl}
+\usepackage{amsmath,mathrsfs,amsfonts,amssymb}
+\usepackage{graphics,graphicx,epsfig}
+\usepackage{epstopdf}
+\usepackage{subfig}
+\usepackage{enumerate}
+\usepackage{pdflscape}
+
+
+\textheight=240mm % высота текста
+\textwidth=170mm % ширина текста
+\oddsidemargin=0mm % отступ от левого края
+\topmargin=0mm % отступ от верхнего края
+\headsep=0mm
+\headheight=0mm
+%
+\renewcommand{\baselinestretch}{1.3}
+
+\definecolor{grr}{rgb}{0.5,0.5,0.5}
+\newcommand\TODO[1]{\textcolor{red}{#1}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\w}{\mathbf{w}}
+\newcommand{\T}{{\text{\tiny\sffamily\upshape\mdseries T}}}
+\newcommand{\argmax}{\mathop{\rm arg\,max}\limits}
+
+
+\begin{document}
+
+\begin{table}[!ht]
+\caption{Must-try functions.}
+\label{tb:elemetaries}
+\begin{tabular}{|c|p{50pt}|p{50pt}|p{50pt}|}
+\hline
+Formula		&	Output dimension	&	$\#$ of arguments	&	$\#$ of parameters	\\ \hline
+$	\sqrt{x}	$	&	1	&	1	&	0	\\ \hline
+$	x\sqrt{x}	$	&	1	&	1	&	0	\\ \hline
+$	\arctan{x}	$	&	1	&	1	&	0	\\ \hline
+$	\ln{x}	$	&	1	&	1	&	0	\\ \hline
+$	x\ln{x}	$	&	1	&	1	&	0	\\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[!ht]
+\caption{List of elementary functions.}
+\label{tb:elemetaries}
+\begin{tabular}{|p{90pt}|c|p{50pt}|p{50pt}|p{50pt}|}
+\hline
+Function name	&		Formula		&	Output dimension	&	$\#$ of arguments	&	$\#$ of parameters	\\ \hline
+Add constant	&	$	x + w	$	&	1	&	1	&	1	\\ \hline
+Quadratic	&	$	w_2 x^2 + w_1 x + w_0	$	&	1	&	1	&	3	\\ \hline
+Cubic	&	$	w_3x^3 + w_2 x^2 + w_1 x + w_0	$	&	1	&	1	&	4	\\ \hline
+%Nonparametric sin	&	$	\sin(x)	$	&	1	&	1	&	0	\\ \hline
+%Sin	&	$	\sin(w_0 + w_1x)	$	&	1	&	1	&	2	\\ \hline
+%Square root	&	$	\sqrt{x}, \;x\sqrt{x}	$	&	1	&	1	&	0	\\ \hline
+%Arctangent	&	$	\arctan{x}	$	&	1	&	1	&	0	\\ \hline
+%Logarithmic	&	$	\ln{x}, \;x\ln{x}	$	&	1	&	1	&	0	\\ \hline
+Logarithmic sigmoid	&	$	1/(w_0 + \exp(-w_1x))	$	&	1	&	1	&	2	\\ \hline
+Exponent	&	$	\exp{x}	$	&	1	&	1	&	0	\\ \hline
+Normal	&	$	\frac{1}{w_1\sqrt{2\pi}}\exp\left(\frac{(x-w_2)^2}{2w_1^2}\right)	$	&	1	&	1	&	2	\\ \hline
+Multiply by constant	&	$	x\cdot w	$	&	1	&	1	&	1	\\ \hline
+Monomial	&	$	w_1 x^{w_2}	$	&	1	&	1	&	2	\\ \hline
+Weibull-2	&	$	w_1w_2x^{w_2-1}\exp{-w_1x^{w_2}}	$	&	1	&	1	&	2	\\ \hline
+Weibull-3	&	$	w_1w_2x^{w_2-1}\exp{-w_1(x-w_3)^{w_2}}	$	&	1	&	1	&	3	\\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[!ht]
+\caption{Monotone functions.}
+\label{tb:monotone}
+\begin{tabular}{|p{90pt}|c|p{50pt}|p{50pt}|p{50pt}|p{60pt}|}
+\hline
+\multicolumn{6}{|c|}{By growth rate} \\
+\hline
+Function name	&		Formula		&	Output dimension	&	$\#$ of arguments	&	$\#$ of parameters	&	Constraints	\\ \hline
+Linear	&	$	w_1 x + w_0	$	&	1	&	1	&	2	\\ \hline
+Exponential rate	&	$	\exp(w_1x + w_0)	$	&	1	&	1	&	2	&	$w_1 > 0$	\\ \hline
+Polynomial rate	&	$	\exp(w_1\ln x + w_0)	$	&	1	&	1	&	2	&	$w_1 > 1$	\\ \hline
+Sublinear polynomial rate	&	$\exp(w_1\ln x + w_0)$	&	1	&	1	&	2	&	$0 < w_1 < 1$	\\ \hline
+Logarithmic rate	&	$	w_1\ln x + w_0	$	&	1	&	1	&	2	&	$w_1 > 0$	\\ \hline
+Slow convergence	&	$	w_0 + w_1/x	$	&	1	&	1	&	2	&	$w_1 \neq 0$	\\ \hline
+Fast convergence	&	$	w_0 + w_1\cdot\exp(-x)	$	&	1	&	1	&	2	&	$w_1 \neq 0 $	\\ 
+\hline
+\multicolumn{6}{|c|}{Other} \\
+\hline
+Soft ReLu & $\ln(1+e^{x}) $	&	1	&	1	&	0	&		\\ \hline
+Sigmoid	&	$	1/(w_0 + \exp(-w_1x))	$	&	1	&	1	&	2	&	$w_1 > 0$	\\ \hline
+Nonparametric log-sigmoid	&	$	1/(1 + \exp(-x))	$	&	1	&	1	&	0	& \\ \hline
+Hiberbolic tangent	&	$	\tanh(x)	$	&	1	&	1	&	0 & 	\\ \hline
+% &   $-1,\text{~for~} x < -1$ &		&		&		&		\\
+%hardtan &  $0, \text{~if~} -1\leq x\leq 1, $ &	1	&	1	&	0	&		\\
+% &  $1,\text{~for~} x > 1$ &		&		&		&		\\ \hline
+softsign & $\frac{|x|}{1+|x|}$	&	1	&	1	&	0	&		\\ \hline
+\end{tabular}
+\end{table}
+
+
+\begin{table}[!ht]
+\caption{Multivariate.}
+\label{tb:variable}
+\begin{tabular}{|p{90pt}|c|p{50pt}|p{50pt}|p{50pt}|}
+\hline
+\multicolumn{5}{|c|}{Bivariate} \\
+\hline
+Plus	&	$	x_1 + x_2	$	&	1	&	2	&	0	\\ \hline
+Minus	&	$	x_1 - x_2	$	&	1	&	2	&	0	\\ \hline
+Product	&	$	x_1 \cdot x_2	$	&	1	&	2	&	0	\\ \hline
+Division	&	$	\frac{x_1}{x_2}	$	&	1	&	2	&	0	\\ \hline
+	&	$	x_1\sqrt{x_2}	$	&	1	&	2	&	0	\\ \hline
+	&	$	x_1\ln{x_2}	$	&	1	&	2	&	0	\\ \hline
+\multicolumn{5}{|c|}{Multivariate} \\
+\hline
+Sum of products	&	$\sum_{i,\;j}x_ix_j	$	&	1	&	$n\geq 2$	&	0	\\ \hline
+Sum of products	&	$\sum_{i,\;j,\;k}x_ix_jx_k$	&	1	&	$n\geq 3$	&	0	\\ \hline
+Sum of Gaussians	&	$	\sum_{j=1}^n a_j\exp(-\frac{(x_j-b_j)^2}{c_j})	$	&	1	&	$n$	&	$3n$	\\ \hline
+Polynomial	&	$	\sum_{j=0}^n a_jx^j	$	&	1	&	1	&	$n$	\\ \hline
+Rational polynomial	&	$	\frac{\sum_{j=0}^n a_jx^j}{x^m + \sum_{j=0}^{m-1}b_jx^j}	$	&	1	&	1	&	$n + m + 1$	\\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[!ht]
+\caption{Data statistics.}
+\label{tb:elemetaries}
+\begin{tabular}{|p{90pt}|c|p{50pt}|p{50pt}|p{50pt}|p{60pt}|}
+\hline
+sum	&	$	\sum_i x_i	$	&	1	&	$m$	&	0	\\ \hline
+mean	&	$	(\sum_i x_i)/m	$	&	1	&	$m$	&	0	\\ \hline
+min	&	$	\min_i x_i	$	&	1	&	$m$	&	0	\\ \hline
+max	&	$	\max_i x_i	$	&	1	&	$m$	&	0	\\ \hline
+std	&	$	\frac{1}{m-1}\sqrt{\sum_i(x_i - \text{mean}(x))^2}	$	&	1	&	$m$	&	0	\\ \hline
+hist &	$	\sum_i [X_{j-1} < x_i \leq X_j ]	$	&	$n$	&	$m$	&	$n-1$	\\ \hline
+conv &	$	\sum_j x_{i-j}w_j 	$	&	1	&	$m- n + 1$	&	$n \leq m$	\\ \hline
+\multicolumn{2}{|c|}{FFT coefficients}	&	$n$	&	$m$	&	1	\\ \hline
+
+\end{tabular}
+\end{table}
+
+\end{document} 
