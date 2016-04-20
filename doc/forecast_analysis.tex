@@ -17,6 +17,7 @@
 \setlength\dashlinegap{4.5pt}
 \setlength\arrayrulewidth{0.2pt}
 
+\graphicspath{ {fig/} } 
 \newcommand{\argmax}{\mathop{\rm arg\,max}\limits}
 \newcommand{\dtr}{\Delta t_\text{r}}
 \newcommand{\dtp}{\Delta t_\text{p}}
@@ -38,7 +39,7 @@ It follows from~\eqref{eq:strategy1} that $|t_{i+1} - t_i| > \dtr + \dtp$ for an
 \item For each time stamp $t_i$ of the least frequent regular sampling there is correspondent row vector $\bs_i$ in $\bX^{*}$:
     \[\{T_{\max}, \dots, 1\} = \bigcup_i t_i. \]
 \item Time intervals $\Delta t_i$ are selected randomly.
-\item Potentially, other sensible strategies are possible.    
+\item Potentially, other sensible strategies are possible.
 \end{enumerate}
  Vector $\veps \in \mathbb{R}^{\dtr}$ of model residuals at time stamp $t_i$ is given by
 \[\veps_i = {\y}_i - \hat{\y}_i.\]
@@ -46,10 +47,51 @@ Dependent on the way the matrix $\mathbf{X}^{*}$ is designed, there might be dep
 If there are such $i, \; i' \in \cB$ that $|t_i - t_{i'}| < \dtr$, vectors $\veps_i$ and $\veps_{i'}$ overlap or contain residuals for the same time stamp. In this case define the test vector of residuals as
 \[\veps(\cB) = \left\{\bar{\varepsilon}_t \left| t \in \bigcup_{i \in \cB} \{i-\dtr, \dots, i\} = \{t_{i_{\min}} - \dtr, \dots, t_{i_{\max}}\}\right.\right\}, \]
 where $\bar{\varepsilon}_t$ is the average residual for the time stamp $t$.
+\begin{figure}[!ht]
+\centering\includegraphics[width=0.8\textwidth]{online_forecasting_paradigm.png}
+\label{fg:online_frc}
+\caption{Online forecasting paradigm.}
+\end{figure}
+
+
+\begin{figure}[!ht]
+\centering\includegraphics[width=0.8\textwidth]{retrospective_validation.png}
+\label{fg:retrospective}
+\caption{\hl{Retrospective forecast includes most recent samples in data set.}}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering\includegraphics[width=0.8\textwidth]{retrospective_validation.png}
+\label{fg:retrospective}
+\caption{\hl{Retrospective forecast includes most recent samples in data set.}}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering\includegraphics[width=0.8\textwidth]{draw_object.png}
+\label{fg:draw}
+\caption{Draw an object from time series history.}
+\end{figure}
+\begin{figure}[!ht]
+\centering\includegraphics[width=0.8\textwidth]{design_matrix_generation.png}
+\label{fg:design}
+\caption{Design matrix generation.}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering\includegraphics[width=0.8\textwidth]{forecasting_model.png}
+\label{fg:forecasting}
+\caption{Forecasting as regression problem.}
+\end{figure}
 
 To avoid these issues, we fix the second strategy of the $\bX$ construction.
 \section{Forecast analysis}
-We consider the following testing procedure, given by the algorithm~\ref{alg:train_test_rmse}:
+We consider the forecast testing procedure, given by the algorithm~\ref{alg:train_test_rmse}.
+Our ultimate goal is to construct a forecasting model be able to obtain forecasts at any given time $t$~\ref{fg:online}. To construct such model we have to imitate this setting, using the so-called retrospective forecast~\ref{fg:retrospective} (\hl{rolling forecasts, walking ahead predictions}). Here we conceal most recent historical samples and make predictions as if they were unknown. Then the quality of the model is evaluated according to its performance on these concealed samples. In this paper we convert the forecasting problem to regression problem,  considering the segments of time series as objects of the design matrix $\bX^{*}$~\ref{fg:draw}. Sliding~\ref{fg:design} the ``current'' time point $t$ according to the chosen strategy (1--5), we obtain the design matrix $\bX$ and further we solve the regression problem instead of forecasting problem~\ref{fg:forecasting_model}.
+
+
+
+
+
 
 \begin{algorithm}[!h]
 \textbf{\emph{ComputeForecastingErrors()}}
@@ -58,7 +100,7 @@ We consider the following testing procedure, given by the algorithm~\ref{alg:tra
  \KwResult{Forecasting quality: root-mean-squared error.}
  \While{$n \leq M - m$:}{
  define, $\bX^{*}_n = [\bx^{*}_{n}, \dots, \bx^{*}_{m + n - 1}]\T$ \;
-  $\bX_{\text{train}}, \; \bX_{\text{test}}, \;\bX_{\text{val}} = TrainTestSplit(\bX^{*}_n, \alpha)$\; 
+  $\bX_{\text{train}}, \; \bX_{\text{test}}, \;\bX_{\text{val}} = TrainTestSplit(\bX^{*}_n, \alpha)$\;
   train forecasting model $\fx(\x, \hat{\w}_n)$, using $\bX_{\text{train}}$ and $\bX_{\text{test}}$\;
   obtain vector of residuals $\veps = [\varepsilon_{T}, \dots, \varepsilon_{T- \dtr + 1}]$ with respect to $\bX_{\text{val}}$ \;
   compute forecasting quality:
@@ -67,13 +109,13 @@ We consider the following testing procedure, given by the algorithm~\ref{alg:tra
   }
   Average RMSE by data splits.
   \bigskip
- 
+
 \textbf{\emph{TrainTestSplit()}}
- 
+
 \KwData{Object-feature matrix $\bX^{*} \in \mathbb{R}^{m\times(\dtr+\dtp)}$. Train to test ratio $\alpha$.}
  \KwResult{Train, test, validation matrices $\bX^{*}_{\text{train}}$, $\bX^{*}_{\text{test}}$, $\bX^{*}_{\text{val}}$.}
  Set train set and test set sizes:
- 
+
  $ \quad m_{\text{train}} = \lfloor\alpha(m-1)\rfloor$ \;
  $ \quad m_{\text{test}} = m - 1 - m_{\text{train}} $ \; %(1-\alpha)(m-1)
  Decompose matrix $\bX^{*}$ into train, test, validation matrices $\bX^{*}_{\text{train}}$, $\bX^{*}_{\text{test}}$, $\bX^{*}_{\text{val}}$:
@@ -81,9 +123,9 @@ We consider the following testing procedure, given by the algorithm~\ref{alg:tra
  \hline
  \bX^{*}_{m_{\text{test}}} \in \mathbb{R}^{m_{\text{test}} \times (\dtr + \dtp)} \\
  \hdashline
- \bX^{*}_{m_{\text{train}}} \in \mathbb{R}^{m_{\text{train}} \times (\dtr + \dtp)} 
+ \bX^{*}_{m_{\text{train}}} \in \mathbb{R}^{m_{\text{train}} \times (\dtr + \dtp)}
  \end{array}\right] = \left[\begin{array}{c|c} \y_{\text{val}} & \x_{\text{val}} \\
- \hline 
+ \hline
  \bY_{m_{\text{test}}} & \bX_{m_{\text{test}}}  \\
  \hdashline
  \bY_{m_{\text{train}}}  & \bX_{m_{\text{train}}}
@@ -108,7 +150,7 @@ If the forecast does not meet any of these conditions, then it can be further im
 
 \subsection{Forecasting quality}
 
-\end{document} 
+\end{document}
 
 \paragraph{Step-by-step forecasts.}
 Suppose that a forecasting model $\fx$ was built, producing forecasts
