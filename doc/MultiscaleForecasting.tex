@@ -106,11 +106,11 @@ i\in\cB_0
 \section{Time searies resampling}
 For the time series of sample rate that is changing, unstable, non-rational to the common rate as well as for the time series with missing values the following procedure should be applied.
 
-Let the time~$t$ be in continous set~$\mathbb{R}_+^1$ and the time series~$s$ be piece-wise constant. There are three possibilities to create such time series from a discrete-values one: 1) the constant goes after the sample~$s(t)$, 2) before the sample, 3) in the neighborhood of the sample. See red, green and blue lines in the Figure~\ref{fig_resamle1}.
+Let the time~$t$ be in continuous set~$\mathbb{R}_+^1$ and the time series~$s$ be piece-wise constant. There are three possibilities to create such time series from a discrete-values one: 1) the constant goes after the sample~$s(t)$, 2) before the sample, 3) in the neighborhood of the sample. See red, green and blue lines in the Figure~\ref{fig_resamle1}.
 
 \begin{figure}[!hp]
 \centering\includegraphics[width=0.5\textwidth]{resample1.png}
-\label{fig_resamle1}
+\label{fig_resample1}
 \caption{Piece-wise representation of a time series}
 \end{figure}
 
@@ -122,7 +122,7 @@ This fixed rate is used to obtain a resampled time series with regular time-tick
 
 \begin{figure}[!t]
 \centering\includegraphics[width=0.9\textwidth]{resample2.png}
-\label{fig_resamle2}
+\label{fig_resample2}
 \caption{Resample time series of variating sample rate into the fixed one with the optimal period}
 \end{figure}
 
@@ -133,7 +133,7 @@ TODO
 TODO
 \subsection{Wavelet resampling}
 In signal processing a common way to change resolution of a signal is to use a combination of upsampling and decimation (FFT \hl{wavelet transform} and downsampling). Suppose that desired sampling rate $u$ is fixed, that is, we would like to approximate $U = uT_{\max}$ uniformly sampled observations $\tilde{s}(\tilde{t}_i), \; i = 1, \dots U$ of the time series $s(t_i), \; i=1, \dots, T_{\max}$. Let $G = \{t_1, \dots, T_{\max}\}$ and $\tilde{G} = \{\tilde{t}_1, \dots, T_{\max}\}$ denote the current and the desired grids.
-The first step to rescaling $\bs \rightarrow \tilde{s}$ is the piecewise approximation $\hat{\bs}$ (see Fig.~\ref{fig:resample1} and Fig.~\ref{fig:resample1}) of $\bs$ at $\hat{G} = G \cup \tilde{G}$. To increase the smoothness of piecewise approximation $\hat{\bs}$ we apply low pass FFT \hl{wavelet} filtering to $\hat{\bs}$ and then downsample the output to $\tilde{G}$.
+The first step to rescaling $\bs \rightarrow \tilde{s}$ is the piecewise approximation $\hat{\bs}$ (see Fig.~\ref{fig_resample1} and Fig.~\ref{fig_resample1}) of $\bs$ at $\hat{G} = G \cup \tilde{G}$. To increase the smoothness of piecewise approximation $\hat{\bs}$ we apply low pass FFT \hl{wavelet} filtering to $\hat{\bs}$ and then downsample the output to $\tilde{G}$.
 
 \begin{algorithm}[ht]
 \textbf{TimeSeriesRescaling()}
@@ -148,9 +148,9 @@ The first step to rescaling $\bs \rightarrow \tilde{s}$ is the piecewise approxi
  Apply low pass filtering $\hat{\bs}$:
  
  $\quad \hat{\bs}_{\text{lf}} = \text{\textbf{LowPassFFTFiltering}}(\hat{\bs})$ \;
- Downsample $\quad \hat{\bs}_{\text{lf}}$ to $\tilde{G}$:
+ Downsample $\hat{\bs}_{\text{lf}}$ to $\tilde{G}$:
  
- $\tilde{\bs} = [\hat{s}_{lf}(\tilde{t}_1), \dots, ], \; \tilde{t}_i \in \tilde{G}.$
+ $\quad \tilde{\bs} = [\hat{s}_{lf}(\tilde{t}_1), \dots, ], \; \tilde{t}_i \in \tilde{G}.$
  \bigskip
  
  \textbf{LowPassFFTFiltering()}
