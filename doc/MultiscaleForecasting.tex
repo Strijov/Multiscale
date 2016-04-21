@@ -131,6 +131,40 @@ TODO
 
 \subsection{ Fisher-Neyman resampling criterion}
 TODO
+\subsection{Wavelet resampling}
+In signal processing a common way to change resolution of a signal is to use a combination of upsampling and decimation (FFT \hl{wavelet transform} and downsampling). Suppose that desired sampling rate $u$ is fixed, that is, we would like to approximate $U = uT_{\max}$ uniformly sampled observations $\tilde{s}(\tilde{t}_i), \; i = 1, \dots U$ of the time series $s(t_i), \; i=1, \dots, T_{\max}$. Let $G = \{t_1, \dots, T_{\max}\}$ and $\tilde{G} = \{\tilde{t}_1, \dots, T_{\max}\}$ denote the current and the desired grids.
+The first step to rescaling $\bs \rightarrow \tilde{s}$ is the piecewise approximation $\hat{\bs}$ (see Fig.~\ref{fig:resample1} and Fig.~\ref{fig:resample1}) of $\bs$ at $\hat{G} = G \cup \tilde{G}$. To increase the smoothness of piecewise approximation $\hat{\bs}$ we apply low pass FFT \hl{wavelet} filtering to $\hat{\bs}$ and then downsample the output to $\tilde{G}$.
+
+\begin{algorithm}[ht]
+\textbf{TimeSeriesRescaling()}
+
+ \KwData{$\bs$. Parameters: desired grid $\tilde{G} = \{\tilde{t}_1, \dots \tilde{t}_U\}$.}
+ \KwResult{Resamples time series $\tilde{\bs}$.}
+ Form the new grid $\hat{G} = G \cup \tilde{G}$\;
+ Upsample time series, using piecewise approximation:
+ 
+ $\quad \hat{\bs} \leftarrow \text{~\textbf{Piecewise}}(\bs, G, \tilde{G})$\;
+ Zero-pad $\hat{\bs}$, so that $|\hat{G}| = 2^{N}$, where $N = \lceil \log_2(|\hat{G}|)\rceil$\;
+ Apply low pass filtering $\hat{\bs}$:
+ 
+ $\quad \hat{\bs}_{\text{lf}} = \text{\textbf{LowPassFFTFiltering}}(\hat{\bs})$ \;
+ Downsample $\quad \hat{\bs}_{\text{lf}}$ to $\tilde{G}$:
+ 
+ $\tilde{\bs} = [\hat{s}_{lf}(\tilde{t}_1), \dots, ], \; \tilde{t}_i \in \tilde{G}.$
+ \bigskip
+ 
+ \textbf{LowPassFFTFiltering()}
+ 
+ \KwData{Time series, $\bs$. Parameters: cut-off value $w_{\max}$ for high frequencies.}
+ \KwResult{Filtered time series $\tilde{\bs}_{\text{lf}}$.}
+ Find FFT coefficients $a_j,\; b_j$ for  $j = 1, \dots, N$ for $\bs$\;
+ Set $a_j = 0,\; b_j=0$, for  $w_j > w_{\max}$ \; 
+ Reconstruct the time series, using inverse FFT.
+ \smallskip
+ \caption{FFT rescaling procedure.}
+\end{algorithm}
+
+ 
 
 
 \section{Feature generation}
@@ -153,7 +187,7 @@ The object set  $\mathcal {I} = \mathop{\sqcup}\limits_k \mathcal{B}_k$ includes
 Denote the generated feature vector as~$\vf$. This vector consists of concatenated row-vectors~$\vf=[\vf^\prime,\vf^{\prime\prime},\dots]$, which corresponds to time series local histories ~$\bs=[\bs^\prime,\bs^{\prime\prime},\dots]$, modified with set of transformations~$\mathfrak{G}$. The elements~$g:\bs\to\vf$ of this set are listed below.
 
 \subsection{Transformations of local history}
-The table~\ref{tb:primitives} lists the~time series transformation functions. There are non-parametric and parametric procedures to generate features. For the parametric functions~$g=g(\bb,s)$ the default values of the parameters~$\bb$ are assigned empirically.
+The tables~\ref{tb:musttries},~\ref{tb:elementaries},~\ref{tb:monotones},~\ref{tb:multivariates},~\ref{tb:datastats} list the~time series transformation functions. There are non-parametric and parametric procedures to generate features. For the parametric functions~$g=g(\bb,s)$ the default values of the parameters~$\bb$ are assigned empirically.
 
 The parametric procedure request two optimization problem statements of the model parameters~$\bw$ and the primitive function parameters~$\bb$. The first one fixes the vector~$\hat\bb$, collected over all the primitive functions~$\{g\}$, which generate features~$\vf$:
 \[
@@ -165,7 +199,7 @@ The second one optimizes the transformation parameters~$\hat\bb$ given obtained 
 \[
 \hat\bb = \arg\min S\bigl(\bb|\fx(\hat\bw,\bx),\by\bigr).
 \]
-This procedure repeats two problems until vectors~$\hat\bw,\hat\bb$ converge. The initial values of vector~$\bb$ (are shown in table~\ref{tb:primitives}). Due to the various origins of the time series and their transformations the residual vector should be normalized:
+This procedure repeats two problems until vectors~$\hat\bw,\hat\bb$ converge. \hl{The initial values of vector~$\bb$ (are shown in table}~\ref{tb:primitives}). Due to the various origins of the time series and their transformations the residual vector should be normalized:
 \[\veps^\prime = \frac{\hat\by^\prime-\by^\prime}{|\by^\prime| \cdot \|\by^\prime\|_2^1}.
 \]
 It does not change the number elements in the vectors,~$|\vf^\prime|=|\bs^\prime|$.
@@ -201,7 +235,7 @@ This $k$-means of another clustering procedure may use internal parameters, so t
 
 \begin{table}[!ht]
 \caption{Must-try functions.}
-\label{tb:elemetaries}
+\label{tb:musttries}
 \begin{tabular}{|c|p{50pt}|p{50pt}|p{50pt}|}
 \hline
 Formula		&	Output dimension	&	$\#$ of arguments	&	$\#$ of parameters	\\ \hline
@@ -215,7 +249,7 @@ $	x\ln{x}	$	&	1	&	1	&	0	\\ \hline
 
 \begin{table}[!ht]
 \caption{List of elementary functions.}
-\label{tb:elemetaries}
+\label{tb:elementaries}
 \begin{tabular}{|p{90pt}|c|p{50pt}|p{50pt}|p{50pt}|}
 \hline
 Function name	&		Formula		&	Output dimension	&	$\#$ of arguments	&	$\#$ of parameters	\\ \hline
@@ -239,7 +273,7 @@ Weibull-3	&	$	w_1w_2x^{w_2-1}\exp{-w_1(x-w_3)^{w_2}}	$	&	1	&	1	&	3	\\ \hline
 
 \begin{table}[!ht]
 \caption{Monotone functions.}
-\label{tb:monotone}
+\label{tb:monotones}
 \begin{tabular}{|p{90pt}|c|p{50pt}|p{50pt}|p{50pt}|p{60pt}|}
 \hline
 \multicolumn{6}{|c|}{By growth rate} \\
@@ -269,7 +303,7 @@ softsign & $\frac{|x|}{1+|x|}$	&	1	&	1	&	0	&		\\ \hline
 
 \begin{table}[!ht]
 \caption{Multivariate.}
-\label{tb:variable}
+\label{tb:multivariates}
 \begin{tabular}{|p{90pt}|c|p{50pt}|p{50pt}|p{50pt}|}
 \hline
 \multicolumn{5}{|c|}{Bivariate} \\
@@ -292,7 +326,7 @@ Rational polynomial	&	$	\frac{\sum_{j=0}^n a_jx^j}{x^m + \sum_{j=0}^{m-1}b_jx^j}
 
 \begin{table}[!ht]
 \caption{Data statistics.}
-\label{tb:elemetaries}
+\label{tb:datastats}
 \begin{tabular}{|p{90pt}|c|p{50pt}|p{50pt}|p{50pt}|p{60pt}|}
 \hline
 sum	&	$	\sum_i x_i	$	&	1	&	$m$	&	0	\\ \hline
