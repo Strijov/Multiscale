@@ -90,7 +90,7 @@ for i = 1:numel(deltaTp_bounds)
 end
 figure(4)
 
-surf(error_mat)
+surfc(deltaTp_bounds, m_bounds, error_mat)
 xlabel 'deltaTp'
 ylabel 'm'
 zlabel 'RMSE'
