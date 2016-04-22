@@ -13,13 +13,13 @@ function  model = OptimizeModelParameters(X, Y, model)
             W = inv(X'*X)*X'*Y;
             model.params = W;
             model.tuned_func = [];
-            model.unoptimized_flag = true;
+            model.unopt_flag = true;
         case 'Neural_network'
             net = fitnet(10);
             net = train(net,X',Y');
             model.params = [];
             model.tuned_func = net;
-            model.unoptimized_flag = true; %FIXIT Should be false, but can't find function to retrain NN using old parameters.
+            model.unopt_flag = true; %FIXIT Should be false, but can't find function to retrain NN using old parameters.
     end
 end
 
