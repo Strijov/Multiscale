@@ -11,6 +11,7 @@
 \usepackage{enumerate}
 \usepackage{array}
 \usepackage{color, soul}
+\usepackage{longtable}
 \usepackage[normalem]{ulem}
 
 \newcommand{\argmax}{\mathop{\rm arg\,max}\limits}
@@ -22,6 +23,40 @@
 \date{Technical report (pre-draft)}
 \maketitle
 
+\section*{Notation}
+\begin{longtable}{p{4cm}p{12cm}}
+$\fD=\{\bs, \bs', \bs'', \dots\}$ & large set of time series \\
+$\bar{\bs}$ & special case of time series $\bs$ for classification \\
+$T_{\max}$ & maximum number of time stamps \\
+$\dtp$ & local prehistory \\
+$\dtr$ & defines time period (requested) for prediction \\
+$\bs_i = [\y_i|\x_i]$ & local ($t_i$) segment of the time series $\bs$ \\
+$\bX^{*}$, $\bx_i^{*} = [\y_i, \y'_i, \dots |\x_i, \x'_i, \dots]$ & object-feature matrix \\
+$\bY$, $\bX$ & target matrix, feature matrix \\
+$m$ & number of objects $\bx_i^{*}$ extracted from $\fD$ \\
+$r$ & dimensionality of the target vector $[\y_i, \y'_i, \dots]$ \\
+$n$ & dimensionality of the feature vector $[\x_i, \x'_i, \dots]$ \\
+$\bx_0^{*} = [\hat{y}|\bx_0]$ & a testing object? \\
+$\cJ = {1,\dots, n}$ & feature index set \\
+$\cA \subset \cJ$ & the subset of feature indices \\ 
+$\fx_k(\w_{\cA_k}, \x)$, $k=1,\dots,K$ & regression model, defined for a subset $\cA_k$ \\
+$\w_{\cA_k}$ & model parameters (alternatively, $\w_k$)\\
+$\boldsymbol{\pi} = [\pi_{i1}, \dots, \pi_{iK}]$ & vector of correspondence \\
+$\cI = \{1, \dots, m\} = \cB_0 \sqcup_k \cB_k$ & set of object indices \\
+$\cB_0$ & test set \\
+$\cB_k$, $k=1,\dots,K$ & training sets \\
+$Q$ & quality function \\
+$S$ & error function \\ 
+$g=g(\bb,s)$ parametric functions for feature transformation \\
+$\mathfrak{G} = \{g:\bs\to\vf\}$ & set of feature transformations \\
+$\vf=[\vf^\prime,\vf^{\prime\prime},\dots]$ & generated feature vector \\ 
+$\veps = \by - \hat{\by}$ & vector of residuals \\
+$\bc^\prime_1,\dots,\bc^\prime_P$ & $k$-means centroids \\
+$\mathbf{H}^{*}$ & Hankel matrix \\
+$\bth = [\w_1, \dots, \w_k, \boldsymbol{\pi}, \beta]$ & parameters of the mixture model \\
+$z_{ik}$, $\gamma_{ik}$ & latent (correspondence) variables and their expectations (mixture models) \\
+\end{longtable}
+
 \section{Introduction}
 The paper investigated behavior of a device, a member of the internet of things. A device is monitored by a set of sensors, which produces large amount of multiscale time series during its lifespan. These time series have various time scales, due to measurements could perform over each millisecond, day, week, etc.  The main goal is to forecast the next state of a device.
 
@@ -32,7 +67,7 @@ To make an adequate forecasting model hold the following hypothesis: the time hi
 To forecast time series under the listed conditions autoregressive models constructed in next TODO (list and review state of the art).
 
 \section{Problem statement}
-There give a large set of time series~$\fD=\{\bs\}$, where each real-valued time series~$\bs$  has its own sample rate. Assuming each time series could be interpolated introduce a joint sample rate and assign each series~$\bs$ has minimum one and maximum~$T_{\max}$ samples for one time-tick of this rate. Introduce joint time-scale and split it to the following parts, as Fig.~\label{TimeScale} shows. The first part is the history itself, the second part is the local history, which forms an object of the “object-feature” matrix to make a forecast. The third part is a requested forecast time-segment~$\Delta t_\text{r}$ and the last one is a forecast horizon.
+\hl{There give a large set of time series~$\fD=\{\bs\}$, where each real-valued time series~$\bs$  has its own sample rate. Assuming each time series could be interpolated introduce a joint sample rate and assign each series~$\bs$ has minimum one and maximum~$T_{\max}$ samples for one time-tick of this rate.} Introduce joint time-scale and split it to the following parts, as Fig.~\label{TimeScale} shows. The first part is the history itself, the second part is the local history, which forms an object of the “object-feature” matrix to make a forecast. The third part is a requested forecast time-segment~$\Delta t_\text{r}$ and the last one is a forecast horizon.
 
 %\begin{define}
 Forecast horizon is a time segment~$\Delta t_\text{h}$, which brings an adequate (TODO explain it) forecast~$\bs(\Delta t_\text{h})$ in comparison to the real historical values~$\hat{\bs}(\Delta t_\text{h})$.
@@ -84,10 +119,10 @@ where the set of object indexes~$\cI$ is splatted to the test set~$\cB_0$ and th
 \cI = \cB_0\mathop{\sqcup}\limits_{k=1}^K \cB_k.
 \]
 
-State the forecasting problem as a problem to minimize the error function~$S$ given models~$\fx_1,\dots,\fx_K$ by optimizing matrix $\Pi = [\pi_{ik}]$, finite sets~$\cA_1,\dots,\cA_K$ and model parameters~$\bw_1,\dots,\bw_K$ on the sample set with indexes~$\cI\setminus\cB_0$.
+State the forecasting problem as a problem to minimize the error function~$S$ given models~$\fx_1,\dots,\fx_K$ by optimizing matrix $\Pi = [\pi_{ik}]$, finite sets~$\cA_1,\dots,\cA_K$ and model parameters~\hl{$\bw_1,\dots,\bw_K$} on the sample set with indexes~$\cI\setminus\cB_0$.
 
 \section{Special case of the problem}
-A special case of the problem is an early warning forecasting. There is a special time series~$\bar{\bs}$ with its element~$\bar{s}\in\{0,1\}$. Here zero is interpreted as a \emph{normal state} of the system and one meas the system goes from normal to the \emph{abnormal} state without return over time~$t$.
+A special case of the problem is an early warning forecasting. There is a special time series~$\bar{\bs}$ with its elements~$\bar{s}\in\{0,1\}$. Here zero is interpreted as a \emph{normal state} of the system and one meas the system goes from normal to the \emph{abnormal} state without return over time~$t$.
 The problem is to maximize the lapse of the time segment
 \[ \| \Delta t_\text{r} \| \to\max,\]
 where the vector
@@ -106,7 +141,7 @@ i\in\cB_0
 \section{Time searies resampling}
 For the time series of sample rate that is changing, unstable, non-rational to the common rate as well as for the time series with missing values the following procedure should be applied.
 
-Let the time~$t$ be in continuous set~$\mathbb{R}_+^1$ and the time series~$s$ be piece-wise constant. There are three possibilities to create such time series from a discrete-values one: 1) the constant goes after the sample~$s(t)$, 2) before the sample, 3) in the neighborhood of the sample. See red, green and blue lines in the Figure~\ref{fig_resamle1}.
+Let the time~$t$ be in continuous set~$\mathbb{R}_+^1$ and the time series~$s$ be piece-wise constant. There are three possibilities to create such time series from a discrete-values one: 1) the constant goes after the sample~$s(t)$, 2) before the sample, 3) in the neighborhood of the sample. See red, green and blue lines in the Figure~\ref{fig_resample1}.
 
 \begin{figure}[!hp]
 \centering\includegraphics[width=0.5\textwidth]{resample1.png}
@@ -114,7 +149,7 @@ Let the time~$t$ be in continuous set~$\mathbb{R}_+^1$ and the time series~$s$ b
 \caption{Piece-wise representation of a time series}
 \end{figure}
 
-This assumptions helps introducing a new sampling rate and eliminates the problem of missing values, since the previous (next, current in the terms of Fig.~\ref{fig_resamle1}) value holds continuously until the following comes. The constant model could be developed into more comples one: a piece-wise, quadratic or cubic spline with its nodes in the time-ticks or over the time-ticks according to the following criterions: 1) Nyquist–Shannon theorem, 2) Fisher-Neyman theorem. The following optimization problem returns the new sampling rate:
+This assumptions helps introducing a new sampling rate and eliminates the problem of missing values, since the previous (next, current in the terms of Fig.~\ref{fig_resample1}) value holds continuously until the following comes. The constant model could be developed into more comples one: a piece-wise, quadratic or cubic spline with its nodes in the time-ticks or over the time-ticks according to the following criterions: 1) Nyquist–Shannon theorem, 2) Fisher-Neyman theorem. The following optimization problem returns the new sampling rate:
 \[
 \text{todo}
 \]
@@ -133,7 +168,7 @@ TODO
 TODO
 \subsection{Wavelet resampling}
 In signal processing a common way to change resolution of a signal is to use a combination of upsampling and decimation (FFT \hl{wavelet transform} and downsampling). Suppose that desired sampling rate $u$ is fixed, that is, we would like to approximate $U = uT_{\max}$ uniformly sampled observations $\tilde{s}(\tilde{t}_i), \; i = 1, \dots U$ of the time series $s(t_i), \; i=1, \dots, T_{\max}$. Let $G = \{t_1, \dots, T_{\max}\}$ and $\tilde{G} = \{\tilde{t}_1, \dots, T_{\max}\}$ denote the current and the desired grids.
-The first step to rescaling $\bs \rightarrow \tilde{s}$ is the piecewise approximation $\hat{\bs}$ (see Fig.~\ref{fig_resample1} and Fig.~\ref{fig_resample1}) of $\bs$ at $\hat{G} = G \cup \tilde{G}$. To increase the smoothness of piecewise approximation $\hat{\bs}$ we apply low pass FFT \hl{wavelet} filtering to $\hat{\bs}$ and then downsample the output to $\tilde{G}$.
+The first step to rescaling $\bs \rightarrow \tilde{s}$ is the piecewise approximation $\hat{\bs}$ (see Fig.~\ref{fig_resample1} and Fig.~\ref{fig_resample2}) of $\bs$ at $\hat{G} = G \cup \tilde{G}$. To increase the smoothness of piecewise approximation $\hat{\bs}$ we apply low pass FFT \hl{wavelet} filtering to $\hat{\bs}$ and then downsample the output to $\tilde{G}$.
 
 \begin{algorithm}[ht]
 \textbf{TimeSeriesRescaling()}
@@ -359,49 +394,49 @@ Let $D = (X, \by)$ denote the data, where $X = [\bx_1\T, \dots, \bx_i, \dots, \b
 \subsection{EM-algorithm for mixture models}
 Assume the target variable $\by$ is generated by one of~$K$ linear models $f_{k}(\x, \w_k)$. Let the distribution of the target variable~$\by$ be a mixture of normal distributions
 \begin{equation}\label{eq:mixture_models}
-p(\by|\x, \bs) = \sum_{k=1}^{K}\pi_k\;\mathcal{N}(\by|\w_k\T\bx,\beta) = \sum_{k=1}^K
+p(\by|\x, \bth) = \sum_{k=1}^{K}\pi_k\;\mathcal{N}(\by|\w_k\T\bx,\beta) = \sum_{k=1}^K
 \frac{1}{(2\pi\beta_k)^{n/2}} \exp \left(
 ( -\frac{1}{2\beta_k}(\by - \w_k\T X)^{\top}(\by - \w_k\T X) \right).
 \end{equation}
-Here~$\bs$ denotes the concatenated vector of parameters:
+Here~$\bth$ denotes the concatenated vector of parameters:
 \[
-\bs = [\w_1,\dots,\w_k,\boldsymbol{\pi},\beta]\T,
+\bth = [\w_1,\dots,\w_k,\boldsymbol{\pi},\beta]\T,
 \]
 where $\boldsymbol{\pi} = [\pi_1,\dots,\pi_k]$ are weights of the models,
 and $\bB = \beta \bI_m$ is the covariance matrix for~$\by$.
 
 \paragraph{Parameter estimation.}
-The goal is to find parameters vector $\hat{\bs}$ which optimizes loglikelihood function for given data set~$D$
+The goal is to find parameters vector $\hat{\bth}$ which optimizes loglikelihood function for given data set~$D$
 \begin{equation}\label{eq:MLE}
-\hat{\bs} = \argmax_{\bs}\ln p(\by|\bs), \quad \ln p(\by|\bs) = \sum_{i=1}^{m}\ln\left( \sum_{k=1}^K  \pi_k\mathcal{N}(\by|\w\T_{k}\x_i,\beta) \right).
+\hat{\bth} = \argmax_{\bth}\ln p(\by|\bth), \quad \ln p(\by|\bth) = \sum_{i=1}^{m}\ln\left( \sum_{k=1}^K  \pi_k\mathcal{N}(\by|\w\T_{k}\x_i,\beta) \right).
 \end{equation}
-%To estimate parameters $\bs$ introduce the matrix
+%To estimate parameters $\bth$ introduce the matrix
 %\[
 %Z = \left[\bz_1,\dots,\bz_m|\bz\in\{0,1\}^K\right]
 %\]
 %of hidden variables. A hidden variable $\bz_i$ indicates which model generates $\mathbf{x}_i$: $\mathbf{x}_i$ is generated by $k$-th model iff $\bz_{ik}=\delta_{ik}$.
 %The log-likelihood function for joint distribution of~$\y,Z$ is
 %\begin{equation}\label{eq:joint_y_z}
-%\ln p(\by,Z|\bs) = \sum_{i=1}^m\sum_{k=1}^K z_{ik} \ln \left( \pi_k \mathcal{N}(y_i|\w\T_{k}\x_i,\beta) \right).
+%\ln p(\by,Z|\bth) = \sum_{i=1}^m\sum_{k=1}^K z_{ik} \ln \left( \pi_k \mathcal{N}(y_i|\w\T_{k}\x_i,\beta) \right).
 %\end{equation}
 
 
-To obtain maximum likelihood estimates~\eqref{eq:MLE} for parameter $\bs$ of the model~\eqref{eq:mixture_models}, let us introduce hidden indicator variables
+To obtain maximum likelihood estimates~\eqref{eq:MLE} for parameter $\bth$ of the model~\eqref{eq:mixture_models}, let us introduce hidden indicator variables
 \[Z = \left[\bz_1,\dots,\bz_m\right], \quad z_{ik}\in \{0,1\},\] such that
 \[z_{ik} = 1 \Leftrightarrow y_i\sim\mathcal{N}(\w_k\T\x_i, \beta).\]
-Then the loglikelihood function $p(\by, Z|X, \bs)$ takes the form
-\[p(\by|X, Z, \bs) = \sum_{i=1}^{m}\sum_{k=1}^{K} z_{ik} \left( \ln\pi_k + \ln\mathcal{N}(y_i|\w\T_{k}\x_i,\beta) \right) = \]
+Then the loglikelihood function $p(\by, Z|X, \bth)$ takes the form
+\[p(\by|X, Z, \bth) = \sum_{i=1}^{m}\sum_{k=1}^{K} z_{ik} \left( \ln\pi_k + \ln\mathcal{N}(y_i|\w\T_{k}\x_i,\beta) \right) = \]
 \[=\sum_{i=1}^{m}\sum_{k=1}^{K} z_{ik} \left( \ln\pi_k - \frac{1}{2\beta}(y_i-\w\T_{k}\x_i)^2 + \frac{n\ln{\beta}}{2} + \text{const}\right).\]
-Since $p(\by, Z|X, \bs)$ depends on random variables $z_{ik}$, instead of $p(\by|X, \bs)$ maximize the expected loglikelihood of the observed data $D$:
-\[\mathsf{E}_{Z} [p(\y, Z|X, \bs)] = \sum_{i=1}^{m}\sum_{k=1}^{K} \gamma_{ik} \left( \ln\pi_k - \frac{1}{2\beta}(y_i-\w\T_{k}\x_i)^2 + \frac{n\ln{\beta}}{2}\right), \quad \gamma_{ik} = \mathsf{E}[z_{ik}|\y, X].\]
+Since $p(\by, Z|X, \bth)$ depends on random variables $z_{ik}$, instead of $p(\by|X, \bth)$ maximize the expected loglikelihood of the observed data $D$:
+\[\mathsf{E}_{Z} [p(\y, Z|X, \bth)] = \sum_{i=1}^{m}\sum_{k=1}^{K} \gamma_{ik} \left( \ln\pi_k - \frac{1}{2\beta}(y_i-\w\T_{k}\x_i)^2 + \frac{n\ln{\beta}}{2}\right), \quad \gamma_{ik} = \mathsf{E}[z_{ik}|\y, X].\]
 
 
-Finally, apply Expectation-Maximization algorithm to maximize $\mathsf{E}_{Z} [p(\y, Z|X, \bs)]$ updating parameters estimates $\bs^{(r)}$ in two iterative steps.
+Finally, apply Expectation-Maximization algorithm to maximize $\mathsf{E}_{Z} [p(\y, Z|X, \bth)]$ updating parameters estimates $\bth^{(r)}$ in two iterative steps.
 
 
 {\bf E-step}: obtain $\mathsf{E}(Z)$. Let~$\Gamma=[\gamma_{ik}]$ be a matrix of posterior probabilities that $i$-th sample is generated by~$k$-th model. Using Bayesian rule, obtain
 \begin{equation}\label{eq:hidden_vars_Estep}
-\gamma_{ik}^{(r+1)} = \mathsf{E}(z_{ik}) = p(k|\x_i, \bs^{(r)}) =
+\gamma_{ik}^{(r+1)} = \mathsf{E}(z_{ik}) = p(k|\x_i, \bth^{(r)}) =
     \frac{
         \pi_k\mathcal{N}(y_i|\x_i\T\w^{(r)}_{k}, \beta^{(r)})
         }{
@@ -409,15 +444,15 @@ Finally, apply Expectation-Maximization algorithm to maximize $\mathsf{E}_{Z} [p
         }
 \end{equation}
 
-Define expectations of joint loglikelihood $\ln p(\y, Z|X, \bs)$ with respect to the posteriors distribution~$p(Z|\y,\bs)$
+Define expectations of joint loglikelihood $\ln p(\y, Z|X, \bth)$ with respect to the posteriors distribution~$p(Z|\y,\bth)$
 \begin{equation}\label{eq:posterior}
-Q^{(r)}(\bs) = \mathsf{E}_Z(\ln p(\y, Z|\bs)) = \sum_{i=1}^m\sum_{k=1}^K\gamma_{ik}^{(r+1)}
+Q^{(r)}(\bth) = \mathsf{E}_Z(\ln p(\y, Z|\bth)) = \sum_{i=1}^m\sum_{k=1}^K\gamma_{ik}^{(r+1)}
     \left(
         \ln\pi^{(r)}_k+\ln\mathcal{N}(y_i|\x_i\T\w^{(r)}_{k},\beta^{(r)})
     \right).
 \end{equation}
 
-{\bf M-step:} update parameters $\bs$, maximizing $Q^{(r)}(\bs)$. Maximize function~$Q^{(r)}(\bs)$ with respect to~$\bs$ with~$\Gamma^{(r+1)}$ fixed. First, optimize $\pi_k$, which is constrained as $\sum_{k=1}^K\pi_k=1$. Using Lagrange multipliers, obtain the following estimation
+{\bf M-step:} update parameters $\bth$, maximizing $Q^{(r)}(\bth)$. Maximize function~$Q^{(r)}(\bth)$ with respect to~$\bth$ with~$\Gamma^{(r+1)}$ fixed. First, optimize $\pi_k$, which is constrained as $\sum_{k=1}^K\pi_k=1$. Using Lagrange multipliers, obtain the following estimation
 \[
 \pi^{(r+1)}_k = \frac{1}{n}\sum_{i=1}^m { \gamma_{ik}^{(r+1)}}.
 \]
@@ -440,21 +475,21 @@ With $\pi_k$ fixed maximizing~\eqref{eq:posterior} is equivalent to \
 \subsection{Mixture of experts}
 Suppose that each model $f(\x, \w_k)$ generates a sample $(\x, y)$ with some probability $p(k|\x, \w)$. Then
 the following factorization holds
-\begin{equation*}\label{eq:mixture_of_experts} p(y|\x, \bs) = \sum_{k=1}^{K} p(y, k| \x, \bs) = \sum_{k=1}^{K} p(k|\x, \bs)p(y|k, \x, \bs)\end{equation*}
- for $p(y|\x, \bs)$. Here $p(k|\x, \bs)$ correspond to weight parameters $\pi_k$ in~\eqref{eq:mixture_models} dependent on the inputs $\x$.
+\begin{equation*}\label{eq:mixture_of_experts} p(y|\x, \bth) = \sum_{k=1}^{K} p(y, k| \x, \bth) = \sum_{k=1}^{K} p(k|\x, \bth)p(y|k, \x, \bth)\end{equation*}
+ for $p(y|\x, \bth)$. Here $p(k|\x, \bth)$ correspond to weight parameters $\pi_k$ in~\eqref{eq:mixture_models} dependent on the inputs $\x$.
  Assuming normal linear models $f(\x, \w_k)$ or, equivalently, normal  distributions
  $p(y|\bx, \w_k) = \mathcal{N}(y|\w_k\T, \beta),$
  obtain
-\begin{equation}\label{eq:mixture_of_experts}p(\by|\x, \bs) = \sum_{k=1}^{K}\pi_k(\x, \bv_k)\mathcal{N}(\by|\w_k\T\bx,\beta), \end{equation}
+\begin{equation}\label{eq:mixture_of_experts}p(\by|\x, \bth) = \sum_{k=1}^{K}\pi_k(\x, \bv_k)\mathcal{N}(\by|\w_k\T\bx,\beta), \end{equation}
 where
 \[\pi_k(\x, \bv_k) = \frac{\exp(\bv_k\T\x)}{\sum_{k'=1}^K \exp(\bv_{k'}\T\x)}.\]
    The difference between mixture of experts model~\eqref{eq:mixture_of_experts} and mixture model~\eqref{eq:mixture_models} in that model weights $\pi_k$ depend on inputs $\x$ in mixture of experts. Similarly, EM-procedure for mixture of experts differs from EM-procedure for mixture models in the way $\gamma_{ik}$ are optimized in M-step.
 
 \begin{algorithm}[ht]
  \KwData{$(\x_i, y_i)$, $i = 1, \dots, m$. Parameters: number of experts $K$.}
- \KwResult{Parameters $\bs$ of the model~\eqref{eq:mixture_of_experts}.}
- Initialize $[\w, \beta, \bv] \equiv \bs = \bs^{(0)}$, $r = 0$\;
- \While{$\bs$ keeps changing}{
+ \KwResult{Parameters $\bth$ of the model~\eqref{eq:mixture_of_experts}.}
+ Initialize $[\w, \beta, \bv] \equiv \bth = \bth^{(0)}$, $r = 0$\;
+ \While{$\bth$ keeps changing}{
   \textbf{E step}: compute hidden variables $\gamma^{(r+1)}_{ik}$, the expectation of the indicator
 variables, using~\eqref{eq:hidden_vars_Estep}\;
 
