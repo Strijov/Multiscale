@@ -8,9 +8,7 @@
 \newcommand{\Grs}{G_{\text{rs}}} % resampled grid
 \newcommand{\Gs}{G_{\text{s}}} % originally resampled grid
 \newcommand{\Gj}{G_{\text{joint}}} % joint grid
-\newcommand{\Trs}{T_{\text{rs}}} % resampled grid
-\newcommand{\Ts}{T_{\text{s}}} % originally resampled grid
-\newcommand{\Tj}{T_{\text{joint}}} % joint grid
+
 
 % Mathematical objects
 \newcommand{\fD}{{\mathfrak{D}}} % Samle set, Data set, Source set

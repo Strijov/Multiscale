@@ -106,15 +106,10 @@ of the time series $s(t_i)$ yields perfect reconstruction of the signal $s(t)$. 
 
 %\paragraph{Selecting sampling rate: power spectrum analysis.}
 
-\paragraph{FFT resampling.}
-In signal processing a common way to change resolution of a signal is to use a combination of upsampling and decimation, implemented here via FFT transform and downsampling. Suppose that desired sampling rate $f_{rs}$ is fixed, that is, we would like to approximate $\Trs = f_{rs}\Ts$ uniformly sampled observations ${s}(\tilde{t}_i), \; i = 1, \dots T_{rs}$ of the time series $s(t_i), \; i=1, \dots, \Ts$. Let $\Gs = \{t_1, \dots, \Ts\}$ and $\Grs = \{\tilde{t}_1, \dots, T_{rs}\}$ denote the current and the desired grids.
-The first step to resampling $\bs(\Gs) \rightarrow \bs(\Grs)$ is the piecewise approximation $\hat{\bs} = \bs(\Gj)$ (see Fig.~\ref{fig_resample1} and Fig.~\ref{fig_resample2})
-\begin{equation}\label{eq:piecewise_c}
- % \hat{s}(\hat{t}_i) = \begin{cases} s(\hat{t}_i), \text{~if~} t_i \in \Gs, \text{~otherwise:} \\
-%  s(t_i), \text{~where~} t_i = \max\{t|t\in \Gs ~\text{and~} t < t_i\}.\end{cases}
-\hat{s}(\hat{t}_i) = s(t_i), \text{~where~} t_i = \max\{t|t\in \Gs ~\text{and~} t \leq t_i \}.
-\end{equation}of $\bs$ at $\Gj = \Gs \cup \Grs$. To increase the smoothness of piecewise approximation $\hat{\bs}$ we apply low pass DFT filtering to $\bs({\Gj})$, so that the reconstructed time series $\bs_{\text{lf}}({\Gj})$ are bandlimited with
-$f_{b} < f_{rs}/2$ and then downsample the output $\bs({\Gj})$ to $\Grs$.
+\paragraph{Wavelet resampling.}
+In signal processing a common way to change resolution of a signal is to use a combination of upsampling and decimation, implemented here via FFT transform and downsampling. Suppose that desired sampling rate $f_{rs}$ is fixed, that is, we would like to approximate $T_{\text{rs}} = f_{rs}T_{\max}$ uniformly sampled observations ${s}(\tilde{t}_i), \; i = 1, \dots T_{rs}$ of the time series $s(t_i), \; i=1, \dots, T_{\max}$. Let $\Gs = \{t_1, \dots, T_{\max}\}$ and $\Grs = \{\tilde{t}_1, \dots, T_{rs}\}$ denote the current and the desired grids.
+The first step to resampling $\bs(\Gs) \rightarrow \bs(\Grs)$ is the piecewise approximation $\hat{\bs}$ (see Fig.~\ref{fig_resample1} and Fig.~\ref{fig_resample2}) of $\bs$ at $\Gj = \Gs \cup \Grs$. To increase the smoothness of piecewise approximation $\hat{\bs}$ we apply low pass DFT filtering to $\bs{\Gj}$, so that the reconstructed time series $\bs_{\text{lf}}{\Gj}$ are bandlimited with
+$f_{b} < f_{rs}/2$ and then downsample the output $\bs{\Gj}$ to $\Grs$.
 
 \paragraph{Selecting sampling rate: Fisher-Neyman resampling criterion.}
 When selecting a new sampling frequency $f_s$ is the local approximation quality of the time series $s(t_i)$, it might also be useful to monitor the variability of $s(t_i)$ as $t_i$ increase. \hl{Not evident how to analyse the variability? If the time series were nearly constant for a period of time and then start changing, it doesn't say much about the sampling rate. Moreover, how  do we measure variability over time while the sampling is still uneven?}
@@ -124,8 +119,8 @@ When selecting a new sampling frequency $f_s$ is the local approximation quality
 \begin{algorithm}[ht]
 \emph{\textbf{TimeSeriesRescaling()}}
 
- \KwData{time series $\bs(\Gs)$, sampled at $\Gs = \{t_1, \dots, \Ts\}$. }
- \textbf{Parameters:}{ desired grid $\Grs = \{\tilde{t}_1, \dots \Trs\}$.} \\
+ \KwData{time series $\bs(\Gs)$, sampled at $\Gs = \{t_1, \dots, T_{\text{s}}\}$. }
+ \textbf{Parameters:}{ desired grid $\Grs = \{\tilde{t}_1, \dots T_{\text{rs}}\}$.} \\
  \KwResult{resampled time series $\bs(\Grs) = \{\tilde{s}(\tilde{t}_i)| i\in \Grs \}$.}
  Form the new grid $\Gj = \Gs \cup \Grs$\;
  Upsample time series, using piecewise approximation:
@@ -143,7 +138,7 @@ When selecting a new sampling frequency $f_s$ is the local approximation quality
  \KwData{Time series, $\bs$. Parameters: original grid $G$, new grid $\tilde{G}$.}
  \KwResult{Upsampled time series $\hat{\bs} = \{\hat{s}(\hat{t}_i) \in G \cup \tilde{G}\}$.}
  Form new grid $\hat{G} = G \cup \tilde{G}$:
- $ \hat{G} = \{\hat{t}_1 < \dots < \hat{t}_i < \dots < \Ts| \hat{t}_i \in G\cup \tilde{G}\}$ \;
+ $ \hat{G} = \{\hat{t}_1 < \dots < \hat{t}_i < \dots < T_{\max}| \hat{t}_i \in G\cup \tilde{G}\}$ \;
  For each $\hat{t}_i \in \hat{G}: $
  \eIf{$\hat{t}_i \in G$:}{
  $\quad \hat{s}(\hat{t}_i) = x(\hat{t}_i)$ \;}{
@@ -167,7 +162,7 @@ Forecast horizon is a time segment~$\Delta t_\text{h}$, which brings an adequate
 %\end{define}
 
 \subsection{Design matrix}
-\hl{Assign to the requested forecast time-segment~$\dtr$ a new vector~$\by$ of forecasts. This vector contains forecasts to all time series of the set~$\{\bs\}$. The value of~$\dtr$ is given so that each time series~$\bs$ has minimum one sample. A~proportion of~$T_{\max}$ samples for time series of high frequency sample rates could be considered, too.}
+\hl{Assign to the requested forecast time-segment~$\dtr$ a new vector~$\by$ of forecasts. This vector contains forecasts to all time series of the set~$\{\bs\}$. The value of~$\dtr$ is given so that each time series~$\bs$ has minimum one sample.} A~proportion of~$T_{\max}$ samples for time series of high frequency sample rates could be considered, too.
 
 Form an object set at a set of the vectors~$\{\bx^{*}\}$, where each vector~$\{\bx^{*}\}$ collects all the time series over the time~$\dtp$. The first part is the history itself, the second part is the local history, which forms an object of the ``object-feature'' matrix to make a forecast. The third part is a requested forecast time-segment~$\dtr$ and the last one is a forecast horizon.
 
