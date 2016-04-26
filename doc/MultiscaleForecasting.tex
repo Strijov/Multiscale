@@ -29,19 +29,19 @@
 \maketitle
 
 \section*{Notation}
-\begin{longtable}{p{4.2cm}p{12cm}}
-$\fD=\{\bs^{(m)}\}$, \par $m = 1, \dots, M$ & large set of time series \\
+\begin{longtable}{p{6cm}p{12cm}}
+$\fD=\{\bs^{(m)}| m = 1, \dots, M\}$ & large set of time series \\
 $\bar{\bs}$ & special case of time series $\bs$ for classification \\
 \textcolor{red}{$T_{\max}$} & maximum number of time stamps \\
 $\dtp$ & local prehistory \\
 $\dtr$ & defines time period (requested) for prediction \\
 $\bs^{(m)}_i = [\y^{(m)}_i|\x^{(m)}_i]$ & local ($t_i$) segment from the time series $\bs^{(m)}$ \\
-$\bX^{*}$, $\bx_i^{*} = [\y_i|\x_i]$ & object-feature matrix, $\by_i = [\y^{1}_i, \dots, \y^{M}_i]$, $\x_i = [\x^{1}_i, \dots, \x^{M}_i]$ \\
+$\bX^{*}$, $\bx_i^{*} = [\y_i|\x_i]$ & object-feature matrix, $\by_i = [\y^{(1)}_i, \dots, \y^{(M)}_i]$, $\x_i = [\x^{(1)}_i, \dots, \x^{(M)}_i]$ \\
 $\bY$, $\bX$ & target matrix, feature matrix \\
 \textcolor{red}{$q$} & number of objects $\bx_i^{*}$ extracted from $\fD$ \\
-$r$ & dimensionality of the target vector $[\y_i, \y'_i, \dots]$ \\
-$n$ & dimensionality of the feature vector $[\x_i, \x'_i, \dots]$ \\
-$\bx_0^{*} = [\hat{y} |\bx_0]$ & a testing object? \\
+$r$ & dimensionality of the target vector $[\y^{(1)}_i, \dots, \y^{(M)}_i]$ \\
+$n$ & dimensionality of the feature vector $[\x^{(1)}_i, \dots, \x^{(M)}_i]$ \\
+$\bx_0^{*} = [\by_0 |\bx_0]$ & a testing object? \\
 $\cJ = {1,\dots, n}$ & feature index set \\
 $\cA \subset \cJ$ & the subset of feature indices \\
 $\fx_k(\w_{\cA_k}, \x)$, $k=1,\dots,K$ & regression model, defined for a subset $\cA_k$ \\
@@ -103,7 +103,7 @@ This fixed rate is used to obtain a resampled time series with regular time-tick
 \paragraph{Selecting sampling rate: Nyquist–Shannon  sampling theorem.}
 Suppose that a signal $s(t)$ is bandlimited with frequency $f_b$. According to the Nyquist–Shannon  sampling theorem, it is sufficient to sample the signal with frequency \begin{equation}\label{eq:nyquist_condition}
 \frac{1}{T} = f_s > 2f_b\end{equation} 
-to be able to fully reconstruct the signal from its discretely sampled measurements $s(t_i) = s(iT)$. Alternatively, for $f_s > 2f_b$, Whittaker–Shannon interpolation
+to be able to fully reconstruct the signal from its discretely sampled measurements $s(t_i) = s(iT)$. Alternatively, for $f_s > 2f_b$, Whittaker-Shannon interpolation
 \[s(t) = \sum_{i = -\infty}^{\infty} s(i\cdot T)\text{sinc}\left(\frac{t-iT}{T}\right)\]
 of the time series $s(t_i)$ yields perfect reconstruction of the signal $s(t)$. Sampling with $f_s < 2B$ causes distortions known as aliasing. In this case the time series have to be low-pass filtered to satisfy the Nyquist condition~\eqref{eq:nyquist_condition}.
 
@@ -267,6 +267,25 @@ i\in\cB_0
 
 \paragraph{Forecast analysis.} We consider the forecast testing procedure, given by the algorithm~\ref{alg:train_test_rmse}. Since our ultimate goal is to construct a forecasting model $\fx$ be able to obtain forecasts $\hat{y}_i$ at any given time $t \leq t_i + \dtr$ we have to imitate this setting, using the so-called retrospective forecast~\ref{fg:retrospective} (\hl{rolling forecasts, walking ahead predictions}). Here we conceal most recent historical samples $\bx_0^{*}$ and make predictions as if they were unknown. Then the quality of the model $\fx$ is evaluated according to its performance on these concealed samples. 
 
+\paragraph{Forecasting errors.} \label{par:frc_errors}
+Hyndman~\cite{Hyndman2006} divides forecasting errors into four types:
+\begin{itemize}
+\item scale-dependent metrics, such as mean
+absolute error
+\[ MAE = \frac{1}{r}\sum_{i = 1}^{r} |\varepsilon_i|,\]
+\item percentage-error metrics such as the mean absolute percent error
+\[ MAPE = \frac{1}{r}\sum_{i = 1}^{r} \frac{|\varepsilon_i|}{|y_{0}(i)|}, \]
+or symmetric MAPE
+\[ sMAPE = \frac{1}{r}\sum_{i = 1}^{r} \frac{2|{\varepsilon}_i|}{|\hat{y}_0(i) + y_{0}(i)|}, \] \item relative-error metrics, measure
+the average ratio of the errors from a designed
+method to the errors $\veps^{*}$ of a benchmark method
+ \[ MRAE = \frac{1}{r}\sum_{i = 1}^{r} \frac{|{\varepsilon}_i|}{{\varepsilon}^{*}_i},\]
+\item and
+scale-free error metrics, which express each
+error as a ratio to an average error from a
+baseline method:
+\[ MASE = \frac{n-1}{r}\frac{\sum_{i=1}^r|\varepsilon_i|}{\sum_{j=2}^n |x_0(j) - x_0(j-1)|}. \]
+\end{itemize}
 
 \begin{algorithm}[!h]
 \textbf{\emph{ComputeForecastingErrors()}}
@@ -279,8 +298,9 @@ i\in\cB_0
   train forecasting model $\fx(\x, \hat{\w}_n)$, using $\bX_{\text{train}}$ and $\bX_{\text{test}}$\;
   obtain vector of residuals $\veps = [\varepsilon_{T}, \dots, \varepsilon_{T- \dtr + 1}]$ with respect to $\bX_{\text{val}}$ \;
   compute forecasting quality:
-  \[ \text{RMSE}(n)  = \sqrt{\frac{1}{\dtr} \sum_{t=0}^{\dtr} \varepsilon_{T-t}^2};\]
+  \[ \text{MAPE}(n)  = \sqrt{\frac{1}{\dtr} \sum_{t=0}^{\dtr} \varepsilon_{T-t}^2};\]
   $n = n + 1$ \;
+  (or any adequate error function from~\eqref{par:frc_errors}) \\
   }
   Average RMSE by data splits.
   \bigskip
@@ -696,6 +716,10 @@ An optimal multilevel model i s
 \hat{\cA} = \arg\max\limits_{\cA\subseteq\cJ}\mathcal{E}\left(\fx_1(\bw_\cA,\x^{\cB_1})\right)\mathcal{E}\left(\fx_2(\bw'_\cA,\bx^{\cB_2})\right).
 \]
 
+
+\nocite{*}
+\bibliographystyle{unsrt}
+\bibliography{MultiscaleForecasting}
 
 
 \end{document}
