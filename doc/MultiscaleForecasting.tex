@@ -134,14 +134,14 @@ TODO
 \Begin{
  \KwData{time series $\bs(\Gs)$, sampled at $\Gs = \{t_1, \dots, \Ts\}$. }
  \textbf{Parameters:}{ desired grid $\Grs = \{\tilde{t}_1, \dots \Trs\}$.} \\
- \KwResult{resampled time series $\bs(\Grs) = \{\tilde{s}(\tilde{t}_i)| i\in \Grs \}$.}
+ \KwResult{resampled time series $\bs(\Grs) = \{\tilde{s}(\tilde{t}_i)| \tilde{t}_i\in \Grs \}$.}
  Form the new grid $\Gj = \Gs \cup \Grs$\;
  Upsample time series, using piecewise approximation:
 
  $\quad \hat{\bs} = \text{~\textbf{Piecewise}}(\bs, \Gs, \Grs)$\;
  Apply low pass filtering $\hat{\bs}$:
 
- $\quad \hat{\bs}_{\text{lf}} = \text{\textbf{LowPassFFTFiltering}}(\hat{\bs}, \frac{f_{s}}{2} - \varepsilon)$ \;
+ $\quad \hat{\bs}_{\text{lf}} = \text{\textbf{LowPassFFTFiltering}}(\hat{\bs}, \frac{\fs}{2} - \varepsilon)$ \;
  Downsample $\hat{\bs}_{\text{lf}}$ to $\tilde{G}$:
 
  $\quad \tilde{\bs} = [\hat{s}_{lf}(\tilde{t}_1), \dots, ], \; \tilde{t}_i \in \tilde{G}.$
@@ -163,11 +163,11 @@ TODO
 
  \emph{\textbf{LowPassFFTFiltering()}} \\
  \Begin{
- \KwData{Time series, $\bs$. Parameters: cut-off value $f_{b}$ for high frequencies.}
+ \KwData{Time series, $\bs$. Parameters: cut-off value $\fb$ for high frequencies.}
  \KwResult{Filtered time series $\tilde{\bs}_{\text{lf}}$.}
  Zero-pad ${\bs}$, so that $|\bs| = 2^{N}$, where $N = \lceil \log_2(|\bs|)\rceil$\;
  Find FFT coefficients $a_j,\; b_j$ for  $j = 1, \dots, N$ for $\bs$\;
- Set $a_j = 0,\; b_j=0$, for  $2\pi w_j > f_{b}$ \;
+ Set $a_j = 0,\; b_j=0$, for  $2\pi w_j > \fb$ \;
  Reconstruct the time series, using inverse FFT.
 } 
  \smallskip
@@ -204,18 +204,18 @@ The design matrix~$\bX^*$ for the multiscale autoregressive problem statement is
 where~$s^{(m)}(t)$ is an element of time series~$\bs^{(m)}$. To construct the design matrix, select $t_i$, $i = t_1, \dots, q$ from $\Gs = \{t_1, \dots, t_{\max}\}$ so that segments $\bs_i = [\x_i|\y_i]$ cover time series $\bs$
 %\begin{equation}\label{eq:strategy2} \{s(t_{1}), \dots, s(t_{\max})\} = \bigcup_{i=1}^{q-1} \{s(t_i-\Delta t_\text{r}),\dots,s(t_i)\}\end{equation}
 without intersection in target parts  $\y_i$:
-\[ |t_{i+1} - t_i| > \dtr.
-\]
+\begin{equation}\label{eq:strategy2} |t_{i+1} - t_i| > \dtr.
+\end{equation}
 Following~\eqref{eq:segment} and~\eqref{eq:strategy2}, extract segments $i = 1, \dots, q$ from all time series $\bs^{(m)} \in \fD$ and form the matrix
  \[
 \bX^*=\left[
 \begin{array}{lll|lll}
-\bx_1^{(1)}  & \dots & \bx_1^{(M)} & \by_1^{(1)} &  \dots & \by_1^{(M)}   \\
+\bx_q^{(1)}  & \dots & \bx_q^{(M)} & \by_q^{(1)} &  \dots & \by_q^{(M)}   \\
 \vdots & \vdots & \ddots & \vdots & \vdots & \ddots  \\
-\bx_q^{(1)} & \dots & \bx_q^{(M)} & \by_q^{(1)}  & \dots & \by_q^{(M)}   \\
+\bx_1^{(1)} & \dots & \bx_1^{(M)} & \by_1^{(1)}  & \dots & \by_1^{(M)}   \\
 
 \hline
-\bx_0^{(1)} & \dots & \bx_0^{(M)} & \by^{(1)} &  \dots & {\by}^{(M)}   \\
+\bx_0^{(1)} & \dots & \bx_0^{(M)} & \by_0^{(1)} &  \dots & {\by}_0^{(M)}   \\
 \end{array}
 \right]
 =\left[
