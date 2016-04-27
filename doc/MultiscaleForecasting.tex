@@ -1,19 +1,26 @@
 \documentclass[12pt]{article}
 \usepackage{a4wide}
 \usepackage{NotationStyle}
-\usepackage[]{algorithm2e}
+\usepackage[ruled, vlined]{algorithm2e}
 %\usepackage[noend]{algorithmic}
 \usepackage[english]{babel}
 \usepackage{amsmath,amssymb,mathrsfs,mathtext}
+\usepackage{subfig}
 \usepackage{graphics,graphicx,epsfig}
 \usepackage{epstopdf}
 \usepackage{fancybox,fancyhdr}
 \usepackage{enumerate}
 \usepackage{array}
 \usepackage{color, soul}
+\usepackage{longtable}
 \usepackage[normalem]{ulem}
+\usepackage{arydshln}
+\setlength\dashlinedash{0.2pt}
+\setlength\dashlinegap{4.5pt}
+
 
 \newcommand{\argmax}{\mathop{\rm arg\,max}\limits}
+\graphicspath{ {fig/} }
 
 \renewcommand{\baselinestretch}{1.3}
 \begin{document}
@@ -22,50 +29,207 @@
 \date{Technical report (pre-draft)}
 \maketitle
 
+\section*{Notation}
+\begin{longtable}{p{6cm}p{12cm}}
+$\fD=\{\bs^{(m)}| m = 1, \dots, M\}$ & large set of time series \\
+$\bar{\bs}$ & special case of time series $\bs$ for classification \\
+\textcolor{red}{$T_{\max}$} & maximum number of time stamps \\
+$\dtp$ & local prehistory \\
+$\dtr$ & defines time period (requested) for prediction \\
+$\bs^{(m)}_i = [\y^{(m)}_i|\x^{(m)}_i]$ & local ($t_i$) segment from the time series $\bs^{(m)}$ \\
+$\bX^{*}$, $\bx_i^{*} = [\y_i|\x_i]$ & design matrix, $\by_i = [\y^{(1)}_i, \dots, \y^{(M)}_i]$, $\x_i = [\x^{(1)}_i, \dots, \x^{(M)}_i]$ \\
+$\bY$, $\bX$ & target matrix, feature matrix \\
+\textcolor{red}{$q$} & number of objects $\bx_i^{*}$ extracted from $\fD$ \\
+$r$ & dimensionality of the target vector $[\y^{(1)}_i, \dots, \y^{(M)}_i]$ \\
+$n$ & dimensionality of the feature vector $[\x^{(1)}_i, \dots, \x^{(M)}_i]$ \\
+$\bx_0^{*} = [\by_0 |\bx_0]$ & a testing object? \\
+$\cJ = {1,\dots, n}$ & feature index set \\
+$\cA \subset \cJ$ & the subset of feature indices \\
+$\fx_k(\w_{\cA_k}, \x)$, $k=1,\dots,K$ & regression model, defined for a subset $\cA_k$ \\
+$\w_{\cA_k}$ & model parameters (alternatively, $\w_k$)\\
+$\boldsymbol{\pi} = [\pi_{i1}, \dots, \pi_{iK}]$ & vector of correspondence \\
+$\cI = \{1, \dots, m\} = \cB_0 \sqcup_k \cB_k$ & set of object indices \\
+$\cB_0$ & test set \\
+$\cB_k$, $k=1,\dots,K$ & training sets \\
+$Q$ & quality function \\
+$S$ & error function \\
+$g=g(\bb,s)$ & parametric functions for feature transformation \\
+$\mathfrak{G} = \{g:\bs\to\vf\}$ & set of feature transformations \\
+$\vf=[\vf^1,\dots,\vf^{M}]$ & generated feature vector \\
+$\veps = \by - \hat{\by}$ & vector of residuals \\
+$\bc^1_1,\dots,\bc^M_P$ & $k$-means centroids \\
+$\mathbf{H}^{*}$ & Hankel matrix \\
+$\bth = [\w_1, \dots, \w_k, \boldsymbol{\pi}, \beta]$ & parameters of the mixture model \\
+$z_{ik}$, $\gamma_{ik}$ & latent (correspondence) variables and their expectations (mixture models) \\
+\end{longtable}
+
 \section{Introduction}
-The paper investigated behavior of a device, a member of the internet of things. A device is monitored by a set of sensors, which produces large amount of multiscale time series during its lifespan. These time series have various time scales, due to measurements could perform over each millisecond, day, week, etc.  The main goal is to forecast the next state of a device.
+The paper investigates behavior of a device within the concept of Internet of Things. The device at question is monitored by a set of sensors, which produces large amount of multiscale time series during its lifespan. These time series have various time scales since distinct sensor produce measurements with various frequencies (milliseconds, days, weeks, etc).  The main goal is to forecast the next state of a device. \hl{What exactly is this state?}
 
-The investigation assumes the following conditions for a single device unit time series: there are large set of multiscale time series; the sampling rate of a time series is fixed; each time series has its own forecast horizon. Examples of this kind of time series are listed below. \hl{(list)}
+We assume that the sampling rate of each time series is fixed and each time series has its own forecast horizon. Examples of this kind of time series are listed below. \hl{(list)}
 
-To make an adequate forecasting model hold the following hypothesis: the time history is sufficient long; the time series have auto- and cross-correlation dependencies. The model is static, so there exists a history of optimal size. Each time series could be interpolated by some local model (constant, piece-wise), a that there exist a local approximation model, which could be applied in the case of local data absence.
+Furthermore, the time history is assumed sufficiently long to construct an adequate forecasting model; the time series are assumed to have auto- and cross-correlation dependencies. 
 
-To forecast time series under the listed conditions autoregressive models constructed in next TODO (list and review state of the art).
+In the next Sections we explain how to construct \hl{vector autoregressive models} and test their quality under the listed conditions.
+ TODO (list and review state of the art).
 
 \section{Problem statement}
-There give a large set of time series~$\fD=\{\bs\}$, where each real-valued time series~$\bs$  has its own sample rate. Assuming each time series could be interpolated introduce a joint sample rate and assign each series~$\bs$ has minimum one and maximum~$T_{\max}$ samples for one time-tick of this rate. Introduce joint time-scale and split it to the following parts, as Fig.~\label{TimeScale} shows. The first part is the history itself, the second part is the local history, which forms an object of the “object-feature” matrix to make a forecast. The third part is a requested forecast time-segment~$\Delta t_\text{r}$ and the last one is a forecast horizon.
+Consider a large set of time series~$\fD=\{\bs^{(m)}| \; m = 1\dots, {M}\}$, where each real-valued time series~$\bs$  has its own sampling rate $f^{(m)}_s$. The  sampling rate might be changing over time, or the ratio between different sampling rates might be non-rational. In such cases as well as for time series with missing values we apply resampling procedure, which is described further.
 
-%\begin{define}
-Forecast horizon is a time segment~$\Delta t_\text{h}$, which brings an adequate (TODO explain it) forecast~$\bs(\Delta t_\text{h})$ in comparison to the real historical values~$\hat{\bs}(\Delta t_\text{h})$.
-%\end{define}
+\subsection{Time series resampling}
+%\hl{Assuming each time series could be interpolated introduce a joint sample rate and assign each series~$\bs$ has minimum one and maximum~$T_{\max}$ samples for one time-tick of this rate. Introduce joint time-scale and split it to the following parts, as Fig.~\ref{fig_resample1} shows.
+%For the time series of sample rate that is changing, unstable, non-rational to the common rate as well as for the time series with missing values the following procedure should be applied.}
 
-Assign to the requested forecast time-segment~$\Delta t_\text{r}$ a new vector~$\by$ of forecasts. This vector contains forecasts to all time series of the set~$\{\bs\}$. The value of~$\Delta t_\text{r}$ is given so that each time series~$\bs$ has minimum one sample. A~proportion of~$T_{\max}$ samples for time series of high frequency sample rates could be considered, too.
+Let the time~$t$ be in continuous set~$\mathbb{R}_+^1$ and the time series~$\bs$ be piece-wise constant. There are three possibilities to create such time series from a discrete-values one: 1) the constant goes after the sample~$s(t)$, 2) before the sample, 3) in the neighborhood of the sample. See red, green and blue lines in the Figure~\ref{fig_resample1}.
 
-Form an object set at a set of the vectors~$\{\bx\}$, where each vector~$\{\bx\}$ collects all the time series over the time~$\Delta t_\text{p}$. Here~$\text{p}$ stands for the local \emph{prehistory}. The vector could (with no necessity) include samples from previous history of any time series as well as any derivatives, which are called generated features. Construct the ``object-feature'' matrix~$\bX^*$ for the multiscale autoregressive problem statement as follows. Denote~$i$-th element from the sample set as a row-vector
+\begin{figure}[!ht]
+\centering\subfloat[]{\includegraphics[width=0.4\textwidth]{resample1.png}\label{fig_resample1}}
+\centering\subfloat[]{\includegraphics[width=0.6\textwidth]{resample2.png}\label{fig_resample2}}
+\caption{Piece-wise representation of a time series.}
+\end{figure}
+
+This assumptions helps introducing a new sampling rate and eliminates the problem of missing values, since the previous (next, current in the terms of Fig.~\ref{fig_resample1}) value holds continuously until the following comes. The constant model could be developed into more complex one: a piece-wise linear, quadratic or cubic spline with its nodes in the time-ticks or over the time-ticks according to the following criterions: 1) Nyquist–Shannon theorem, 2) Fisher-Neyman theorem. The following optimization problem returns the new sampling rate:
 \[
-\bs_i^\prime = [\by_i^\prime, \bx_i^\prime] = [\underbrace{s(t_i),\dots,s(t_i-\Delta t_\text{r})),}_{\by_i^\prime}
-\underbrace{\dots,s(t_i-\Delta t_\text{r}-\Delta t_\text{p})}_{\bx_i^\prime}],
+\text{todo}
 \]
-where~$s(t)$ is an element of time series~$\bs$. Denote the other time series from~$\fD$ in this segment~$(t_i,\dots,t_i-\Delta t_\text{r}-\Delta t_\text{p})$ as~$\by_i^{\prime\prime}, \bx_i^{\prime\prime},\dots$%,\by_i^{\prime\prime\prime},\bx_i^{\prime\prime\prime}$
-and form the matrix
+This fixed rate is used to obtain a resampled time series with regular time-ticks.
+
+%\begin{figure}[!ht]
+%\centering\includegraphics[width=0.9\textwidth]{resample2.png}
+%\caption{Resample time series of variable sample rate into the fixed one with the optimal period.}\label{fig_resample2}
+%\end{figure}
+
+
+\paragraph{Selecting sampling rate: Nyquist–Shannon  sampling theorem.}
+Suppose that a signal $s(t)$ is bandlimited with frequency $\fb$. According to the Nyquist–Shannon  sampling theorem, it is sufficient to sample the signal with frequency \begin{equation}\label{eq:nyquist_condition}
+\frac{1}{T} = \fs > 2\fb\end{equation}
+to be able to fully reconstruct the signal from its discretely sampled measurements $s(t_i) = s(iT)$. Alternatively, for $\fs > 2\fb$, Whittaker-Shannon interpolation
+\[s(t) = \sum_{i = -\infty}^{\infty} s(i\cdot T)\text{sinc}\left(\frac{t-iT}{T}\right)\]
+of the time series $s(t_i)$ yields perfect reconstruction of the signal $s(t)$. Sampling with $\fs < 2\fb$ causes distortions known as aliasing. In this case the time series have to be low-pass filtered to satisfy the Nyquist condition~\eqref{eq:nyquist_condition}.
+
+\paragraph{FFT resampling.}
+In signal processing a common way to change resolution of a signal is to use a combination of upsampling and decimation, implemented here via FFT transform and downsampling. Suppose that desired sampling rate $\frs$ is fixed, that is, we would like to approximate $\Trs = \frs\Ts$ uniformly sampled observations ${s}(\tilde{t}_i), \; i = 1, \dots \Trs$ of the time series $s(t_i), \; i=1, \dots, \Ts$. Let $\Gs = \{t_1, \dots, \Ts\}$ and $\Grs = \{\tilde{t}_1, \dots, \Trs\}$ denote the current and the desired grids.
+The first step to resampling $\bs(\Gs) \rightarrow \bs(\Grs)$ is the piecewise approximation $\hat{\bs} = \bs(\Gj)$ (see Fig.~\ref{fig_resample1} and Fig.~\ref{fig_resample2})
+\begin{equation}\label{eq:piecewise_c}
+ % \hat{s}(\hat{t}_i) = \begin{cases} s(\hat{t}_i), \text{~if~} t_i \in \Gs, \text{~otherwise:} \\
+%  s(t_i), \text{~where~} t_i = \max\{t|t\in \Gs ~\text{and~} t < t_i\}.\end{cases}
+\hat{s}(\hat{t}_i) = s(t_i), \text{~where~} t_i = \max\{t|t\in \Gs ~\text{and~} t \leq t_i \}.
+\end{equation}of $\bs$ at $\Gj = \Gs \cup \Grs$. To increase the smoothness of piecewise approximation $\hat{\bs}$ we apply low pass DFT filtering to $\bs({\Gj})$, so that the reconstructed time series $\bs_{\text{lf}}({\Gj})$ are bandlimited with
+$\fb < \frs/2$ and then downsample the output $\bs({\Gj})$ to $\Grs$.
+
+The cutoff frequency $\fb$ is set so that fixed ratio $1 - \alpha$ of the power spectrum density is preserved:
+\begin{equation}\label{eq:bandlimit}
+ \sum_{N\fb < k \leq N-1} |X_k|^2 < \alpha \sum_{k=0}^{N-1} |X_k|^2, \end{equation}
+where $X_k$ are the FFT coefficients of $s(iT)$.
+
+\paragraph{Selecting sampling rate: Fisher-Neyman resampling criterion.}
+TODO
+%When selecting a new sampling frequency $\fs$ is the local approximation quality of the time series $s(t_i)$, it might also be useful to monitor the variability of $s(t_i)$ as $t_i$ increase. \hl{Not evident how to analyse the variability? If the time series were nearly constant for a period of time and then start changing, it doesn't say much about the sampling rate. Moreover, how  do we measure variability over time while the sampling is still uneven?}
+
+
+
+\begin{algorithm}[!ht]
+\DontPrintSemicolon
+\emph{\textbf{TimeSeriesRescaling()}}\\
+\Begin{
+ \KwData{time series $\bs(\Gs)$, sampled at $\Gs = \{t_1, \dots, \Ts\}$. }
+ \textbf{Parameters:}{ desired grid $\Grs = \{\tilde{t}_1, \dots \Trs\}$.} \\
+ \KwResult{resampled time series $\bs(\Grs) = \{\tilde{s}(\tilde{t}_i)| i\in \Grs \}$.}
+ Form the new grid $\Gj = \Gs \cup \Grs$\;
+ Upsample time series, using piecewise approximation:
+
+ $\quad \hat{\bs} = \text{~\textbf{Piecewise}}(\bs, \Gs, \Grs)$\;
+ Apply low pass filtering $\hat{\bs}$:
+
+ $\quad \hat{\bs}_{\text{lf}} = \text{\textbf{LowPassFFTFiltering}}(\hat{\bs}, \frac{f_{s}}{2} - \varepsilon)$ \;
+ Downsample $\hat{\bs}_{\text{lf}}$ to $\tilde{G}$:
+
+ $\quad \tilde{\bs} = [\hat{s}_{lf}(\tilde{t}_1), \dots, ], \; \tilde{t}_i \in \tilde{G}.$
+ }
+ \bigskip
+
+\emph{\textbf{Piecewise()}}\\
+\Begin{
+ \KwData{Time series, $\bs$. Parameters: original grid $G$, new grid $\tilde{G}$.}
+ \KwResult{Upsampled time series $\hat{\bs} = \{\hat{s}(\hat{t}_i) \in G \cup \tilde{G}\}$.}
+ Form new grid $\hat{G} = G \cup \tilde{G}$:
+ $ \hat{G} = \{\hat{t}_1 < \dots < \hat{t}_i < \dots < \Ts| \hat{t}_i \in G\cup \tilde{G}\}$ \;
+ For each $\hat{t}_i \in \hat{G}: $
+ \eIf{$\hat{t}_i \in G$:}{
+ $\quad \hat{s}(\hat{t}_i) = x(\hat{t}_i)$ \;}{
+ $\quad \hat{s}(\hat{t}_i) = x(t_i)$, where $t_i = \max\{t: t\in G \text{and} t < \hat{t_i}.\}$ }
+ }
+ \smallskip
+
+ \emph{\textbf{LowPassFFTFiltering()}} \\
+ \Begin{
+ \KwData{Time series, $\bs$. Parameters: cut-off value $f_{b}$ for high frequencies.}
+ \KwResult{Filtered time series $\tilde{\bs}_{\text{lf}}$.}
+ Zero-pad ${\bs}$, so that $|\bs| = 2^{N}$, where $N = \lceil \log_2(|\bs|)\rceil$\;
+ Find FFT coefficients $a_j,\; b_j$ for  $j = 1, \dots, N$ for $\bs$\;
+ Set $a_j = 0,\; b_j=0$, for  $2\pi w_j > f_{b}$ \;
+ Reconstruct the time series, using inverse FFT.
+} 
+ \smallskip
+ \caption{FFT rescaling procedure.}
+\end{algorithm}
+
+\begin{figure}[!ht]
+\centering
+\subfloat[]{\includegraphics[width=0.8\textwidth]{online_forecasting_paradigm.png}
+\label{fg:online_frc}} \\
+\centering \subfloat[]{\includegraphics[width=0.8\textwidth]{forecasting_model.png}
+\label{fg:forecasting}
+}
+\caption{Forecasting (a) as regression problem (b).}
+\end{figure}
+
+\subsection{Design matrix}
+Given the set of properly resampled time series $\fD=\{\bs^{(m)}\}$, $m = 1, \dots, M$, the task is to obtain forecasts $\hat{s}^{(m)}(t_i)$, $\dtr <  t_i \leq T_{\max} + \dtr$ for each time series $\bs^{(m)}$ (Fig.~\ref{fg:online_frc}).
+
+\begin{figure}[!ht]
+\centering
+\subfloat[]{\includegraphics[width=0.8\textwidth]{draw_object.png}\label{fg:draw}} \\
+\centering\subfloat[]{\includegraphics[width=0.8\textwidth]{design_matrix_generation.png}\label{fg:design}}
+\caption{Draw an object from time series history.}
+\end{figure}
+
+To reformulate the forecasting task into regression task, form an object set at a set of the vectors~$\{\bx^{*}\}$, where each vector~$\bx^{*} = [\by| \bx]$ collects all the time series over the time period~$\dtp$ (Fig.~\ref{fg:draw}), which stands for the local \emph{prehistory}. The vector $\bx^{*}$ could (with no necessity) include samples from previous history of any time series $\bs^{(m)}$ as well as any derivatives $\vf$, which are called generated features.
+
+The design matrix~$\bX^*$ for the multiscale autoregressive problem statement is constructed  as follows (Fig.~\ref{fg:design}). Let $\bs^{(m)}_i$ denote the~$i$-th segment of the time series $\bs^{(m)}$
+\begin{equation}\label{eq:segment}
+\bs^{(m)}_i = [\bx^{(m)}_i | \by^{(m)}_i] = [
+\underbrace{s^{(m)}(t_i-\dtr-\dtp),\dots,}_{\bx^{(m)}_i} \underbrace{s^{(m)}(t_i-\dtr),\dots,s^{(m)}(t_i))}_{\by^{(m)}_i}],
+\end{equation}
+where~$s^{(m)}(t)$ is an element of time series~$\bs^{(m)}$. To construct the design matrix, select $t_i$, $i = t_1, \dots, q$ from $\Gs = \{t_1, \dots, t_{\max}\}$ so that segments $\bs_i = [\x_i|\y_i]$ cover time series $\bs$
+%\begin{equation}\label{eq:strategy2} \{s(t_{1}), \dots, s(t_{\max})\} = \bigcup_{i=1}^{q-1} \{s(t_i-\Delta t_\text{r}),\dots,s(t_i)\}\end{equation}
+without intersection in target parts  $\y_i$:
+\[ |t_{i+1} - t_i| > \dtr.
+\]
+Following~\eqref{eq:segment} and~\eqref{eq:strategy2}, extract segments $i = 1, \dots, q$ from all time series $\bs^{(m)} \in \fD$ and form the matrix
  \[
 \bX^*=\left[
 \begin{array}{lll|lll}
-\hat{\by^\prime} & \hat{\by}^{\prime\prime} & \dots & \bx_0^\prime & \bx_0^{\prime\prime} & \dots \\
+\bx_1^{(1)}  & \dots & \bx_1^{(M)} & \by_1^{(1)} &  \dots & \by_1^{(M)}   \\
+\vdots & \vdots & \ddots & \vdots & \vdots & \ddots  \\
+\bx_q^{(1)} & \dots & \bx_q^{(M)} & \by_q^{(1)}  & \dots & \by_q^{(M)}   \\
+
 \hline
-\by_1^\prime & \by_1^{\prime\prime} & \dots & \bx_1^\prime & \bx_1^{\prime\prime} & \dots \\
-\vdots & \vdots & \ddots & \vdots & \vdots & \ddots \\
-\by_m^\prime & \by_m^{\prime\prime} & \dots & \bx_m^\prime & \bx_m^{\prime\prime} & \dots \\
+\bx_0^{(1)} & \dots & \bx_0^{(M)} & \by^{(1)} &  \dots & {\by}^{(M)}   \\
 \end{array}
 \right]
 =\left[
 \begin{array}{c|c}
- \underset{1{\times}r}{\hat{\by}} & \underset{1{\times}n}{\x_0} \\
+ \underset{q{\times}n}\bX & \underset{q{\times}r}\bY  \\
  \hline
- \underset{m{\times}r}\bY & \underset{m{\times}n}\bX \\
+ \underset{1{\times}n}{\x_0} & \underset{1{\times}r}{{\by}_0}  \\
 \end{array}
 \right].
 \]
-Denote a row from the pair~$\bY,\bX$ as $\by,\bx$ and call these vectors the target and the features. As one must forecast all elements from the target~$\by$, only a few elements from the features~$\bx$ are supposed to be informative in terms of the forecast quality. Denote the index set~$\cJ=\{1,\dots,n\}$ and select the subset of the indexes~$\cA\in\cJ$.
+Denote a row from the pair~$\bY,\bX$ as $\by,\bx$ and call these vectors the target and the features. 
+
+\paragraph{Feature selection and multimodelling.}
+As one must forecast all elements from the target~$\by$, only a few elements from the features~$\bx$ are supposed to be informative in terms of the forecast quality. Denote the index set~$\cJ=\{1,\dots,n\}$ and select the subset of the indexes~$\cA\in\cJ$.
 Introduce the forecasting model
 \[
 \hat{\by}_i = \sum_{k=1}^K \pi_{ik} \mathbf{f}_k  (\bw_{\mathcal{A}_k}, \bx_{i\mathcal{A}_k})
@@ -84,88 +248,100 @@ where the set of object indexes~$\cI$ is splatted to the test set~$\cB_0$ and th
 \cI = \cB_0\mathop{\sqcup}\limits_{k=1}^K \cB_k.
 \]
 
-State the forecasting problem as a problem to minimize the error function~$S$ given models~$\fx_1,\dots,\fx_K$ by optimizing matrix $\Pi = [\pi_{ik}]$, finite sets~$\cA_1,\dots,\cA_K$ and model parameters~$\bw_1,\dots,\bw_K$ on the sample set with indexes~$\cI\setminus\cB_0$.
+State the forecasting problem as a problem to minimize the error function~$S$ given models~$\fx_1,\dots,\fx_K$ by optimizing matrix $\Pi = [\pi_{ik}]$, finite sets~$\cA_1,\dots,\cA_K$ and model parameters~\hl{$\bw_1,\dots,\bw_K$} on the sample set with indexes~$\cI\setminus\cB_0$.
 
-\section{Special case of the problem}
-A special case of the problem is an early warning forecasting. There is a special time series~$\bar{\bs}$ with its element~$\bar{s}\in\{0,1\}$. Here zero is interpreted as a \emph{normal state} of the system and one meas the system goes from normal to the \emph{abnormal} state without return over time~$t$.
+\subsection{Special case of the problem}
+A special case of the problem is an early warning forecasting. There is a special time series~$\bar{\bs}$ with its elements~$\bar{s}\in\{0,1\}$. Here zero is interpreted as a \emph{normal state} of the system and one meas the system goes from normal to the \emph{abnormal} state without return over time~$t$.
 The problem is to maximize the lapse of the time segment
-\[ \| \Delta t_\text{r} \| \to\max,\]
+\[ \| \dtr \| \to\max,\]
 where the vector
 \[
-[\bar{\bs}(\Delta t_\text{h}), \bar{\bs}(\Delta t_\text{r})] = [0,\dots,0,0,\dots,0,1],
+[\bx_0, {\y}_0] = [0,\dots,0,0,\dots,0,1],
 \]
-which means the system was in the normal state before it changes. Since the quality~$Q$ of forecasting time series~$\bar{\bs}$ depends on~$\| \Delta t_\text{r} \|$ (the letter time lapse before the warning the higher the forecasting quality~[ref]) the minimum level of quality must be set. Let the minimum forecasting quality be
+which means the system was in the normal state before it changes. Since the quality~$Q$ of forecasting time series~$\bar{\bs}$ depends on~$\| \dtr \|$ (the letter time lapse before the warning the higher the forecasting quality~[ref]) the minimum level of quality must be set. Let the minimum forecasting quality be
 \[
 Q \left\{
-\bigl(\hat{\bs}_i(\Delta t_\text{r}),\bar{\bs}_i(\Delta t_\text{r})\bigr)
+\bigl(\hat{\by}_i,\bar{\by}_i\bigr)
 \;|\;
 i\in\cB_0
 \right\} = \text{AUC} = Q_\text{req}.
 \]
 
-\section{Time searies resampling}
-For the time series of sample rate that is changing, unstable, non-rational to the common rate as well as for the time series with missing values the following procedure should be applied.
-
-Let the time~$t$ be in continuous set~$\mathbb{R}_+^1$ and the time series~$s$ be piece-wise constant. There are three possibilities to create such time series from a discrete-values one: 1) the constant goes after the sample~$s(t)$, 2) before the sample, 3) in the neighborhood of the sample. See red, green and blue lines in the Figure~\ref{fig_resamle1}.
-
-\begin{figure}[!hp]
-\centering\includegraphics[width=0.5\textwidth]{resample1.png}
-\label{fig_resample1}
-\caption{Piece-wise representation of a time series}
+\begin{figure}[!ht]
+\centering\includegraphics[width=0.8\textwidth]{retrospective_validation.png}
+\caption{\hl{Retrospective forecast includes most recent samples in data set.}\label{fg:retrospective}}
 \end{figure}
 
-This assumptions helps introducing a new sampling rate and eliminates the problem of missing values, since the previous (next, current in the terms of Fig.~\ref{fig_resamle1}) value holds continuously until the following comes. The constant model could be developed into more comples one: a piece-wise, quadratic or cubic spline with its nodes in the time-ticks or over the time-ticks according to the following criterions: 1) Nyquist–Shannon theorem, 2) Fisher-Neyman theorem. The following optimization problem returns the new sampling rate:
-\[
-\text{todo}
-\]
-This fixed rate is used to obtain a resampled time series with regular time-ticks.
+\paragraph{Forecast analysis.} We consider the forecast testing procedure, given by the algorithm~\ref{alg:train_test_rmse}. Since our ultimate goal is to construct a forecasting model $\fx$ be able to obtain forecasts $\hat{y}_i$ at any given time $t \leq t_i + \dtr$ we have to imitate this setting, using the so-called retrospective forecast~\ref{fg:retrospective} (\hl{rolling forecasts, walking ahead predictions}). Here we conceal most recent historical samples $\bx_0^{*}$ and make predictions as if they were unknown. Then the quality of the model $\fx$ is evaluated according to its performance on these concealed samples. 
 
-\begin{figure}[!t]
-\centering\includegraphics[width=0.9\textwidth]{resample2.png}
-\label{fig_resample2}
-\caption{Resample time series of variating sample rate into the fixed one with the optimal period}
-\end{figure}
+\paragraph{Forecasting errors.} \label{par:frc_errors}
+Hyndman~\cite{Hyndman2006} divides forecasting errors into four types:
+\begin{itemize}
+\item scale-dependent metrics, such as mean
+absolute error
+\[ MAE = \frac{1}{r}\sum_{i = 1}^{r} |\varepsilon_i|,\]
+\item percentage-error metrics such as the mean absolute percent error
+\[ MAPE = \frac{1}{r}\sum_{i = 1}^{r} \frac{|\varepsilon_i|}{|y_{0}(i)|}, \]
+or symmetric MAPE
+\[ sMAPE = \frac{1}{r}\sum_{i = 1}^{r} \frac{2|{\varepsilon}_i|}{|\hat{y}_0(i) + y_{0}(i)|}, \] \item relative-error metrics, measure
+the average ratio of the errors from a designed
+method to the errors $\veps^{*}$ of a benchmark method
+ \[ MRAE = \frac{1}{r}\sum_{i = 1}^{r} \frac{|{\varepsilon}_i|}{{\varepsilon}^{*}_i},\]
+\item and
+scale-free error metrics, which express each
+error as a ratio to an average error from a
+baseline method:
+\[ MASE = \frac{n-1}{r}\frac{\sum_{i=1}^r|\varepsilon_i|}{\sum_{j=2}^n |x_0(j) - x_0(j-1)|}. \]
+\end{itemize}
 
-\subsection{Nyquist–Shannon  resampling criterion}
-TODO
+\begin{algorithm}[!h]
+\DontPrintSemicolon
+\textbf{\emph{ComputeForecastingErrors()}}\\
+\Begin{
+ \KwData{$\bX^{*} \in \mathbb{R}^{M\times(\dtr+\dtp)}$. Parameters: sample size $m$, train to test ratio $\alpha$.}
+ \KwResult{Forecasting quality: root-mean-squared error.}
+ \While{$n \leq M - m$:}{
+ define, $\bX^{*}_n = [\bx^{*}_{n}, \dots, \bx^{*}_{m + n - 1}]\T$ \;
+  $\bX_{\text{train}}, \; \bX_{\text{test}}, \;\bX_{\text{val}} = TrainTestSplit(\bX^{*}_n, \alpha)$\;
+  train forecasting model $\fx(\x, \hat{\w}_n)$, using $\bX_{\text{train}}$ and $\bX_{\text{test}}$\;
+  obtain vector of residuals $\veps = [\varepsilon_{T}, \dots, \varepsilon_{T- \dtr + 1}]$ with respect to $\bX_{\text{val}}$ \;
+  compute forecasting quality:
+  \[ \text{MAPE}(n)  = \sqrt{\frac{1}{\dtr} \sum_{t=0}^{\dtr} \varepsilon_{T-t}^2};\]
+  $n = n + 1$ \;
+  (or any adequate error function from~\ref{par:frc_errors}) \\
+  }
+  Average MAPE (other error) by data splits.
+}  
+  \bigskip
 
-\subsection{ Fisher-Neyman resampling criterion}
-TODO
-\subsection{Wavelet resampling}
-In signal processing a common way to change resolution of a signal is to use a combination of upsampling and decimation (FFT \hl{wavelet transform} and downsampling). Suppose that desired sampling rate $u$ is fixed, that is, we would like to approximate $U = uT_{\max}$ uniformly sampled observations $\tilde{s}(\tilde{t}_i), \; i = 1, \dots U$ of the time series $s(t_i), \; i=1, \dots, T_{\max}$. Let $G = \{t_1, \dots, T_{\max}\}$ and $\tilde{G} = \{\tilde{t}_1, \dots, T_{\max}\}$ denote the current and the desired grids.
-The first step to rescaling $\bs \rightarrow \tilde{s}$ is the piecewise approximation $\hat{\bs}$ (see Fig.~\ref{fig_resample1} and Fig.~\ref{fig_resample1}) of $\bs$ at $\hat{G} = G \cup \tilde{G}$. To increase the smoothness of piecewise approximation $\hat{\bs}$ we apply low pass FFT \hl{wavelet} filtering to $\hat{\bs}$ and then downsample the output to $\tilde{G}$.
+\textbf{\emph{TrainTestSplit()}}\\
+\Begin{
+\KwData{Object-feature matrix $\bX^{*} \in \mathbb{R}^{m\times(\dtr+\dtp)}$. Train to test ratio $\alpha$.}
+ \KwResult{Train, test, validation matrices $\bX^{*}_{\text{train}}$, $\bX^{*}_{\text{test}}$, $\bX^{*}_{\text{val}}$.}
+ Set train set and test set sizes:
 
-\begin{algorithm}[ht]
-\textbf{TimeSeriesRescaling()}
-
- \KwData{$\bs$. Parameters: desired grid $\tilde{G} = \{\tilde{t}_1, \dots \tilde{t}_U\}$.}
- \KwResult{Resamples time series $\tilde{\bs}$.}
- Form the new grid $\hat{G} = G \cup \tilde{G}$\;
- Upsample time series, using piecewise approximation:
- 
- $\quad \hat{\bs} \leftarrow \text{~\textbf{Piecewise}}(\bs, G, \tilde{G})$\;
- Zero-pad $\hat{\bs}$, so that $|\hat{G}| = 2^{N}$, where $N = \lceil \log_2(|\hat{G}|)\rceil$\;
- Apply low pass filtering $\hat{\bs}$:
- 
- $\quad \hat{\bs}_{\text{lf}} = \text{\textbf{LowPassFFTFiltering}}(\hat{\bs})$ \;
- Downsample $\hat{\bs}_{\text{lf}}$ to $\tilde{G}$:
- 
- $\quad \tilde{\bs} = [\hat{s}_{lf}(\tilde{t}_1), \dots, ], \; \tilde{t}_i \in \tilde{G}.$
- \bigskip
- 
- \textbf{LowPassFFTFiltering()}
- 
- \KwData{Time series, $\bs$. Parameters: cut-off value $w_{\max}$ for high frequencies.}
- \KwResult{Filtered time series $\tilde{\bs}_{\text{lf}}$.}
- Find FFT coefficients $a_j,\; b_j$ for  $j = 1, \dots, N$ for $\bs$\;
- Set $a_j = 0,\; b_j=0$, for  $w_j > w_{\max}$ \; 
- Reconstruct the time series, using inverse FFT.
- \smallskip
- \caption{FFT rescaling procedure.}
+ $ \quad m_{\text{train}} = \lfloor\alpha(m-1)\rfloor$ \;
+ $ \quad m_{\text{test}} = m - 1 - m_{\text{train}} $ \; %(1-\alpha)(m-1)
+ Decompose matrix $\bX^{*}$ into train, test, validation matrices $\bX^{*}_{\text{train}}$, $\bX^{*}_{\text{test}}$, $\bX^{*}_{\text{val}}$:
+ \[\bX^{*}_{\text{train}} = \left[\begin{array}{c} \x^{*}_{\text{val}} \in \mathbb{R}^{1\times (\dtr + \dtp)}\\
+ \hline
+ \bX^{*}_{m_{\text{test}}} \in \mathbb{R}^{m_{\text{test}} \times (\dtr + \dtp)} \\
+ \hdashline
+ \bX^{*}_{m_{\text{train}}} \in \mathbb{R}^{m_{\text{train}} \times (\dtr + \dtp)}
+ \end{array}\right] = \left[\begin{array}{c|c} \y_{\text{val}} & \x_{\text{val}} \\
+ \hline
+ \bY_{m_{\text{test}}} & \bX_{m_{\text{test}}}  \\
+ \hdashline
+ \bY_{m_{\text{train}}}  & \bX_{m_{\text{train}}}
+ \end{array}\right]
+ \]
+ }
+ %$\bX^{*}_{\text{train}} = \left[\begin{array}{c|c} \y_1 & \x_1 \\ \dots &\dots, \\
+% \y_{m_{\text{train}}} & \x_{m_{\text{train}}} \end{array}\right], ~~
+% \bX^{*}_{\text{test}} = \left[\begin{array}{c|c} \y_1 & \x_1 \\ \dots & \dots, \\
+% \y_{m_{\text{test}}}& \x_{m_{\text{test}}} \end{array}\right] $ \;
+ \caption{Train-test split.}\label{alg:train_test_rmse}
 \end{algorithm}
-
- 
-
 
 \section{Feature generation}
 List of procedures for constructing the feature and the object sets will be placed here. Discussion point: vector~$\y$ {\bf remains always unchanged}. \\
@@ -184,7 +360,7 @@ The object set  $\mathcal {I} = \mathop{\sqcup}\limits_k \mathcal{B}_k$ includes
 \item aggregated subsets of time series.
 \end{enumerate}
 
-Denote the generated feature vector as~$\vf$. This vector consists of concatenated row-vectors~$\vf=[\vf^\prime,\vf^{\prime\prime},\dots]$, which corresponds to time series local histories ~$\bs=[\bs^\prime,\bs^{\prime\prime},\dots]$, modified with set of transformations~$\mathfrak{G}$. The elements~$g:\bs\to\vf$ of this set are listed below.
+Denote the generated feature vector as~$\vf$. This vector consists of concatenated row-vectors~$\vf=[\vf^{(1)},\dots,\vf^{(M)}]$, which corresponds to time series local histories ~$\bs=[\bs^{(1)},\dots,\bs^{(M)}]$, modified with set of transformations~$\mathfrak{G}$. The elements~$g:\bs\to\vf$ of this set are listed below.
 
 \subsection{Transformations of local history}
 The tables~\ref{tb:musttries},~\ref{tb:elementaries},~\ref{tb:monotones},~\ref{tb:multivariates},~\ref{tb:datastats} list the~time series transformation functions. There are non-parametric and parametric procedures to generate features. For the parametric functions~$g=g(\bb,s)$ the default values of the parameters~$\bb$ are assigned empirically.
@@ -200,15 +376,15 @@ The second one optimizes the transformation parameters~$\hat\bb$ given obtained 
 \hat\bb = \arg\min S\bigl(\bb|\fx(\hat\bw,\bx),\by\bigr).
 \]
 This procedure repeats two problems until vectors~$\hat\bw,\hat\bb$ converge. \hl{The initial values of vector~$\bb$ (are shown in table}~\ref{tb:primitives}). Due to the various origins of the time series and their transformations the residual vector should be normalized:
-\[\veps^\prime = \frac{\hat\by^\prime-\by^\prime}{|\by^\prime| \cdot \|\by^\prime\|_2^1}.
+\[\veps = \frac{\hat\by-\by}{|\by| \cdot \|\by\|_2^1}.
 \]
-It does not change the number elements in the vectors,~$|\vf^\prime|=|\bs^\prime|$.
+\hl{It (transformation? normalization)} does not change the number elements in the vectors,~$|\vf|=|\bs|$.
 
 \subsection{Convolutions, statistics and parameters of local history}
-The listed feature generation functions convolves time series, so they reduce the dimentionality $|\vf^\prime=\bg(\bs^\prime)|<|\bs^\prime|$.
+The listed feature generation functions convolves time series, so they reduce the dimensionality $|\vf=\bg(\bs)|<|\bs|$.
 
 \subsection{Parameters of local history forecast}
-For the time series~$\bs^\prime$ construct the Hankel matrix with a~period~$k$ and shift~$p$, so~that for~$\bs = [s_1,\dots,s_T]$ the matrix
+For the time series~$\bs$ construct the Hankel matrix with a~period~$k$ and shift~$p$, so~that for~$\bs = [s_1,\dots,s_T]$ the matrix
 \[
 \bH^* =
 \left[ \begin{array}{c|cc}
@@ -222,14 +398,14 @@ s_k & \dots & s_1 \\
 \]
 Reconstruct the regression to the first column of the matrix~$\bH^*=[\bh, \bH]$ and denote its least square parameters as the feature vector
 \[
-\boldsymbol{\phi}^\prime = \arg\min \| \bh-\bH \boldsymbol{\phi}\|_2^2.
+\boldsymbol{\phi}^{(m)} = \arg\min \| \bh-\bH \boldsymbol{\phi}\|_2^2.
 \]
-For the time series~$[\bs_i^\prime, \bs_i^{\prime\prime},\dots]$ use the parameters $[\boldsymbol{\phi}_i^\prime, \boldsymbol{\phi}_i^{\prime\prime}]$ as the features.
+For the time series~$\bs^{(m)}$, $m=1,\dots, M$ use the parameters $\boldsymbol{\phi}^{(m)}$ as the features.
 
 \subsection{Distances to centroids of local clusters}
-This procedure applies the kernel trick to the time series. For given local history time series~$\bs^\prime_1,\dots,\bs^\prime_m$ compute $k$-means centroids~$\bc^\prime_1,\dots,\bc^\prime_P$.  With the selected $k$-means distance function~$\rho$ construct the feature vector
+This procedure applies the kernel trick to the time series. For given local history time series~$\bx_i^{(m)}$, $m=1,\dots, M$ compute $k$-means centroids~$\bc_p^{(m)}$, $p = 1, \dots, P$.  With the selected $k$-means distance function~$\rho$ construct the feature vector
 \[
-\vf_i^\prime = [\rho(\bc^\prime_1,\bs_i^\prime),\dots,\rho(\bc^\prime_P,\bs_i^\prime)] \in \R_+^P.
+\vf_i^{(m)} = [\rho(\bc_1^{(m)},\bs_i^{(m)}),\dots,\rho(\bc^{(m)}_P,\bs_i^{(m)})] \in \R_+^P.
 \]
 This $k$-means of another clustering procedure may use internal parameters, so that there are no parameters to be included to the feature vector or to the forecasting model.
 
@@ -359,49 +535,49 @@ Let $D = (X, \by)$ denote the data, where $X = [\bx_1\T, \dots, \bx_i, \dots, \b
 \subsection{EM-algorithm for mixture models}
 Assume the target variable $\by$ is generated by one of~$K$ linear models $f_{k}(\x, \w_k)$. Let the distribution of the target variable~$\by$ be a mixture of normal distributions
 \begin{equation}\label{eq:mixture_models}
-p(\by|\x, \bs) = \sum_{k=1}^{K}\pi_k\;\mathcal{N}(\by|\w_k\T\bx,\beta) = \sum_{k=1}^K
+p(\by|\x, \bth) = \sum_{k=1}^{K}\pi_k\;\mathcal{N}(\by|\w_k\T\bx,\beta) = \sum_{k=1}^K
 \frac{1}{(2\pi\beta_k)^{n/2}} \exp \left(
 ( -\frac{1}{2\beta_k}(\by - \w_k\T X)^{\top}(\by - \w_k\T X) \right).
 \end{equation}
-Here~$\bs$ denotes the concatenated vector of parameters:
+Here~$\bth$ denotes the concatenated vector of parameters:
 \[
-\bs = [\w_1,\dots,\w_k,\boldsymbol{\pi},\beta]\T,
+\bth = [\w_1,\dots,\w_k,\boldsymbol{\pi},\beta]\T,
 \]
 where $\boldsymbol{\pi} = [\pi_1,\dots,\pi_k]$ are weights of the models,
 and $\bB = \beta \bI_m$ is the covariance matrix for~$\by$.
 
 \paragraph{Parameter estimation.}
-The goal is to find parameters vector $\hat{\bs}$ which optimizes loglikelihood function for given data set~$D$
+The goal is to find parameters vector $\hat{\bth}$ which optimizes loglikelihood function for given data set~$D$
 \begin{equation}\label{eq:MLE}
-\hat{\bs} = \argmax_{\bs}\ln p(\by|\bs), \quad \ln p(\by|\bs) = \sum_{i=1}^{m}\ln\left( \sum_{k=1}^K  \pi_k\mathcal{N}(\by|\w\T_{k}\x_i,\beta) \right).
+\hat{\bth} = \argmax_{\bth}\ln p(\by|\bth), \quad \ln p(\by|\bth) = \sum_{i=1}^{m}\ln\left( \sum_{k=1}^K  \pi_k\mathcal{N}(\by|\w\T_{k}\x_i,\beta) \right).
 \end{equation}
-%To estimate parameters $\bs$ introduce the matrix
+%To estimate parameters $\bth$ introduce the matrix
 %\[
 %Z = \left[\bz_1,\dots,\bz_m|\bz\in\{0,1\}^K\right]
 %\]
 %of hidden variables. A hidden variable $\bz_i$ indicates which model generates $\mathbf{x}_i$: $\mathbf{x}_i$ is generated by $k$-th model iff $\bz_{ik}=\delta_{ik}$.
 %The log-likelihood function for joint distribution of~$\y,Z$ is
 %\begin{equation}\label{eq:joint_y_z}
-%\ln p(\by,Z|\bs) = \sum_{i=1}^m\sum_{k=1}^K z_{ik} \ln \left( \pi_k \mathcal{N}(y_i|\w\T_{k}\x_i,\beta) \right).
+%\ln p(\by,Z|\bth) = \sum_{i=1}^m\sum_{k=1}^K z_{ik} \ln \left( \pi_k \mathcal{N}(y_i|\w\T_{k}\x_i,\beta) \right).
 %\end{equation}
 
 
-To obtain maximum likelihood estimates~\eqref{eq:MLE} for parameter $\bs$ of the model~\eqref{eq:mixture_models}, let us introduce hidden indicator variables
+To obtain maximum likelihood estimates~\eqref{eq:MLE} for parameter $\bth$ of the model~\eqref{eq:mixture_models}, let us introduce hidden indicator variables
 \[Z = \left[\bz_1,\dots,\bz_m\right], \quad z_{ik}\in \{0,1\},\] such that
 \[z_{ik} = 1 \Leftrightarrow y_i\sim\mathcal{N}(\w_k\T\x_i, \beta).\]
-Then the loglikelihood function $p(\by, Z|X, \bs)$ takes the form
-\[p(\by|X, Z, \bs) = \sum_{i=1}^{m}\sum_{k=1}^{K} z_{ik} \left( \ln\pi_k + \ln\mathcal{N}(y_i|\w\T_{k}\x_i,\beta) \right) = \]
+Then the loglikelihood function $p(\by, Z|X, \bth)$ takes the form
+\[p(\by|X, Z, \bth) = \sum_{i=1}^{m}\sum_{k=1}^{K} z_{ik} \left( \ln\pi_k + \ln\mathcal{N}(y_i|\w\T_{k}\x_i,\beta) \right) = \]
 \[=\sum_{i=1}^{m}\sum_{k=1}^{K} z_{ik} \left( \ln\pi_k - \frac{1}{2\beta}(y_i-\w\T_{k}\x_i)^2 + \frac{n\ln{\beta}}{2} + \text{const}\right).\]
-Since $p(\by, Z|X, \bs)$ depends on random variables $z_{ik}$, instead of $p(\by|X, \bs)$ maximize the expected loglikelihood of the observed data $D$:
-\[\mathsf{E}_{Z} [p(\y, Z|X, \bs)] = \sum_{i=1}^{m}\sum_{k=1}^{K} \gamma_{ik} \left( \ln\pi_k - \frac{1}{2\beta}(y_i-\w\T_{k}\x_i)^2 + \frac{n\ln{\beta}}{2}\right), \quad \gamma_{ik} = \mathsf{E}[z_{ik}|\y, X].\]
+Since $p(\by, Z|X, \bth)$ depends on random variables $z_{ik}$, instead of $p(\by|X, \bth)$ maximize the expected loglikelihood of the observed data $D$:
+\[\mathsf{E}_{Z} [p(\y, Z|X, \bth)] = \sum_{i=1}^{m}\sum_{k=1}^{K} \gamma_{ik} \left( \ln\pi_k - \frac{1}{2\beta}(y_i-\w\T_{k}\x_i)^2 + \frac{n\ln{\beta}}{2}\right), \quad \gamma_{ik} = \mathsf{E}[z_{ik}|\y, X].\]
 
 
-Finally, apply Expectation-Maximization algorithm to maximize $\mathsf{E}_{Z} [p(\y, Z|X, \bs)]$ updating parameters estimates $\bs^{(r)}$ in two iterative steps.
+Finally, apply Expectation-Maximization algorithm to maximize $\mathsf{E}_{Z} [p(\y, Z|X, \bth)]$ updating parameters estimates $\bth^{(r)}$ in two iterative steps.
 
 
 {\bf E-step}: obtain $\mathsf{E}(Z)$. Let~$\Gamma=[\gamma_{ik}]$ be a matrix of posterior probabilities that $i$-th sample is generated by~$k$-th model. Using Bayesian rule, obtain
 \begin{equation}\label{eq:hidden_vars_Estep}
-\gamma_{ik}^{(r+1)} = \mathsf{E}(z_{ik}) = p(k|\x_i, \bs^{(r)}) =
+\gamma_{ik}^{(r+1)} = \mathsf{E}(z_{ik}) = p(k|\x_i, \bth^{(r)}) =
     \frac{
         \pi_k\mathcal{N}(y_i|\x_i\T\w^{(r)}_{k}, \beta^{(r)})
         }{
@@ -409,15 +585,15 @@ Finally, apply Expectation-Maximization algorithm to maximize $\mathsf{E}_{Z} [p
         }
 \end{equation}
 
-Define expectations of joint loglikelihood $\ln p(\y, Z|X, \bs)$ with respect to the posteriors distribution~$p(Z|\y,\bs)$
+Define expectations of joint loglikelihood $\ln p(\y, Z|X, \bth)$ with respect to the posteriors distribution~$p(Z|\y,\bth)$
 \begin{equation}\label{eq:posterior}
-Q^{(r)}(\bs) = \mathsf{E}_Z(\ln p(\y, Z|\bs)) = \sum_{i=1}^m\sum_{k=1}^K\gamma_{ik}^{(r+1)}
+Q^{(r)}(\bth) = \mathsf{E}_Z(\ln p(\y, Z|\bth)) = \sum_{i=1}^m\sum_{k=1}^K\gamma_{ik}^{(r+1)}
     \left(
         \ln\pi^{(r)}_k+\ln\mathcal{N}(y_i|\x_i\T\w^{(r)}_{k},\beta^{(r)})
     \right).
 \end{equation}
 
-{\bf M-step:} update parameters $\bs$, maximizing $Q^{(r)}(\bs)$. Maximize function~$Q^{(r)}(\bs)$ with respect to~$\bs$ with~$\Gamma^{(r+1)}$ fixed. First, optimize $\pi_k$, which is constrained as $\sum_{k=1}^K\pi_k=1$. Using Lagrange multipliers, obtain the following estimation
+{\bf M-step:} update parameters $\bth$, maximizing $Q^{(r)}(\bth)$. Maximize function~$Q^{(r)}(\bth)$ with respect to~$\bth$ with~$\Gamma^{(r+1)}$ fixed. First, optimize $\pi_k$, which is constrained as $\sum_{k=1}^K\pi_k=1$. Using Lagrange multipliers, obtain the following estimation
 \[
 \pi^{(r+1)}_k = \frac{1}{n}\sum_{i=1}^m { \gamma_{ik}^{(r+1)}}.
 \]
@@ -440,21 +616,23 @@ With $\pi_k$ fixed maximizing~\eqref{eq:posterior} is equivalent to \
 \subsection{Mixture of experts}
 Suppose that each model $f(\x, \w_k)$ generates a sample $(\x, y)$ with some probability $p(k|\x, \w)$. Then
 the following factorization holds
-\begin{equation*}\label{eq:mixture_of_experts} p(y|\x, \bs) = \sum_{k=1}^{K} p(y, k| \x, \bs) = \sum_{k=1}^{K} p(k|\x, \bs)p(y|k, \x, \bs)\end{equation*}
- for $p(y|\x, \bs)$. Here $p(k|\x, \bs)$ correspond to weight parameters $\pi_k$ in~\eqref{eq:mixture_models} dependent on the inputs $\x$.
+\begin{equation*}\label{eq:mixture_of_experts} p(y|\x, \bth) = \sum_{k=1}^{K} p(y, k| \x, \bth) = \sum_{k=1}^{K} p(k|\x, \bth)p(y|k, \x, \bth)\end{equation*}
+ for $p(y|\x, \bth)$. Here $p(k|\x, \bth)$ correspond to weight parameters $\pi_k$ in~\eqref{eq:mixture_models} dependent on the inputs $\x$.
  Assuming normal linear models $f(\x, \w_k)$ or, equivalently, normal  distributions
  $p(y|\bx, \w_k) = \mathcal{N}(y|\w_k\T, \beta),$
  obtain
-\begin{equation}\label{eq:mixture_of_experts}p(\by|\x, \bs) = \sum_{k=1}^{K}\pi_k(\x, \bv_k)\mathcal{N}(\by|\w_k\T\bx,\beta), \end{equation}
+\begin{equation}\label{eq:mixture_of_experts}p(\by|\x, \bth) = \sum_{k=1}^{K}\pi_k(\x, \bv_k)\mathcal{N}(\by|\w_k\T\bx,\beta), \end{equation}
 where
 \[\pi_k(\x, \bv_k) = \frac{\exp(\bv_k\T\x)}{\sum_{k'=1}^K \exp(\bv_{k'}\T\x)}.\]
    The difference between mixture of experts model~\eqref{eq:mixture_of_experts} and mixture model~\eqref{eq:mixture_models} in that model weights $\pi_k$ depend on inputs $\x$ in mixture of experts. Similarly, EM-procedure for mixture of experts differs from EM-procedure for mixture models in the way $\gamma_{ik}$ are optimized in M-step.
 
 \begin{algorithm}[ht]
+\DontPrintSemicolon
+\Begin{
  \KwData{$(\x_i, y_i)$, $i = 1, \dots, m$. Parameters: number of experts $K$.}
- \KwResult{Parameters $\bs$ of the model~\eqref{eq:mixture_of_experts}.}
- Initialize $[\w, \beta, \bv] \equiv \bs = \bs^{(0)}$, $r = 0$\;
- \While{$\bs$ keeps changing}{
+ \KwResult{Parameters $\bth$ of the model~\eqref{eq:mixture_of_experts}.}
+ Initialize $[\w, \beta, \bv] \equiv \bth = \bth^{(0)}$, $r = 0$\;
+ \While{$\bth$ keeps changing}{
   \textbf{E step}: compute hidden variables $\gamma^{(r+1)}_{ik}$, the expectation of the indicator
 variables, using~\eqref{eq:hidden_vars_Estep}\;
 
@@ -468,6 +646,7 @@ variables, using~\eqref{eq:hidden_vars_Estep}\;
         -\frac{1}{\beta}(y_i-\x_i\T\w^{(r+1)}_k)^2
     \right)
     \;$$
+ }
  }
  \caption{EM-algorithm for mixture of experts.}
 \end{algorithm}
@@ -550,6 +729,10 @@ An optimal multilevel model i s
 \hat{\cA} = \arg\max\limits_{\cA\subseteq\cJ}\mathcal{E}\left(\fx_1(\bw_\cA,\x^{\cB_1})\right)\mathcal{E}\left(\fx_2(\bw'_\cA,\bx^{\cB_2})\right).
 \]
 
+
+\nocite{*}
+\bibliographystyle{unsrt}
+\bibliography{MultiscaleForecasting}
 
 
 \end{document}

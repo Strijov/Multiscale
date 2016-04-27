@@ -13,4 +13,4 @@ function [matrix] = CreateRegMatrix_small(ts, time_points, deltaTp, deltaTr)
     end  
 end
 
-    
+

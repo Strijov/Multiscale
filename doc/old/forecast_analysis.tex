@@ -17,13 +17,11 @@
 \setlength\dashlinegap{4.5pt}
 \setlength\arrayrulewidth{0.2pt}
 
-\graphicspath{ {fig/} } 
+\graphicspath{ {fig/} }
 \newcommand{\argmax}{\mathop{\rm arg\,max}\limits}
-\newcommand{\dtr}{\Delta t_\text{r}}
-\newcommand{\dtp}{\Delta t_\text{p}}
 
 \begin{document}
-\section{Strategies of martix construction}
+\section{Strategies of matrix construction}
 Suppose a large set of time series~$\fD=\{\bs\}$ is given. The ``object-feature'' matrix~$\bX^*$ for the multiscale autoregressive problem statement is composed of row-vectors
 \[
 \bs_i^\prime = [\by_i^\prime, \bx_i^\prime] = [\underbrace{s(t_i),\dots,s(t_i-\Delta t_\text{r})),}_{\by_i^\prime}
@@ -60,11 +58,6 @@ where $\bar{\varepsilon}_t$ is the average residual for the time stamp $t$.
 \caption{\hl{Retrospective forecast includes most recent samples in data set.}}
 \end{figure}
 
-\begin{figure}[!ht]
-\centering\includegraphics[width=0.8\textwidth]{retrospective_validation.png}
-\label{fg:retrospective}
-\caption{\hl{Retrospective forecast includes most recent samples in data set.}}
-\end{figure}
 
 \begin{figure}[!ht]
 \centering\includegraphics[width=0.8\textwidth]{draw_object.png}
@@ -87,11 +80,6 @@ To avoid these issues, we fix the second strategy of the $\bX$ construction.
 \section{Forecast analysis}
 We consider the forecast testing procedure, given by the algorithm~\ref{alg:train_test_rmse}.
 Our ultimate goal is to construct a forecasting model be able to obtain forecasts at any given time $t$~\ref{fg:online}. To construct such model we have to imitate this setting, using the so-called retrospective forecast~\ref{fg:retrospective} (\hl{rolling forecasts, walking ahead predictions}). Here we conceal most recent historical samples and make predictions as if they were unknown. Then the quality of the model is evaluated according to its performance on these concealed samples. In this paper we convert the forecasting problem to regression problem,  considering the segments of time series as objects of the design matrix $\bX^{*}$~\ref{fg:draw}. Sliding~\ref{fg:design} the ``current'' time point $t$ according to the chosen strategy (1--5), we obtain the design matrix $\bX$ and further we solve the regression problem instead of forecasting problem~\ref{fg:forecasting_model}.
-
-
-
-
-
 
 \begin{algorithm}[!h]
 \textbf{\emph{ComputeForecastingErrors()}}
@@ -148,7 +136,30 @@ A valid forecast model must meet the following conditions:
 If the forecast does not meet any of these conditions, then it can be further improved by
  simply adding a constant (minus residual mean) to the model, balancing variance or including more lags. Additionally, desirable properties are normality and homoscedasticity of residuals. These properties are not necessary for an adequate model, but allow to obtain theoretical estimations of the confidence interval.
 
-\subsection{Forecasting quality}
+\subsection{Forecasting errors}
+Hyndman~\cite{Hyndman2006} divides forecasting errors into four types:
+\begin{itemize}
+\item scale-dependent metrics, such as mean
+absolute error
+\[ MAE = \frac{1}{r}\sum_{i = 1}^{r} |\varepsilon_i|,\]
+\item percentage-error metrics such as the mean absolute percent error
+\[ MAPE = \frac{1}{r}\sum_{i = 1}^{r} \frac{|\varepsilon_i|}{|y_{0}(i)|}, \]
+or symmetric MAPE
+\[ sMAPE = \frac{1}{r}\sum_{i = 1}^{r} \frac{2|{\varepsilon}_i|}{|\hat{y}_0(i) + y_{0}(i)|}, \] \item relative-error metrics, measure
+the average ratio of the errors from a designed
+method to the errors $\veps^{*}$ of a benchmark method
+ \[ MRAE = \frac{1}{r}\sum_{i = 1}^{r} \frac{|{\varepsilon}_i|}{{\varepsilon}^{*}_i},\]
+\item and
+scale-free error metrics, which express each
+error as a ratio to an average error from a
+baseline method:
+\[ MASE = \frac{n-1}{r}\frac{\sum_{i=1}^r|\varepsilon_i|}{\sum_{j=2}^n |x_0(j) - x_0(j-1)|}. \]
+\end{itemize}
+
+\nocite{*}
+\bibliographystyle{unsrt}
+\bibliography{MultiscaleForecasting}
+
 
 \end{document}
 

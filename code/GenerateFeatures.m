@@ -54,4 +54,3 @@ function [matrix] = GenerateFeatures(matrix, deltaTp, deltaTr, generator)
     end
     matrix = [Xnew, Y];
 end
-        

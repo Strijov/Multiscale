@@ -5,4 +5,3 @@ function ts = NormalizeTS(s)
     multiplier = max(tmp);
     ts = x/multiplier;
     s.normalization = [multiplier, min_val];
-end
