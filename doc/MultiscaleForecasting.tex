@@ -37,7 +37,7 @@ $\bar{\bs}$ & special case of time series $\bs$ for classification \\
 $\dtp$ & local prehistory \\
 $\dtr$ & defines time period (requested) for prediction \\
 $\bs^{(m)}_i = [\y^{(m)}_i|\x^{(m)}_i]$ & local ($t_i$) segment from the time series $\bs^{(m)}$ \\
-$\bX^{*}$, $\bx_i^{*} = [\y_i|\x_i]$ & object-feature matrix, $\by_i = [\y^{(1)}_i, \dots, \y^{(M)}_i]$, $\x_i = [\x^{(1)}_i, \dots, \x^{(M)}_i]$ \\
+$\bX^{*}$, $\bx_i^{*} = [\y_i|\x_i]$ & design matrix, $\by_i = [\y^{(1)}_i, \dots, \y^{(M)}_i]$, $\x_i = [\x^{(1)}_i, \dots, \x^{(M)}_i]$ \\
 $\bY$, $\bX$ & target matrix, feature matrix \\
 \textcolor{red}{$q$} & number of objects $\bx_i^{*}$ extracted from $\fD$ \\
 $r$ & dimensionality of the target vector $[\y^{(1)}_i, \dots, \y^{(M)}_i]$ \\
@@ -196,32 +196,33 @@ Given the set of properly resampled time series $\fD=\{\bs^{(m)}\}$, $m = 1, \do
 
 To reformulate the forecasting task into regression task, form an object set at a set of the vectors~$\{\bx^{*}\}$, where each vector~$\bx^{*} = [\by| \bx]$ collects all the time series over the time period~$\dtp$ (Fig.~\ref{fg:draw}), which stands for the local \emph{prehistory}. The vector $\bx^{*}$ could (with no necessity) include samples from previous history of any time series $\bs^{(m)}$ as well as any derivatives $\vf$, which are called generated features.
 
-The ``object-feature'' matrix~$\bX^*$ for the multiscale autoregressive problem statement is constructed  as follows (Fig.~\ref{fg:design}). Let $\bs^{(m)}_i$ denote the~$i$-th segment of the time series $\bs^{(m)}$
+The design matrix~$\bX^*$ for the multiscale autoregressive problem statement is constructed  as follows (Fig.~\ref{fg:design}). Let $\bs^{(m)}_i$ denote the~$i$-th segment of the time series $\bs^{(m)}$
 \begin{equation}\label{eq:segment}
-\bs^{(m)}_i = [\by^{(m)}_i | \bx^{(m)}_i] = [\underbrace{s^{(m)}(t_i),\dots,s^{(m)}(t_i-\dtr)),}_{\by^{(m)}_i}
-\underbrace{\dots,s^{(m)}(t_i-\dtr-\dtp)}_{\bx^{(m)}_i}],
+\bs^{(m)}_i = [\bx^{(m)}_i | \by^{(m)}_i] = [
+\underbrace{s^{(m)}(t_i-\dtr-\dtp),\dots,}_{\bx^{(m)}_i} \underbrace{s^{(m)}(t_i-\dtr),\dots,s^{(m)}(t_i))}_{\by^{(m)}_i}],
 \end{equation}
-where~$s^{(m)}(t)$ is an element of time series~$\bs^{(m)}$. Select $t_i$, $i = 1, \dots, q$ from $\Gs = \{1, \dots, T_{\max}\}$ so that vectors $\bs_i = [\y_i, \x_i]$ cover time series $\bs$
-\begin{equation}\label{eq:strategy2} \{s(1), \dots, s(T_{\max})\} = \bigcup_{i=1}^{q-1} \{s(t_i-\Delta t_\text{r}),\dots,s(t_i)\}\end{equation}
-with overlap in feature parts $\bx_i$ and no intersection in target parts  $\y_i$:
+where~$s^{(m)}(t)$ is an element of time series~$\bs^{(m)}$. To construct the design matrix, select $t_i$, $i = t_1, \dots, q$ from $\Gs = \{t_1, \dots, t_{\max}\}$ so that segments $\bs_i = [\x_i|\y_i]$ cover time series $\bs$
+%\begin{equation}\label{eq:strategy2} \{s(t_{1}), \dots, s(t_{\max})\} = \bigcup_{i=1}^{q-1} \{s(t_i-\Delta t_\text{r}),\dots,s(t_i)\}\end{equation}
+without intersection in target parts  $\y_i$:
 \[ |t_{i+1} - t_i| > \dtr.
 \]
 Following~\eqref{eq:segment} and~\eqref{eq:strategy2}, extract segments $i = 1, \dots, q$ from all time series $\bs^{(m)} \in \fD$ and form the matrix
  \[
 \bX^*=\left[
 \begin{array}{lll|lll}
-\by^{(1)} &  \dots & {\by}^{(M)} & \bx_0^{(1)} & \dots & \bx_0^{(M)}  \\
+\bx_1^{(1)}  & \dots & \bx_1^{(M)} & \by_1^{(1)} &  \dots & \by_1^{(M)}   \\
+\vdots & \vdots & \ddots & \vdots & \vdots & \ddots  \\
+\bx_q^{(1)} & \dots & \bx_q^{(M)} & \by_q^{(1)}  & \dots & \by_q^{(M)}   \\
+
 \hline
-\by_1^{(1)} &  \dots & \by_1^{(M)} & \bx_1^{(1)}  & \dots & \bx_1^{(M)}  \\
-\vdots & \vdots & \ddots & \vdots & \vdots & \ddots \\
-\by_q^{(1)}  & \dots & \by_q^{(M)} & \bx_q^{(1)} & \dots & \bx_q^{(M)}  \\
+\bx_0^{(1)} & \dots & \bx_0^{(M)} & \by^{(1)} &  \dots & {\by}^{(M)}   \\
 \end{array}
 \right]
 =\left[
 \begin{array}{c|c}
- \underset{1{\times}r}{{\by}_0} & \underset{1{\times}n}{\x_0} \\
+ \underset{q{\times}n}\bX & \underset{q{\times}r}\bY  \\
  \hline
- \underset{q{\times}r}\bY & \underset{q{\times}n}\bX \\
+ \underset{1{\times}n}{\x_0} & \underset{1{\times}r}{{\by}_0}  \\
 \end{array}
 \right].
 \]
@@ -255,7 +256,7 @@ The problem is to maximize the lapse of the time segment
 \[ \| \dtr \| \to\max,\]
 where the vector
 \[
-[{\y}_0, \bx_0] = \textcolor{red}{[0,\dots,0,0,\dots,0,1]},
+[\bx_0, {\y}_0] = [0,\dots,0,0,\dots,0,1],
 \]
 which means the system was in the normal state before it changes. Since the quality~$Q$ of forecasting time series~$\bar{\bs}$ depends on~$\| \dtr \|$ (the letter time lapse before the warning the higher the forecasting quality~[ref]) the minimum level of quality must be set. Let the minimum forecasting quality be
 \[
