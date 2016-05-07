@@ -1,5 +1,5 @@
 %algSSA
-function [frc, par] = algSSA(inputTS, idxHist, idxFrc, par)
+function [frc, par, eigenvalues] = algSSA(inputTS, idxHist, idxFrc, par)
 %makes forecasting
 %
 %[frc, par] = algSSA(inputTS, idxHist, idxFrc, par)

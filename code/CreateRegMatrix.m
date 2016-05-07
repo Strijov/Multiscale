@@ -1,4 +1,4 @@
-function [matrix, deltaTp, deltaTr] = CreateRegMatrix(s)
+function [workStructTS] = CreateRegMatrix(s, legend)
 %     input:
 %         struct s with fields:
 %             x           - [1xn] cell with time-series
@@ -7,13 +7,18 @@ function [matrix, deltaTp, deltaTr] = CreateRegMatrix(s)
 %             deltaTp     - [1xn] cell with ints, corresponds to number of feature columns
 %             deltaTr     - [1xn] cell with ints,corresponds to number of target columns (Y)
 %             time_points - [1xn] cell with vectors of TS time-ticks
-%             normalization - [1x2] vector. First value is normalization
-%             multiplier, second is TS minimum. To get back to real values 
-%               shold multiply with the first value and sum up with second.
 %      output:
-%         matrix          - [NxM] object-features matrix
-%         deltaTp         - int, corresponds to number of feature columns (X)
-%         deltaTr         - int, corresponds to number of target columns (Y)
+%        struct workStructTS with fields:
+%             matrix          - [NxM] object-features matrix
+%             legend          - [1xn] cell with strings, containing lengend of each TS
+%             deltaTp         - int, corresponds to number of feature columns (X)
+%             deltaTr         - int, corresponds to number of target columns (Y)
+%             self_deltaTp    - [1xn] cell with ints, corresponds to number of feature columns
+%             self_deltaTr    - [1xn] cell with ints,corresponds to number of target columns (Y)
+%             norm_div        - [1xn] cell with normalization multiplier.
+%             norm_subt       - [1xn] cell with minimum for each TS. 
+%                           To get back to real values shold multiply with
+%                           the first value and sum up with second.
 
     ts_num = numel(s);
     counterTp = 0;
@@ -25,8 +30,10 @@ function [matrix, deltaTp, deltaTr] = CreateRegMatrix(s)
     matrix = zeros(numel(s(1).time_points), counterTp+counterTr);
     shiftTp = 0;
     shiftTr = counterTp;
+    norm_div = zeros(1,ts_num);
+    norm_subt = zeros(1, ts_num);
     for i = 1:ts_num
-        nozmalized_ts = NormalizeTS(s(i));
+        [nozmalized_ts, norm_div(i), norm_subt(i)] = NormalizeTS(s(i));
         small_matrix = CreateRegMatrix_small(nozmalized_ts, s(i).time_points, s(i).deltaTp, s(i).deltaTr);
         [tmpX,tmpY] = SplitIntoXY(small_matrix, s(i).deltaTp, s(i).deltaTr);
         matrix(:, shiftTp+1:shiftTp+s(i).deltaTp) = tmpX;
@@ -35,5 +42,8 @@ function [matrix, deltaTp, deltaTr] = CreateRegMatrix(s)
         shiftTr = shiftTr + s(i).deltaTr;
     end
     deltaTp = sum([s.deltaTp]);
+    self_deltaTp = [s.deltaTp];
     deltaTr = sum([s.deltaTr]);
+    self_deltaTr = [s.deltaTr];
+    workStructTS = struct('matrix', matrix, 'deltaTp', deltaTp, 'deltaTr', deltaTr, 'self_deltaTp', self_deltaTp, 'self_deltaTr', self_deltaTr, 'norm_div', norm_div, 'norm_subt', norm_subt);
 end

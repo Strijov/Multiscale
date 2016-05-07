@@ -7,7 +7,6 @@ function  model = OptimizeModelParameters(X, Y, model)
     %   model          - optimized model
     %   validation     - vector[1xN]
     %Trains model to fit provided data in X, Y.
-    names = ['VAR', 'Neural_network'];
     switch model.name
         case 'VAR'
             W = inv(X'*X)*X'*Y;
@@ -20,6 +19,10 @@ function  model = OptimizeModelParameters(X, Y, model)
             model.params = [];
             model.tuned_func = net;
             model.unopt_flag = true; %FIXIT Should be false, but can't find function to retrain NN using old parameters.
+        case 'SVR'
+            model.unopt_flag = true;
+            model.tuned_func = [];
+            model.params = [];
     end
 end
 

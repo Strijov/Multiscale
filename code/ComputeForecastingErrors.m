@@ -1,5 +1,9 @@
-function [RMSE, model, real_y] = ComputeForecastingErrors(matrix, K, m, alpha_coeff, model, deltaTp, deltaTr)
+function [RMSE, model, real_y] = ComputeForecastingErrors(workStructTS, K, m, alpha_coeff, model)
+    matrix = workStructTS.matrix;
+    deltaTp = workStructTS.deltaTp;
+    deltaTr = workStructTS.deltaTr;
     n = 1;
+    
     RMSE = zeros(1, K);
     model.forecasted_y = zeros(1,deltaTr*K);
     real_y = zeros(1,deltaTr*K);
@@ -12,7 +16,7 @@ function [RMSE, model, real_y] = ComputeForecastingErrors(matrix, K, m, alpha_co
         else
             model = ExtraOptimization(trainX, trainY, model);
         end
-        forecast_y = ComputeForecast(val_x, model);
+        forecast_y = ComputeForecast(val_x, model, trainX, trainY);
         model.forecasted_y((n-1)*deltaTr+1:n*deltaTr) = forecast_y;
         real_y((n-1)*deltaTr+1:n*deltaTr) = val_y;
         epsilon = (forecast_y - val_y);%NOW IS MAPE!!!

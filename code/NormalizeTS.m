@@ -1,7 +1,7 @@
-function ts = NormalizeTS(s)
+function [ts, div, subt] = NormalizeTS(s)
     x = s.x;
-    min_val = min(x);
-    tmp = x - min(x);
-    multiplier = max(tmp);
-    ts = x/multiplier;
-    s.normalization = [multiplier, min_val];
+    subt = min(x);
+    tmp = x - subt;
+    div = max(tmp);
+    ts = tmp/div;
+end
