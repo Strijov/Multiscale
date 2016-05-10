@@ -1,13 +1,13 @@
 %Unit tests
 %Reading data from file(s).
 addpath(genpath(cd));
-filename = 'data\orig\SL2.xls';
+filename = 'data/orig/SL2.xls';
 sheet = 'Arkusz1';
 xlRange = 'D3:AA1098';
 ts0 = xlsread(filename,sheet,xlRange);
 ts0 = reshape(ts0', numel(ts0), 1);
 
-tmp = xlsread('data\orig\weatherdata.csv', 1, 'E2:J1093');
+tmp = xlsread('data/orig/weatherdata.xls', 'weatherdata', 'E2:J1093');
 ts{1} = ts0;
 for i = [1:size(tmp, 2)]
     ts{i+1} = tmp(:, i);
