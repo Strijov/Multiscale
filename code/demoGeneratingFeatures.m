@@ -24,12 +24,15 @@ inputStructTS = struct('x', ts, 'time_step', time_step, 'legend', legend, 'delta
 
 %Constructing regression matrix.
 [workStructTS] = CreateRegMatrix(inputStructTS);
-
+cla
 %Generating extra features:
-generator_names = {'SSA', 'NW', 'Cubic', 'Conv', 'Cluster'};
+generator_names = {'SSA', 'NW', 'Cubic', 'Conv'};
 for i = [1:numel(generator_names)]
     generator = generator_names(i);
     structWithNewFeatures{i} = GenerateFeatures(workStructTS, generator);
+    figure(i)
+    pcolor(structWithNewFeatures{i}.matrix)
+    title(generator_names(i))
 end
 structWithNewFeatures
 'done'
