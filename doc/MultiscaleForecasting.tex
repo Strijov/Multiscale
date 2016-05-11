@@ -42,7 +42,7 @@ $\bY$, $\bX$ & target matrix, feature matrix \\
 \textcolor{red}{$q$} & number of objects $\bx_i^{*}$ extracted from $\fD$ \\
 $r$ & dimensionality of the target vector $[\y^{(1)}_i, \dots, \y^{(M)}_i]$ \\
 $n$ & dimensionality of the feature vector $[\x^{(1)}_i, \dots, \x^{(M)}_i]$ \\
-$\bx_0^{*} = [\by_0 |\bx_0]$ & a testing object? \\
+$\bx^{*} = [\by |\bx]$ & a testing object? \\
 $\cJ = {1,\dots, n}$ & feature index set \\
 $\cA \subset \cJ$ & the subset of feature indices \\
 $\fx_k(\w_{\cA_k}, \x)$, $k=1,\dots,K$ & regression model, defined for a subset $\cA_k$ \\
@@ -57,21 +57,21 @@ $g=g(\bb,s)$ & parametric functions for feature transformation \\
 $\mathfrak{G} = \{g:\bs\to\vf\}$ & set of feature transformations \\
 $\vf=[\vf^1,\dots,\vf^{M}]$ & generated feature vector \\
 $\veps = \by - \hat{\by}$ & vector of residuals \\
-$\bc^1_1,\dots,\bc^M_P$ & $k$-means centroids \\
+$\bc^{(m)}_1,\dots,\bc^{(m)}_P$ & $k$-means centroids \\
 $\mathbf{H}^{*}$ & Hankel matrix \\
 $\bth = [\w_1, \dots, \w_k, \boldsymbol{\pi}, \beta]$ & parameters of the mixture model \\
 $z_{ik}$, $\gamma_{ik}$ & latent (correspondence) variables and their expectations (mixture models) \\
 \end{longtable}
 
 \section{Introduction}
-The paper investigates behavior of a device within the concept of Internet of Things. The device at question is monitored by a set of sensors, which produces large amount of multiscale time series during its lifespan. These time series have various time scales since distinct sensor produce measurements with various frequencies (milliseconds, days, weeks, etc).  The main goal is to forecast the next state of a device. \hl{What exactly is this state?}
+The paper investigates behavior of a device within the concept of Internet of Things. The device at question is monitored by a set of sensors, which produces large amount of multi-scale time series during its lifespan. These time series have various time scales since distinct sensors produce measurements with various frequencies (milliseconds, days, weeks, etc).  The main goal is to forecast the measurements of a device in a given time range.
 
-We assume that the sampling rate of each time series is fixed and each time series has its own forecast horizon. Examples of this kind of time series are listed below. \hl{(list)}
+We assume that the sampling rate of each time series is fixed and each time series has its own forecast horizon. The problem of multi-scale analysis arises in such applications as weather prediction, medical diagnosis and monitoring various sensor time series~\cite{Costa2008, Ahmed2012, Cortez2012, Ferreira2006} \hl{[medical, medical, traffic, ecology]}. Motivation for multi-scale analysis comes from the assumption that the behaviour of complex signals may be governed by  essentially different processes at various time scales. Thus, the time series should be modeled separately at each scale. This approach is used in time series classification, prediction and fault detection~\cite{Cui2016, Cortez2012, Aldrich2013}. Regardless of the goal of multi-scale analysis, it includes sequential averaging of the time series to obtain more coarse-scaled time series~\cite{Wu2013}, or, more rarely, differencing the time series for a more detailed, fine-scaled version of the time series~\cite{Jiang2011}. Averaging and differencing, which is equivalent to application of Haar's wavelet transform~\cite{Jiang2011}, may be replaced by any other pair of low and high pass wavelet filters~\cite{Chen2004} or convolution operation with some kernel function~\cite{Vespier2012}. Next steps depend on the goal of multi-scale analysis. Using multi-scale approach in time series prediction usually involves determining optimal scales~\cite{Vespier2012, Ahmed2012}, decomposition of time series into separately forecasted components and combination of the obtained forecasts.
 
-Furthermore, the time history is assumed sufficiently long to construct an adequate forecasting model; the time series are assumed to have auto- and cross-correlation dependencies. 
 
-In the next Sections we explain how to construct \hl{vector autoregressive models} and test their quality under the listed conditions.
- TODO (list and review state of the art).
+\section{Related work}
+
+
 
 \section{Problem statement}
 Consider a large set of time series~$\fD=\{\bs^{(m)}| \; m = 1\dots, {M}\}$, where each real-valued time series~$\bs$  has its own sampling rate $f^{(m)}_s$. The  sampling rate might be changing over time, or the ratio between different sampling rates might be non-rational. In such cases as well as for time series with missing values we apply resampling procedure, which is described further.
@@ -169,7 +169,7 @@ TODO
  Find FFT coefficients $a_j,\; b_j$ for  $j = 1, \dots, N$ for $\bs$\;
  Set $a_j = 0,\; b_j=0$, for  $2\pi w_j > \fb$ \;
  Reconstruct the time series, using inverse FFT.
-} 
+}
  \smallskip
  \caption{FFT rescaling procedure.}
 \end{algorithm}
@@ -210,9 +210,9 @@ Following~\eqref{eq:segment} and~\eqref{eq:strategy2}, extract segments $i = 1, 
  \[
 \bX^*=\left[
 \begin{array}{lll|lll}
-\bx_q^{(1)}  & \dots & \bx_q^{(M)} & \by_q^{(1)} &  \dots & \by_q^{(M)}   \\
+\bx_1^{(1)}  & \dots & \bx_1^{(M)} & \by_1^{(1)} &  \dots & \by_1^{(M)}   \\
 \vdots & \vdots & \ddots & \vdots & \vdots & \ddots  \\
-\bx_1^{(1)} & \dots & \bx_1^{(M)} & \by_1^{(1)}  & \dots & \by_1^{(M)}   \\
+\bx_q^{(1)} & \dots & \bx_q^{(M)} & \by_q^{(1)}  & \dots & \by_q^{(M)}   \\
 
 \hline
 \bx_0^{(1)} & \dots & \bx_0^{(M)} & \by_0^{(1)} &  \dots & {\by}_0^{(M)}   \\
@@ -226,7 +226,7 @@ Following~\eqref{eq:segment} and~\eqref{eq:strategy2}, extract segments $i = 1, 
 \end{array}
 \right].
 \]
-Denote a row from the pair~$\bY,\bX$ as $\by,\bx$ and call these vectors the target and the features. 
+Denote a row from the pair~$\bY,\bX$ as $\by,\bx$ and call these vectors the target and the features.
 
 \paragraph{Feature selection and multimodelling.}
 As one must forecast all elements from the target~$\by$, only a few elements from the features~$\bx$ are supposed to be informative in terms of the forecast quality. Denote the index set~$\cJ=\{1,\dots,n\}$ and select the subset of the indexes~$\cA\in\cJ$.
@@ -272,7 +272,7 @@ i\in\cB_0
 \caption{\hl{Retrospective forecast includes most recent samples in data set.}\label{fg:retrospective}}
 \end{figure}
 
-\paragraph{Forecast analysis.} We consider the forecast testing procedure, given by the algorithm~\ref{alg:train_test_rmse}. Since our ultimate goal is to construct a forecasting model $\fx$ be able to obtain forecasts $\hat{y}_i$ at any given time $t \leq t_i + \dtr$ we have to imitate this setting, using the so-called retrospective forecast~\ref{fg:retrospective} (\hl{rolling forecasts, walking ahead predictions}). Here we conceal most recent historical samples $\bx_0^{*}$ and make predictions as if they were unknown. Then the quality of the model $\fx$ is evaluated according to its performance on these concealed samples. 
+\paragraph{Forecast analysis.} We consider the forecast testing procedure, given by the algorithm~\ref{alg:train_test_rmse}. Since our ultimate goal is to construct a forecasting model $\fx$ be able to obtain forecasts $\hat{y}_i$ at any given time $t \leq t_i + \dtr$ we have to imitate this setting, using the so-called retrospective forecast~\ref{fg:retrospective} (\hl{rolling forecasts, walking ahead predictions}). Here we conceal most recent historical samples $\bx_0^{*}$ and make predictions as if they were unknown. Then the quality of the model $\fx$ is evaluated according to its performance on these concealed samples.
 
 \paragraph{Forecasting errors.} \label{par:frc_errors}
 Hyndman~\cite{Hyndman2006} divides forecasting errors into four types:
@@ -311,7 +311,7 @@ baseline method:
   (or any adequate error function from~\ref{par:frc_errors}) \\
   }
   Average MAPE (other error) by data splits.
-}  
+}
   \bigskip
 
 \textbf{\emph{TrainTestSplit()}}\\
