@@ -15,6 +15,14 @@
 \usepackage{longtable}
 \usepackage[normalem]{ulem}
 \usepackage{arydshln}
+%\usepackage{accents} % for the sake of doublehat!
+%\newlength{\dhatheight}
+%\newcommand{\doublehat}[1]{%
+%    \settoheight{\dhatheight}{\ensuremath{\hat{#1}}}%
+%    \addtolength{\dhatheight}{-0.35ex}%
+%    \hat{\vphantom{\rule{1pt}{\dhatheight}}%
+%    \smash{\hat{#1}}}}
+
 \setlength\dashlinedash{0.2pt}
 \setlength\dashlinegap{4.5pt}
 
@@ -32,11 +40,15 @@
 \section*{Notation}
 \begin{longtable}{p{6cm}p{12cm}}
 $\fD=\{\bs^{(m)}| m = 1, \dots, M\}$ & large set of time series \\
+$s(t)$ & the underlying signal \\ 
 $\bar{\bs}$ & special case of time series $\bs$ for classification \\
-\textcolor{red}{$T_{\max}$} & maximum number of time stamps \\
+$t_{\max}$ & the ``current'' time \\
+$\Gs$, $\Grs$ & initial and resampled grid \\
+$\Ts$, $\Trs$ & initial and resampled number of observations in $\bs$\\
+$\fs = \frac{1}{\ts}$ & sampling rate \\ 
 $\dtp$ & local prehistory \\
 $\dtr$ & defines time period (requested) for prediction \\
-$\bs^{(m)}_i = [\y^{(m)}_i|\x^{(m)}_i]$ & local ($t_i$) segment from the time series $\bs^{(m)}$ \\
+$[\y^{(m)}_i|\x^{(m)}_i]$ & local ($t_i$) segment from the time series $\bs^{(m)}$ \\
 $\bX^{*}$, $\bx_i^{*} = [\y_i|\x_i]$ & design matrix, $\by_i = [\y^{(1)}_i, \dots, \y^{(M)}_i]$, $\x_i = [\x^{(1)}_i, \dots, \x^{(M)}_i]$ \\
 $\bY$, $\bX$ & target matrix, feature matrix \\
 \textcolor{red}{$q$} & number of objects $\bx_i^{*}$ extracted from $\fD$ \\
@@ -64,16 +76,15 @@ $z_{ik}$, $\gamma_{ik}$ & latent (correspondence) variables and their expectatio
 \end{longtable}
 
 \section{Introduction}
-The paper investigates behavior of a device within the concept of Internet of Things. The device at question is monitored by a set of sensors, which produces large amount of multi-scale time series during its lifespan. These time series have various time scales since distinct sensors produce measurements with various frequencies (milliseconds, days, weeks, etc).  The main goal is to forecast the measurements of a device in a given time range.
+The paper investigates behavior of a device within the concept of Internet of Things. The device at question is monitored by a set of sensors, which produces large amount of multi-scale time series during its lifespan. These time series have various time scales since distinct sensors produce observations with various frequencies (milliseconds, days, weeks, etc).  The main goal is to forecast the observations of a device in a given time range.
 
 We assume that the sampling rate of each time series is fixed and each time series has its own forecast horizon. The problem of multi-scale analysis arises in such applications as weather prediction, medical diagnosis and monitoring various sensor time series~\cite{Costa2008, Ahmed2012, Cortez2012, Ferreira2006} \hl{[medical, medical, traffic, ecology]}. Motivation for multi-scale analysis comes from the assumption that the behaviour of complex signals may be governed by  essentially different processes at various time scales. Thus, the time series should be modeled separately at each scale. This approach is used in time series classification, prediction and fault detection~\cite{Cui2016, Cortez2012, Aldrich2013}. Regardless of the goal of multi-scale analysis, it includes sequential averaging of the time series to obtain more coarse-scaled time series~\cite{Wu2013}, or, more rarely, differencing the time series for a more detailed, fine-scaled version of the time series~\cite{Jiang2011}. Averaging and differencing, which is equivalent to application of Haar's wavelet transform~\cite{Jiang2011}, may be replaced by any other pair of low and high pass wavelet filters~\cite{Chen2004} or convolution operation with some kernel function~\cite{Vespier2012}. Next steps depend on the goal of multi-scale analysis. Using multi-scale approach in time series prediction usually involves determining optimal scales~\cite{Vespier2012, Ahmed2012}, decomposition of time series into separately forecasted components and combination of the obtained forecasts.
-
 
 
 \section{Related work}
  Along with generic methods of time series forecasting, such as Autoregressive Moving Average Models (ARMA), Autoregressive Integrated Moving Average Models (ARIMA), many authors report high predictive performance of the methods, originally developed for classification or regression, applied to forecast time series. The latter include support vector regression~\cite{Trafalis2000, Navarrete2015, Hao2006}, random forests~\cite{Yu2016, Kane2014} and artificial neural networks~\cite{Busseti2012, Taylor2009}.
  %The authors of~\cite{Trafalis2000, Hao2006} reported high predictive performance of SVR applied to time series forecasting.
- Here the input variables are the delayed measurements  of the time series, and the output is the forecasted value of time series. However, the authors of~\cite{Navarrete2015} show that this prediction framework suffers from systematic error that does not converge to zero as the sample size increases, since both the inputs and the outputs are noised and regression algorithms do not handle the noise in the input correctly. To ensure error convergence, the authors first apply cubic spline approximation, which yields much lower RMSE in case of noisy data. The impact of spline approximation is not so great when the noise is low or discretization is too coarse.
+ Here the input variables are the delayed observations  of the time series, and the output is the forecasted value of time series. However, the authors of~\cite{Navarrete2015} show that this prediction framework suffers from systematic error that does not converge to zero as the sample size increases, since both the inputs and the outputs are noised and regression algorithms do not handle the noise in the input correctly. To ensure error convergence, the authors first apply cubic spline approximation, which yields much lower RMSE in case of noisy data. The impact of spline approximation is not so great when the noise is low or discretization is too coarse.
  
  To extend this one-step-ahead forecasting scheme to the case of multiple predictions, one may use iterative, direct or multiple output strategies~\cite{Bao2014}. Within the iterative strategy, one-step-ahead forecasts are computed recursively, with the newly predicted values of the time series used as the actual future records. A less prone to error accumulation, though more time consuming method is the direct strategy, which involves estimation of $h$ models to predict $h$ future values of the time series~\cite{Zhang2013}. Finally, the multiple input multiple output (MIMO) strategy allows to obtain $h$ prediction with at one step. In case of SVR, MIMO strategy is based on multivariate SVR~\cite{PerezCruz2002}. The paper~\cite{Bao2014} compares different strategies of multi-step-ahead prediction in SVR-based forecasting: direct, iterative and multiple output. Regardless of the horizon values, direct and MIMO strategies consistently achieve more accurate forecasts, than the iterative strategy, with MIMO being most accurate in most cases.
 
@@ -81,7 +92,12 @@ Additionally, there are multiple suggestions on how to combine these forecasting
 
 
 \section{Problem statement}
-Consider a large set of time series~$\fD=\{\bs^{(m)}| \; m = 1\dots, {M}\}$, where each real-valued time series~$\bs$  has its own sampling rate $f^{(m)}_s$. The  sampling rate might be changing over time, or the ratio between different sampling rates might be non-rational. In such cases as well as for time series with missing values we apply resampling procedure, which is described further.
+Consider a large set of time series~$\fD=\{\bs^{(m)}| \; m = 1\dots, {M}\}$, where each real-valued time series~$\bs$
+\[ \bs = [s_1, \dots, s_i, \dots, s_{T}], ~~ s_i = s(t_i),\quad 0 \leq t_i \leq t_{\max}\]
+is a sequence of observations (\hl{measurements, records}) of some real-valued signal $s(t)$.
+Each time series $\bs^{(m)}$ has its own number of observations $T^{(m)}$. Moreover, the sampling rate might be changing over time
+\[ t_i \neq i\cdot\frac{t_T - t_1}{T-1}, \] 
+or the ratio between different sampling rates might be non-rational. \hl{How do we know??} In such cases as well as for time series with missing values we apply resampling procedure, which is described further.
 
 
 
@@ -110,26 +126,44 @@ This fixed rate is used to obtain a resampled time series with regular time-tick
 
 
 \paragraph{Selecting sampling rate: Nyquist–Shannon  sampling theorem.}
-Suppose that a signal $s(t)$ is bandlimited with frequency $\fb$. According to the Nyquist–Shannon  sampling theorem, it is sufficient to sample the signal with frequency \begin{equation}\label{eq:nyquist_condition}
-\frac{1}{T} = \fs > 2\fb\end{equation}
-to be able to fully reconstruct the signal from its discretely sampled measurements $s(t_i) = s(iT)$. Alternatively, for $\fs > 2\fb$, Whittaker-Shannon interpolation
-\[s(t) = \sum_{i = -\infty}^{\infty} s(i\cdot T)\text{sinc}\left(\frac{t-iT}{T}\right)\]
-of the time series $s(t_i)$ yields perfect reconstruction of the signal $s(t)$. Sampling with $\fs < 2\fb$ causes distortions known as aliasing. In this case the time series have to be low-pass filtered to satisfy the Nyquist condition~\eqref{eq:nyquist_condition}.
+Suppose that the signal $s(t)$ is bandlimited with frequency $\fb$. According to the Nyquist–Shannon  sampling theorem, it is sufficient to sample the signal $s(t)$ with frequency \begin{equation}\label{eq:nyquist_condition}
+\frac{1}{\trs} = \fs > 2\fb\end{equation}
+to be able to fully reconstruct the signal from its discretely sampled measurements $s(t_i) = s(i\ts)$. Alternatively, for $\fs > 2\fb$, Whittaker-Shannon interpolation
+\[s(t) = \sum_{i = -\infty}^{\infty} s_i\text{sinc}\left(\frac{t-i\ts}{\ts}\right)\]
+of the time series $\bs$ yields perfect reconstruction of the signal $s(t)$. Sampling with $\fs < 2\fb$ causes distortions known as aliasing. In this case the time series have to be low-pass filtered to satisfy the Nyquist condition~\eqref{eq:nyquist_condition}.
 
 \paragraph{FFT resampling.}
-In signal processing a common way to change resolution of a signal is to use a combination of upsampling and decimation, implemented here via FFT transform and downsampling. Suppose that desired sampling rate $\frs$ is fixed, that is, we would like to approximate $\Trs = \frs\Ts$ uniformly sampled observations ${s}(\tilde{t}_i), \; i = 1, \dots \Trs$ of the time series $s(t_i), \; i=1, \dots, \Ts$. Let $\Gs = \{t_1, \dots, \Ts\}$ and $\Grs = \{\tilde{t}_1, \dots, \Trs\}$ denote the current and the desired grids.
-The first step to resampling $\bs(\Gs) \rightarrow \bs(\Grs)$ is the piecewise approximation $\hat{\bs} = \bs(\Gj)$ (see Fig.~\ref{fig_resample1} and Fig.~\ref{fig_resample2})
+In signal processing a common way to change resolution of a signal is to use a combination of upsampling and decimation, implemented here via FFT transform and downsampling. Suppose that desired sampling rate $\fs$ is fixed, that is, we would like to approximate $\Ts = \fs t_{\max}$ uniformly sampled observations 
+\[{s}(i\ts), \; i = 1, \dots \Ts, \quad \text{where~} \ts = \frac{t_{\max}}{\Ts - 1},\] 
+of the signal $s(t)$. Let $\Gs = \{t_1, \dots, t_T\}$ and $\Grs = \{\ts, \dots, \ts\Ts\}$ denote the current and the desired grids.
+The first step to resampling $s(\Gs) \rightarrow s(\Grs)$ is the piecewise approximation $\hat{\bs}$ of time series $\bs$ at equidistant time points $\Grs$ (see Fig.~\ref{fig_resample1} and Fig.~\ref{fig_resample2})
 \begin{equation}\label{eq:piecewise_c}
- % \hat{s}(\hat{t}_i) = \begin{cases} s(\hat{t}_i), \text{~if~} t_i \in \Gs, \text{~otherwise:} \\
-%  s(t_i), \text{~where~} t_i = \max\{t|t\in \Gs ~\text{and~} t < t_i\}.\end{cases}
-\hat{s}(\hat{t}_i) = s(t_i), \text{~where~} t_i = \max\{t|t\in \Gs ~\text{and~} t \leq t_i \}.
-\end{equation}of $\bs$ at $\Gj = \Gs \cup \Grs$. To increase the smoothness of piecewise approximation $\hat{\bs}$ we apply low pass DFT filtering to $\bs({\Gj})$, so that the reconstructed time series $\bs_{\text{lf}}({\Gj})$ are bandlimited with
-$\fb < \frs/2$ and then downsample the output $\bs({\Gj})$ to $\Grs$.
+%\hat{s}(\hat{t}_i) = s(t_i), \text{~where~} t_i = \max\{t|t\in \Gs ~\text{and~} t \leq t_i \}.
+\hat{s}_i = s(t_i), \quad t_i = \max_{t\in \Gs ~\text{and~} t \leq i\trs} t.
+\end{equation} To increase the smoothness of piecewise approximation $\hat{\bs}$ we apply low pass DFT filtering to $\hat{\bs}$, so that the reconstructed time series are bandlimited with
+$\fb < \fs/2$ and then downsample the output to $\Grs$.
 
+\hl{On selecting $\fs$ and $\fb$.} 
+Earlier we assumed that the desired sampling rate $\fs$ is fixed. In fact, the new grid $\Grs$ is defined by the number of sampled observations $\Ts$ rather than the sampling frequency.
+Consider some special cases of unevenly sampled signals, where selecting $\Ts$ is straightforward.
+\begin{enumerate}
+\item The initial sampling rate is approximately even, but distortions are possible:
+\[ t_i = i\cdot\tau + \delta_i, |\delta_i| < \frac{\tau}{2}.\]
+In this case the number $\Ts$ of resampled observations equals the initial number of observations $T$.
+\item The sampling rate is even, but some values are missing:
+\[ |t_{i+1} - t_{i}| = n\tau, n \in \mathbb{N}.\]
+Here $\ts = \tau$ and missing values are the only ones that one needs to approximate. 
+\item Time series $\bs$ comprises a finite number of intervals $\bs_k$, each sampled from $s(t)$ at fixed sampling rate:
+\[ \bs = \left[s(\tau_1), \dots, s(T_1\tau_1), s(T_1\tau_1 + \tau_2), \dots,  s\bigl(\sum_{k}T_k\tau_k\bigr)\right], \quad \sum_{T_k} = T.\]
+Here we select the maximum sampling rate $\fs = \max_{k} \frac{1}{\tau_k}$ and upsample the rest time series, using piecewise constant approximation.
+\end{enumerate}  
+
+\hl{Another criterion for $\fb$.}
 The cutoff frequency $\fb$ is set so that fixed ratio $1 - \alpha$ of the power spectrum density is preserved:
 \begin{equation}\label{eq:bandlimit}
  \sum_{N\fb < k \leq N-1} |X_k|^2 < \alpha \sum_{k=0}^{N-1} |X_k|^2, \end{equation}
 where $X_k$ are the FFT coefficients of $s(iT)$.
+\hl{The problem here is that we cannot estimate $\fb$ until the time series are evenly sampled, which means that $\fs$ has already been set and we only need to set $\fb$ to $\fs/2$.}
 
 \paragraph{Selecting sampling rate: Fisher-Neyman resampling criterion.}
 TODO
@@ -139,43 +173,50 @@ TODO
 
 \begin{algorithm}[!ht]
 \DontPrintSemicolon
-\emph{\textbf{TimeSeriesRescaling()}}\\
+\emph{\textbf{TimeSeriesResampling()}}\\
 \Begin{
- \KwData{time series $\bs(\Gs)$, sampled at $\Gs = \{t_1, \dots, \Ts\}$. }
- \textbf{Parameters:}{ desired grid $\Grs = \{\tilde{t}_1, \dots \Trs\}$.} \\
- \KwResult{resampled time series $\bs(\Grs) = \{\tilde{s}(\tilde{t}_i)| \tilde{t}_i\in \Grs \}$.}
- Form the new grid $\Gj = \Gs \cup \Grs$\;
- Upsample time series, using piecewise approximation:
+ \KwData{time series $\bs = s(\Gs)$, sampled at $\Gs = \{t_1, \dots, t_T\}$. }
+ \textbf{Parameters:}{ Upsampling rate $\fs$.} \\
+ \KwResult{resampled time series $\bs = [\tilde{s}(0), \dots,  \tilde{s}(t_{\Trs})]$.}
+ Form the new grid $\Grs  = \{0, \dots, \Ts\cdot\ts\}$\;
+ Use piecewise approximation~\eqref{eq:piecewise_c} to upsample time series: $\hat{\bs} =  \uparrow_{\Grs} \bs$ \;
+ %$\quad \hat{\bs} = \text{~\textbf{Piecewise}}(\bs, \Gs, \Grs)$\;
+  Apply low pass filtering to upsampled time series $\hat{\bs}$:
 
- $\quad \hat{\bs} = \text{~\textbf{Piecewise}}(\bs, \Gs, \Grs)$\;
- Apply low pass filtering $\hat{\bs}$:
-
- $\quad \hat{\bs}_{\text{lf}} = \text{\textbf{LowPassFFTFiltering}}(\hat{\bs}, \frac{\fs}{2} - \varepsilon)$ \;
- Downsample $\hat{\bs}_{\text{lf}}$ to $\tilde{G}$:
-
- $\quad \tilde{\bs} = [\hat{s}_{lf}(\tilde{t}_1), \dots, ], \; \tilde{t}_i \in \tilde{G}.$
- }
+ $\quad \hat{\bs}^{\text{b}} = \text{\textbf{LowPassFFTFiltering}}(\hat{\bs}, \alpha)$ \;
+ If necessary, downsample $\hat{\bs}_{\text{b}}$ to $\Grs$. }
  \bigskip
 
-\emph{\textbf{Piecewise()}}\\
-\Begin{
- \KwData{Time series, $\bs$. Parameters: original grid $G$, new grid $\tilde{G}$.}
- \KwResult{Upsampled time series $\hat{\bs} = \{\hat{s}(\hat{t}_i) \in G \cup \tilde{G}\}$.}
- Form new grid $\hat{G} = G \cup \tilde{G}$:
- $ \hat{G} = \{\hat{t}_1 < \dots < \hat{t}_i < \dots < \Ts| \hat{t}_i \in G\cup \tilde{G}\}$ \;
- For each $\hat{t}_i \in \hat{G}: $
- \eIf{$\hat{t}_i \in G$:}{
- $\quad \hat{s}(\hat{t}_i) = x(\hat{t}_i)$ \;}{
- $\quad \hat{s}(\hat{t}_i) = x(t_i)$, where $t_i = \max\{t: t\in G \text{and} t < \hat{t_i}.\}$ }
- }
- \smallskip
+%\emph{\textbf{Piecewise()}}\\
+%\Begin{
+% \KwData{Time series, $\bs$. Parameters: original grid $G$, new grid $\tilde{G}$.}
+% \KwResult{Upsampled time series $\hat{\bs} = \{\hat{s}(\hat{t}_i) \in G \cup \tilde{G}\}$.}
+% Form new grid $\hat{G} = G \cup \tilde{G}$:
+% $ \hat{G} = \{\hat{t}_1 < \dots < \hat{t}_i < \dots < \Ts| \hat{t}_i \in G\cup \tilde{G}\}$ \;
+% For each $\hat{t}_i \in \hat{G}: $
+% \eIf{$\hat{t}_i \in G$:}{
+% $\quad \hat{s}(\hat{t}_i) = x(\hat{t}_i)$ \;}{
+% $\quad \hat{s}(\hat{t}_i) = x(t_i)$, where $t_i = \max\{t: t\in G \text{~and~} t < \hat{t_i}.\}$ }
+% }
+% \smallskip
 
- \emph{\textbf{LowPassFFTFiltering()}} \\
+% \emph{\textbf{LowPassFFTFiltering()}} \\
+% \Begin{
+% \KwData{Time series, $\bs$. Parameters: cut-off value $\fb$ for high frequencies.}
+% \KwResult{Filtered time series $\tilde{\bs}_{\text{lf}}$.}
+% Zero-pad ${\bs}$, so that $|\bs| = 2^{N}$, where $N = \lceil \log_2(|\bs|)\rceil$\;
+% Find FFT coefficients $a_j,\; b_j$ for  $j = 1, \dots, N$ for $\bs$\;
+% Set $a_j = 0,\; b_j=0$, for  $2\pi w_j > \fb$ \;
+% Reconstruct the time series, using inverse FFT.
+%}
+%or \\
+\emph{\textbf{LowPassFFTFiltering()}} \\
  \Begin{
- \KwData{Time series, $\bs$. Parameters: cut-off value $\fb$ for high frequencies.}
- \KwResult{Filtered time series $\tilde{\bs}_{\text{lf}}$.}
+ \KwData{Time series, $\bs$. Parameters: tolerance to spectrum reduction level $\alpha$.}
+ \KwResult{Filtered time series $\bs_{\text{b}}$.}
  Zero-pad ${\bs}$, so that $|\bs| = 2^{N}$, where $N = \lceil \log_2(|\bs|)\rceil$\;
  Find FFT coefficients $a_j,\; b_j$ for  $j = 1, \dots, N$ for $\bs$\;
+ Set $\fb$ according to~\eqref{eq:bandlimit}\;
  Set $a_j = 0,\; b_j=0$, for  $2\pi w_j > \fb$ \;
  Reconstruct the time series, using inverse FFT.
 }
@@ -203,19 +244,19 @@ Given the set of properly resampled time series $\fD=\{\bs^{(m)}\}$, $m = 1, \do
 \caption{Draw an object from time series history.}
 \end{figure}
 
-To reformulate the forecasting task into regression task, form an object set at a set of the vectors~$\{\bx^{*}\}$, where each vector~$\bx^{*} = [\by| \bx]$ collects all the time series over the time period~$\dtp$ (Fig.~\ref{fg:draw}), which stands for the local \emph{prehistory}. The vector $\bx^{*}$ could (with no necessity) include samples from previous history of any time series $\bs^{(m)}$ as well as any derivatives $\vf$, which are called generated features.
+To reformulate the forecasting task into regression task, form an object set at a set of the vectors~$\{\bx^{*}\}$, where each vector~$\bx^{*} = [\by| \bx]$ collects all the time series over the time period~$\dtp$ (Fig.~\ref{fg:draw}), which stands for the local \emph{prehistory}. The vector $\bx^{*}$ includes samples from previous history of any time series $\bs^{(m)}$ as well as any derivatives $\vf$, which are called generated features.
 
 The design matrix~$\bX^*$ for the multiscale autoregressive problem statement is constructed  as follows (Fig.~\ref{fg:design}). Let $\bs^{(m)}_i$ denote the~$i$-th segment of the time series $\bs^{(m)}$
 \begin{equation}\label{eq:segment}
-\bs^{(m)}_i = [\bx^{(m)}_i | \by^{(m)}_i] = [
+[\bx^{(m)}_i | \by^{(m)}_i] = [
 \underbrace{s^{(m)}(t_i-\dtr-\dtp),\dots,}_{\bx^{(m)}_i} \underbrace{s^{(m)}(t_i-\dtr),\dots,s^{(m)}(t_i))}_{\by^{(m)}_i}],
 \end{equation}
-where~$s^{(m)}(t)$ is an element of time series~$\bs^{(m)}$. To construct the design matrix, select $t_i$, $i = t_1, \dots, q$ from $\Gs = \{t_1, \dots, t_{\max}\}$ so that segments $\bs_i = [\x_i|\y_i]$ cover time series $\bs$
+where~$s^{(m)}(t)$ is an element of time series~$\bs^{(m)}$. To construct the design matrix, select $t_i$, $i = 1, \dots, q$ from $\Gs = \{t_1, \dots, t_T\}$ such that segments $\bs_i = [\x_i|\y_i]$ cover time series $\bs$
 %\begin{equation}\label{eq:strategy2} \{s(t_{1}), \dots, s(t_{\max})\} = \bigcup_{i=1}^{q-1} \{s(t_i-\Delta t_\text{r}),\dots,s(t_i)\}\end{equation}
 without intersection in target parts  $\y_i$:
 \begin{equation}\label{eq:strategy2} |t_{i+1} - t_i| > \dtr.
 \end{equation}
-Following~\eqref{eq:segment} and~\eqref{eq:strategy2}, extract segments $i = 1, \dots, q$ from all time series $\bs^{(m)} \in \fD$ and form the matrix
+Following~\eqref{eq:segment} and~\eqref{eq:strategy2}, extract segments $[\bx^{(m)}_i | \by^{(m)}_i]$, $i = 1, \dots, q$ from all time series $\bs^{(m)} \in \fD$ and form the matrix
  \[
 \bX^*=\left[
 \begin{array}{lll|lll}
@@ -224,7 +265,7 @@ Following~\eqref{eq:segment} and~\eqref{eq:strategy2}, extract segments $i = 1, 
 \bx_q^{(1)} & \dots & \bx_q^{(M)} & \by_q^{(1)}  & \dots & \by_q^{(M)}   \\
 
 \hline
-\bx_0^{(1)} & \dots & \bx_0^{(M)} & \by_0^{(1)} &  \dots & {\by}_0^{(M)}   \\
+\bx^{(1)} & \dots & \bx^{(M)} & \by^{(1)} &  \dots & {\by}^{(M)}   \\
 \end{array}
 \right]
 =\left[
