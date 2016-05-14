@@ -35,17 +35,19 @@ end
 % FIXIT Put its description here.
 function tsSheaf = load_SL2()
 
-NO_WIN = true;
+if strcmp(computer,'MACI64'), WIN_XLS = false;
+else WIN_XLS = true; end % Fix for xlsread.
+
 addpath(genpath(cd));
 filename = 'data/orig/SL2.xls';
 sheet = 'Arkusz1';
 xlRange = 'D3:AA1098';
 ts0 = xlsread(filename,sheet,xlRange,'basic');
-if NO_WIN, ts0(:, 1:3) = []; end % FIXIT If there is no Windows the xlsread does not work.
+if ~WIN_XLS, ts0(:, 1:3) = []; end % FIXIT If there is no Windows the xlsread does not work.
 ts0 = reshape(ts0', numel(ts0), 1);
 
 tmp = xlsread('data/orig/weatherdata.xls', 'weatherdata', 'E2:J1093','basic');
-if NO_WIN, tmp(:, 1:4) = []; end % FIXIT If there is no Windows the xlsread does not work.
+if ~WIN_XLS, tmp(:, 1:4) = []; end % FIXIT If there is no Windows the xlsread does not work.
 
 % ts = {ts0};
 % for i = 1:size(tmp, 2)
