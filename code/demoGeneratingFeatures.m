@@ -1,3 +1,5 @@
+% FIXIT Please rename this module to GenerateFeatures and call it from demo
+
 %Unit tests
 %Reading data from file(s).
 % addpath(genpath(cd));
