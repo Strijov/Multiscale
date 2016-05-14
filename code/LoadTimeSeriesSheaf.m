@@ -1,7 +1,9 @@
 function tsSheaf = LoadTimeSeriesSheaf(txtAlias)
-% Loads a set (Sheaf) of time series and returns the structre, whre each ts is an item.
+% Load a set (Sheaf) of time series and returns the structre, where each ts is an item.
 %
-% The structure ts has the fields:
+% The structure ts has the fields: % FIXIT please move this help where this
+% structure is defined and put the reference in.
+%
 % Describes time series 
 % t [T,1] Time in milliseconds since 1/1/1970 (UNIX format)
 % x [T, N] Columns of the matrix are time series; missing values are NaNs
@@ -34,6 +36,7 @@ end
 % Collection SLC2
 % FIXIT Put its description here.
 function tsSheaf = load_SL2()
+% This temporary scrript loads unique dataset.
 
 if strcmp(computer,'MACI64'), WIN_XLS = false;
 else WIN_XLS = true; end % Fix for xlsread.
@@ -43,11 +46,11 @@ filename = 'data/orig/SL2.xls';
 sheet = 'Arkusz1';
 xlRange = 'D3:AA1098';
 ts0 = xlsread(filename,sheet,xlRange,'basic');
-if ~WIN_XLS, ts0(:, 1:3) = []; end % FIXIT If there is no Windows the xlsread does not work.
+if ~WIN_XLS, ts0(:, 1:3) = []; end % TODO If there is no Windows the xlsread does not work.
 ts0 = reshape(ts0', numel(ts0), 1);
 
 tmp = xlsread('data/orig/weatherdata.xls', 'weatherdata', 'E2:J1093','basic');
-if ~WIN_XLS, tmp(:, 1:4) = []; end % FIXIT If there is no Windows the xlsread does not work.
+if ~WIN_XLS, tmp(:, 1:4) = []; end % TODO If there is no Windows the xlsread does not work.
 
 % ts = {ts0};
 % for i = 1:size(tmp, 2)

@@ -1,5 +1,5 @@
 function workStructTS = CreateRegMatrix(s, legend) % FIXIT why this variable is here?
-% It does something FIXIT
+% It does something. FIXIT
 %
 % FIXIT and TODO make one simple structure and declare it in one place.
 % Put link to this place here&
@@ -54,4 +54,20 @@ self_deltaTr = [s.deltaTr];
 
 % FIXIT To discuss: does this struct bring extra complexity to this function?
 workStructTS = struct('matrix', matrix, 'deltaTp', deltaTp, 'deltaTr', deltaTr, 'self_deltaTp', self_deltaTp, 'self_deltaTr', self_deltaTr, 'norm_div', norm_div, 'norm_subt', norm_subt);
+end
+
+% FIXIT Please simplify this part, get rid of loops.
+function [matrix] = CreateRegMatrix_small(ts, time_points, deltaTp, deltaTr)
+    obj_len = deltaTp + deltaTr;
+    matrix = zeros(numel(time_points), obj_len);
+    %FIXIT: first create zero-filled matrix, then add there real values -
+    %increases computing speed.
+    for i = 1:numel(time_points)
+        tp = time_points(i);
+        object = ts(tp - obj_len + 1 : tp);
+        if (size(object, 1) > size(object, 2))
+            object = object';
+        end
+        matrix(i, :) = matrix(i,:) + object;
+    end  
 end

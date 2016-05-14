@@ -1,3 +1,8 @@
+% FIXIT Do we need this file? No then delete is, please. Yes then a tmp
+% folder might be created.
+
+
+
 %Data preparation. Time series length are fixed and precomputed.
 addpath(genpath(cd));
 filename = 'data\orig\SL2.xls';
