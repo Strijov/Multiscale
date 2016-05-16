@@ -1,7 +1,7 @@
-function [RMSE, model, real_y] = ComputeForecastingErrors(workStructTS, K, m, alpha_coeff, model)
-    matrix = workStructTS.matrix;
-    deltaTp = workStructTS.deltaTp;
-    deltaTr = workStructTS.deltaTr;
+function [RMSE, model, real_y] = ComputeForecastingErrors(ts, K, m, alpha_coeff, model)
+    matrix = ts.matrix; % TODO please remove these duplicates.
+    deltaTp = ts.deltaTp;
+    deltaTr = ts.deltaTr;
     n = 1;
     
     RMSE = zeros(1, K);

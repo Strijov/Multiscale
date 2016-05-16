@@ -1,15 +1,18 @@
-function [trainMatrix, testMatrix, validation] = TrainTestSplit(matrix, alpha_coeff)
-    %Input:
-    %   matrix         - regression matrix [MxN] (X|Y)
-    %   alpha_coeff    - float, test size M2 divided to train size M1
-    %Output:
-    %   trainMatrix    - matrix[M1xN]
-    %   testMatrix     - matrix[M2xN]
-    %validation     - vector[1xN]
-    %Just splits matrix to train, test & validation
-    validation = matrix(1,:);
-    matrix(1,:) = [];
-    test_size = floor(alpha_coeff * (size(matrix, 1) - 1));
-    testMatrix = matrix(1:test_size,:);
-    trainMatrix = matrix(test_size+1:end, :);
+function [matTrain, matTest, natVal] = TrainTestSplit(mat, alpha_coeff)
+%Splits matrix to train, test & validation.
+%
+% Input:
+% mat	        [M x N] regression matrix  (X|Y)
+% alpha_coeff   [float] test size M2 divided to train size M1
+%
+% Output:
+% matTrain      [M1 x N]
+% matTest       [M2 x N]
+% matVal        [1 x N]
+
+natVal = mat(1,:);
+mat(1,:) = []; % FIXIT Please remove this line and change addresses.
+test_size = floor(alpha_coeff * (size(mat, 1) - 1));
+matTest = mat(1:test_size,:);
+matTrain = mat(test_size+1:end, :);
 end
