@@ -36,7 +36,7 @@ end
 % Collection SLC2
 % FIXIT Put its description here.
 function tsSheaf = load_SL2()
-% This temporary scrript loads unique dataset.
+% This temporary script loads unique dataset.
 
 if strcmp(computer,'MACI64'), WIN_XLS = false;
 else WIN_XLS = true; end % Fix for xlsread.
@@ -51,19 +51,23 @@ ts0 = reshape(ts0', numel(ts0), 1);
 
 tmp = xlsread('data/orig/weatherdata.xls', 'weatherdata', 'E2:J1093','basic');
 if ~WIN_XLS, tmp(:, 1:4) = []; end % TODO If there is no Windows the xlsread does not work.
-
+if WIN_XLS, tmp(:, 1:4) = []; end % AM: This leaves columns that correspond to ts_legend below
 % ts = {ts0};
 % for i = 1:size(tmp, 2)
 %     ts{i+1} = tmp(:, i);
 % end
+
 ts  = [ts0, num2cell(tmp,1)];
 ts_length = 155;
-ts_legend = {'Consumption', 'Max Temperature','Min Temperature','Precipitation','Wind','Relative Humidity','Solar'};
+ts_legend = {'Consumption', 'Max Temperature','Min Temperature',...
+                'Precipitation','Wind','Relative Humidity','Solar'};
 time_step = {1, 24,24,24,24,24,24};
 self_deltaTp = {6*24,6,6,6,6,6,6};
 self_deltaTr = {24,1,1,1,1,1,1};
 tmp1 = linspace(numel(ts{2}), numel(ts{2}) - 7 * ts_length, ts_length+1);
 tmp2 = linspace(numel(ts{1}), numel(ts{1}) - 24 * 7 * ts_length, ts_length+1);
 time_points = {tmp2,tmp1,tmp1,tmp1,tmp1,tmp1, tmp1};
-tsSheaf = struct('x', ts, 'time_step', time_step, 'legend', legend, 'deltaTp', self_deltaTp, 'deltaTr', self_deltaTr, 'time_points', time_points, 'normalization', []);
+tsSheaf = struct('x', ts, 'time_step', time_step, 'legend', legend, ...
+                    'deltaTp', self_deltaTp, 'deltaTr', self_deltaTr,...
+                    'time_points', time_points, 'normalization', []);
 end

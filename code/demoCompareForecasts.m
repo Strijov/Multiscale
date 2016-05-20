@@ -27,7 +27,9 @@
 
 % Data and models.
 nameTsSheaf = 'SL2';                            % The only dataset to test.
-nameModel = {'VAR', 'Neural_network', 'SVR'};   % Set of models. 
+nameModel = {'VAR', 'SVR', 'Neural network'};   % Set of models. 
+handleModel = {@VarForecast, @SVRMethod, @NnForecast};
+nModels = numel(nameModel);
 
 % Experiment settings. 
 alpha_coeff = 0; % FIXIT Please explain. 
@@ -37,32 +39,33 @@ K = 1; % FIXIT Please explain.
 inputStructTS = LoadTimeSeriesSheaf(nameTsSheaf);
 workStructTS = CreateRegMatrix(inputStructTS);    % Construct regression matrix.
 
-% FIXIT Please see Systemdics dfrom MVR.
-model_draft = struct('name', [], 'params', [], 'tuned_func', [], 'error', [], 'unopt_flag', true, 'forecasted_y', []);
-m = size(workStructTS.matrix,1); % FIXIT Please remive this line, it occurs one in another module,=,
+%Generating extra features:
+generator_names = {'SSA', 'NW', 'Cubic', 'Conv'};
+generator_handles = {@SsaGenerator, @NwGenerator, @CubicGenerator, @ConvGenerator};
 
-for i = 1:numel(nameModel)
-    model(i) = model_draft;
-    model(i).name = nameModel{i};
-    [MAPE_target, model(i), real_y] = ComputeForecastingErrors(workStructTS, K, m, alpha_coeff, model(i));
+workStructTS = GenerateFeatures(workStructTS, generator_handles);
+plot_generated_feature_matrix(workStructTS.matrix, generator_names);
+%
+
+model = struct('handle', handleModel, 'name', nameModel, 'params', [], ...
+    'error', [], 'unopt_flag', true, 'forecasted_y', []);
+
+for i = 1:nModels
+    disp(['Fitting model: ', nameModel{i}])
+    [~, model(i), real_y] = ComputeForecastingErrors(workStructTS, K, alpha_coeff, model(i));
 end
+
+% plot 1:24 forecasts of real_y if the error does not exceed 1e3
+plot_forecasting_results(real_y, model, 1:24, 1e3);
 
 % VAR results are not plotted because it's unstable on samples [MxN] where
 % M < N, just like our case. Feature selection is vital for it.
-figure(1)
-cla
-plot(real_y(1:24), 'LineWidth', 2);
-hold on
-grid on
-MAPE_full = zeros(3,1);
-MAPE_target = zeros(3,1);
-AIC = zeros(3,1);
-for i = [2:3] % % FIXIT, please.
-    plot(model(i).forecasted_y(1:24));
-end
-legend(nameModel, 'Location', 'NorthWest');
 
-for i = [1:3] % FIXIT, please.
+MAPE_full = zeros(nModels,1);
+MAPE_target = zeros(nModels,1);
+AIC = zeros(nModels,1);
+
+for i = 1:nModels % FIXIT, please.
     epsilon_target = (model(i).forecasted_y(1:24) - real_y(1:24));
     MAPE_target(i) = sqrt((1/24)*norm(epsilon_target));
     epsilon_full = (model(i).forecasted_y - real_y);
@@ -70,3 +73,5 @@ for i = [1:3] % FIXIT, please.
     AIC(i) = 2*workStructTS.deltaTp + size(workStructTS.matrix, 1) * log(norm(epsilon_full));
 end
 table(MAPE_target, MAPE_full, AIC, 'RowNames', nameModel)
+
+

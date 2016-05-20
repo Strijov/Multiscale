@@ -53,7 +53,9 @@ deltaTr = sum([s.deltaTr]);
 self_deltaTr = [s.deltaTr];
 
 % FIXIT To discuss: does this struct bring extra complexity to this function?
-workStructTS = struct('matrix', matrix, 'deltaTp', deltaTp, 'deltaTr', deltaTr, 'self_deltaTp', self_deltaTp, 'self_deltaTr', self_deltaTr, 'norm_div', norm_div, 'norm_subt', norm_subt);
+workStructTS = struct('matrix', matrix, 'deltaTp', deltaTp, 'deltaTr', deltaTr,...
+            'self_deltaTp', self_deltaTp, 'self_deltaTr', self_deltaTr, ...
+            'norm_div', norm_div, 'norm_subt', norm_subt);
 end
 
 % FIXIT Please simplify this part, get rid of loops.
