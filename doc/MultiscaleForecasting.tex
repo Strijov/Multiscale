@@ -156,7 +156,7 @@ In this case the number $\Ts$ of resampled observations equals the initial numbe
 \[ |t_{i+1} - t_{i}| = n\tau, n \in \mathbb{N}.\]
 Here $\ts = \tau$ and missing values are the only ones that one needs to approximate.
 \item Time series $\bs$ comprises a finite number of intervals $\bs_k$, each sampled from $s(t)$ at fixed sampling rate:
-\[ \bs = \left[s(\tau_1), \dots, s(T_1\tau_1), s(T_1\tau_1 + \tau_2), \dots,  s\bigl(\sum_{k}T_k\tau_k\bigr)\right], \quad \sum_{T_k} = T.\]
+\[ \bs = \left[s(\tau_1), \dots, s(T_1\tau_1), s(T_1\tau_1 + \tau_2), \dots,  s\left(\sum_{k}T_k\tau_k\right)\right], \quad \sum_k{T_k} = T.\]
 Here we select the maximum sampling rate $\fs = \max_{k} \frac{1}{\tau_k}$ and upsample the rest time series, using piecewise constant approximation.
 \end{enumerate}
 
