@@ -1,9 +1,11 @@
 function [workStructTS] = GenerateFeatures(workStructTS, generators)
-%Generates feature new matrix using methods, specified with generators.
+% Generates new feature matrix using methods, specified with generators.
 %
 % Input:
 % workStructTS	see createRegMatrix.m for explanation
-% generators    cell array of feature generator handles
+% generators    cell array of feature generator handles. Options are 
+% @ConvGenerator, @CubicGenerator, @NwGenerator, @SsaGenerator. When no
+% feature generation is required, use {@IdentityGenerator}
 %
 % Output:
 % workStructTS with new feature matrix

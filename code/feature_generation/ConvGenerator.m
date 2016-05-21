@@ -1,5 +1,5 @@
 function add_features = ConvGenerator(workStructTS)
-%Generates new features based on statistics of the current feature matrix.
+% Generates new features based on statistics of the current feature matrix.
 %
 % Input:
 % workStructTS	see createRegMatrix.m for explanation
@@ -7,7 +7,8 @@ function add_features = ConvGenerator(workStructTS)
 %    horiontally concatenated with the target matrix Y[m x deltaTr]
 %
 % Output:
-% workStructTS with new feature matrix
+% [m x 5] matrix of the new features to add
+
     X = workStructTS.matrix(:, 1:workStructTS.deltaTp);
     add_features = [sum(X, 2), mean(X, 2), min(X, [], 2), max(X, [], 2), std(X, 0, 2)];    
     
