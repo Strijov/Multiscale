@@ -6,6 +6,13 @@ if nargin < 4
 end
 
 idx_models = extractfield(model, 'error') < max_error;
+if ~all(idx_models)
+    model_names = extractfield(model, 'name');
+    model_names = strjoin(model_names(~idx_models), ', ');
+    disp(['Error exceeds ', num2str(max_error), ' for the following models: ', ...
+        model_names, '.']);
+    disp(['The forecasts for ', model_names, ' are not displayed.']);
+end
 model = model(idx_models);
 
 figure;

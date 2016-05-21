@@ -44,6 +44,7 @@ generator_names = {'SSA', 'NW', 'Cubic', 'Conv'};
 generator_handles = {@SsaGenerator, @NwGenerator, @CubicGenerator, @ConvGenerator};
 
 workStructTS = GenerateFeatures(workStructTS, generator_handles);
+disp(['Generation finished. Total number of features: ', num2str(workStructTS.deltaTp)]);
 plot_generated_feature_matrix(workStructTS.matrix, generator_names);
 %
 

@@ -28,17 +28,18 @@ else
 end
 
 pars = model.params;
-
+n_failed = 0; % keep track of badly converged dimensions
 for i = 1:size(trainY, 2)
     train_y = trainY(:, i);
     [xsup, ~, w, b, ~, ~, obj] = svmreg(trainX, train_y, pars.C, pars.epsilon, ...
                 pars.kernel, pars.kerneloption, pars.lambda, pars.verbose);
     if isempty(xsup) || any(isnan(w)) % AM
-        disp('Warning: svmreg converged with empty set of support vectors');
+        n_failed = n_failed + 1;
     else
         forecasted_y(:, i) = svmval(validation_x, xsup, w, b, pars.kernel, ...
                                                          pars.kerneloption);
     end
 end
-
+disp(['Warning: svmreg converged with empty set of support vectors for ', ...
+        num2str(n_failed), ' target dimensions out of ', num2str(size(trainY, 2))]);
 end
