@@ -1,4 +1,4 @@
-function [smoothed score h]=NWSmoothing(ydata,varargin)
+function [smoothed, score, h]=NWSmoothing(ydata,varargin)
 %SMOOTHING smoothes noisy signal.
 %   OUTPUT = SMOOTHING(INPUT) performs nonparametric kernel smoothing
 %   of vector INPUT using Nadaraya-Watson, a local weighted regression.
@@ -56,21 +56,21 @@ function [smoothed score h]=NWSmoothing(ydata,varargin)
     % Either optimalise or use user defined value.
     if numvarargs == 1
         h = varargin{1};
-        [score smoothed] = calculation(ydata, h);
+        [score, smoothed] = calculation(ydata, h);
     else
-        options = optimset('Display','iter','TolX', 0.1);
+        options = optimset('Display','off','TolX', 0.1);
         %h = fminbnd(@(h)calculation(ydata, h), 0.2, 100, options);
         h = fminsearch(@(h)calculation(ydata, h), 1, options);
-        [score smoothed] = calculation(ydata,h);
-        display(sprintf('The optimal bandwith H is: %f', h));
+        [score, smoothed] = calculation(ydata,h);
+        %display(sprintf('The optimal bandwith H is: %f', h));
     end
 
-    display(sprintf('The cross-validation score (smaller is better): %f', score)); 
+    %display(sprintf('The cross-validation score (smaller is better): %f', score)); 
 end
     
   
 
-function [score smoothed]=calculation(ydata,h)
+function [score, smoothed]=calculation(ydata,h)
     % Configuration.
     stdd=1;
     
