@@ -4,5 +4,5 @@ function [ts, div, subt] = NormalizeTS(s)
     tmp = x - subt;
     div = max(tmp);
     ts = tmp/div;
-    ts = ReplaceNansWithZeros(ts); % FIXIT do something more sensible
+    ts = ReplaceNans(ts); % Fills Nans with zeros; FIXIT do something more sensible
 end
