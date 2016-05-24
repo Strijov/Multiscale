@@ -1,6 +1,6 @@
 \documentclass[12pt]{article}
 \usepackage{a4wide}
-\usepackage{multicol}
+\usepackage{multicol, multirow}
 \usepackage[cp1251]{inputenc}
 \usepackage[russian]{babel}
 \usepackage{amsmath, amsfonts, amssymb, amsthm, amscd}
@@ -81,17 +81,72 @@
 
 
 \begin{table}
-\begin{tabular}{||c||c|c|c||c|c|c||c|c|c||c|c|c||c|c|c||c|c|c||c|c|c||c|c|c||c|c|c||}
+\begin{tabular}{|p{2cm}|c|c|c|c|}
 \hline
- & \multicolumn{3}{|c||}{orig.train} & \multicolumn{3}{|c||}{missing.value.train.0.01} & \multicolumn{3}{|c||}{missing.value.train.0.03} & \multicolumn{3}{|c||}{missing.value.train.0.05} & \multicolumn{3}{|c||}{missing.value.train.0.1} & \multicolumn{3}{|c||}{missing.value.train.0.01} & \multicolumn{3}{|c||}{missing.value.train.0.03} & \multicolumn{3}{|c||}{missing.value.train.0.05} & \multicolumn{3}{|c||}{missing.value.train.0.1}\\ 
+Data & Models &MAPE target & MAPE full & AIC\\ 
 \hline
- &MAPE target & MAPE full & AIC & MAPE target & MAPE full & AIC & MAPE target & MAPE full & AIC & MAPE target & MAPE full & AIC & MAPE target & MAPE full & AIC & MAPE target & MAPE full & AIC & MAPE target & MAPE full & AIC & MAPE target & MAPE full & AIC & MAPE target & MAPE full & AIC\\ 
+\multirow{3}{*}{1} &VAR &   100099602.774 &    47606299435441112.000 &    6639.965\\ 
+\cline{2-5}
+ &SVR &   0.129 &    0.110 &    304.336\\ 
+\cline{2-5}
+ &Neural network &   0.130 &    0.089 &    271.265\\ 
+\cline{2-5}
 \hline
-VAR &   100099602.774 &    47606299435441112.000 &    6639.965 &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN\\ 
+\multirow{3}{*}{2} &VAR &   NaN &    NaN &    NaN\\ 
+\cline{2-5}
+ &SVR &   0.296 &    0.391 &    502.693\\ 
+\cline{2-5}
+ &Neural network &   0.132 &    0.118 &    315.710\\ 
+\cline{2-5}
 \hline
-SVR &   0.129 &    0.110 &    304.336 &    0.296 &    0.391 &    502.693 &    0.283 &    0.358 &    489.135 &    0.302 &    0.403 &    507.614 &    0.289 &    0.375 &    496.208 &    0.296 &    0.391 &    502.693 &    0.283 &    0.358 &    489.135 &    0.302 &    0.403 &    507.614 &    0.289 &    0.375 &    496.208\\ 
+\multirow{3}{*}{3} &VAR &   NaN &    NaN &    NaN\\ 
+\cline{2-5}
+ &SVR &   0.283 &    0.358 &    489.135\\ 
+\cline{2-5}
+ &Neural network &   0.173 &    0.144 &    347.107\\ 
+\cline{2-5}
 \hline
-Neural network &   0.130 &    0.089 &    271.265 &    0.132 &    0.118 &    315.710 &    0.173 &    0.144 &    347.107 &    0.128 &    0.101 &    291.178 &    0.151 &    0.136 &    337.495 &    0.193 &    0.183 &    384.702 &    0.110 &    0.058 &    203.840 &    0.145 &    0.101 &    291.670 &    0.222 &    0.230 &    419.913\\ 
+\multirow{3}{*}{4} &VAR &   NaN &    NaN &    NaN\\ 
+\cline{2-5}
+ &SVR &   0.302 &    0.403 &    507.614\\ 
+\cline{2-5}
+ &Neural network &   0.128 &    0.101 &    291.178\\ 
+\cline{2-5}
+\hline
+\multirow{3}{*}{5} &VAR &   NaN &    NaN &    NaN\\ 
+\cline{2-5}
+ &SVR &   0.289 &    0.375 &    496.208\\ 
+\cline{2-5}
+ &Neural network &   0.151 &    0.136 &    337.495\\ 
+\cline{2-5}
+\hline
+\multirow{3}{*}{6} &VAR &   NaN &    NaN &    NaN\\ 
+\cline{2-5}
+ &SVR &   0.296 &    0.391 &    502.693\\ 
+\cline{2-5}
+ &Neural network &   0.193 &    0.183 &    384.702\\ 
+\cline{2-5}
+\hline
+\multirow{3}{*}{7} &VAR &   NaN &    NaN &    NaN\\ 
+\cline{2-5}
+ &SVR &   0.283 &    0.358 &    489.135\\ 
+\cline{2-5}
+ &Neural network &   0.110 &    0.058 &    203.840\\ 
+\cline{2-5}
+\hline
+\multirow{3}{*}{8} &VAR &   NaN &    NaN &    NaN\\ 
+\cline{2-5}
+ &SVR &   0.302 &    0.403 &    507.614\\ 
+\cline{2-5}
+ &Neural network &   0.145 &    0.101 &    291.670\\ 
+\cline{2-5}
+\hline
+\multirow{3}{*}{9} &VAR &   NaN &    NaN &    NaN\\ 
+\cline{2-5}
+ &SVR &   0.289 &    0.375 &    496.208\\ 
+\cline{2-5}
+ &Neural network &   0.222 &    0.230 &    419.913\\ 
+\cline{2-5}
 \hline
 \end{tabular}
 \end{table}
