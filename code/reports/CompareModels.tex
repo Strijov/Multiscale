@@ -1,0 +1,98 @@
+\documentclass[12pt]{article}
+\usepackage{a4wide}
+\usepackage{multicol}
+\usepackage[cp1251]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath, amsfonts, amssymb, amsthm, amscd}
+\usepackage{graphicx, epsfig, subfig, epstopdf}
+\graphicspath{ {../fig/} }
+\begin{document}
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{generation_orig_train.eps}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{res_orig_train.eps}}
+\caption{Feature generation results for	generation.orig.train.	SSA, NW, Cubic, Conv. ()Forecasting results for	res.orig.train.	VAR, SVR, Neural network.}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{generation_missing_value_train_0_01.eps}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{res_missing_value_train_0_01.eps}}
+\caption{Feature generation results for	generation.missing.value.train.0.01.	SSA, NW, Cubic, Conv. ()Forecasting results for	res.missing.value.train.0.01.	VAR, SVR, Neural network.}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{generation_missing_value_train_0_03.eps}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{res_missing_value_train_0_03.eps}}
+\caption{Feature generation results for	generation.missing.value.train.0.03.	SSA, NW, Cubic, Conv. ()Forecasting results for	res.missing.value.train.0.03.	VAR, SVR, Neural network.}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{generation_missing_value_train_0_05.eps}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{res_missing_value_train_0_05.eps}}
+\caption{Feature generation results for	generation.missing.value.train.0.05.	SSA, NW, Cubic, Conv. ()Forecasting results for	res.missing.value.train.0.05.	VAR, SVR, Neural network.}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{generation_missing_value_train_0_1.eps}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{res_missing_value_train_0_1.eps}}
+\caption{Feature generation results for	generation.missing.value.train.0.1.	SSA, NW, Cubic, Conv. ()Forecasting results for	res.missing.value.train.0.1.	VAR, SVR, Neural network.}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{generation_missing_value_train_0_01.eps}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{res_missing_value_train_0_01.eps}}
+\caption{Feature generation results for	generation.missing.value.train.0.01.	SSA, NW, Cubic, Conv. ()Forecasting results for	res.missing.value.train.0.01.	VAR, SVR, Neural network.}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{generation_missing_value_train_0_03.eps}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{res_missing_value_train_0_03.eps}}
+\caption{Feature generation results for	generation.missing.value.train.0.03.	SSA, NW, Cubic, Conv. ()Forecasting results for	res.missing.value.train.0.03.	VAR, SVR, Neural network.}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{generation_missing_value_train_0_05.eps}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{res_missing_value_train_0_05.eps}}
+\caption{Feature generation results for	generation.missing.value.train.0.05.	SSA, NW, Cubic, Conv. ()Forecasting results for	res.missing.value.train.0.05.	VAR, SVR, Neural network.}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{generation_missing_value_train_0_1.eps}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{res_missing_value_train_0_1.eps}}
+\caption{Feature generation results for	generation.missing.value.train.0.1.	SSA, NW, Cubic, Conv. ()Forecasting results for	res.missing.value.train.0.1.	VAR, SVR, Neural network.}
+\end{figure}
+
+
+\begin{table}
+\begin{tabular}{||c||c|c|c||c|c|c||c|c|c||c|c|c||c|c|c||c|c|c||c|c|c||c|c|c||c|c|c||}
+\hline
+ & \multicolumn{3}{|c||}{orig.train} & \multicolumn{3}{|c||}{missing.value.train.0.01} & \multicolumn{3}{|c||}{missing.value.train.0.03} & \multicolumn{3}{|c||}{missing.value.train.0.05} & \multicolumn{3}{|c||}{missing.value.train.0.1} & \multicolumn{3}{|c||}{missing.value.train.0.01} & \multicolumn{3}{|c||}{missing.value.train.0.03} & \multicolumn{3}{|c||}{missing.value.train.0.05} & \multicolumn{3}{|c||}{missing.value.train.0.1}\\ 
+\hline
+ &MAPE target & MAPE full & AIC & MAPE target & MAPE full & AIC & MAPE target & MAPE full & AIC & MAPE target & MAPE full & AIC & MAPE target & MAPE full & AIC & MAPE target & MAPE full & AIC & MAPE target & MAPE full & AIC & MAPE target & MAPE full & AIC & MAPE target & MAPE full & AIC\\ 
+\hline
+VAR &   100099602.774 &    47606299435441112.000 &    6639.965 &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN &    NaN\\ 
+\hline
+SVR &   0.129 &    0.110 &    304.336 &    0.296 &    0.391 &    502.693 &    0.283 &    0.358 &    489.135 &    0.302 &    0.403 &    507.614 &    0.289 &    0.375 &    496.208 &    0.296 &    0.391 &    502.693 &    0.283 &    0.358 &    489.135 &    0.302 &    0.403 &    507.614 &    0.289 &    0.375 &    496.208\\ 
+\hline
+Neural network &   0.130 &    0.089 &    271.265 &    0.132 &    0.118 &    315.710 &    0.173 &    0.144 &    347.107 &    0.128 &    0.101 &    291.178 &    0.151 &    0.136 &    337.495 &    0.193 &    0.183 &    384.702 &    0.110 &    0.058 &    203.840 &    0.145 &    0.101 &    291.670 &    0.222 &    0.230 &    419.913\\ 
+\hline
+\end{tabular}
+\end{table}
+\end{document}

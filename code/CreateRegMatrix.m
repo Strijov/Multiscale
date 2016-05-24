@@ -27,12 +27,9 @@ function workStructTS = CreateRegMatrix(s, legend) % FIXIT why this variable is 
 %                           the first value and sum up with second.
 
 ts_num = numel(s);
-counterTp = 0;
-counterTr = 0;
-for i = 1:ts_num
-	counterTp = counterTp + s(i).deltaTp;
-    counterTr = counterTr + s(i).deltaTr;
-end
+counterTp = sum(extractfield(s, 'deltaTp'));
+counterTr = sum(extractfield(s, 'deltaTr'));
+
 matrix = zeros(numel(s(1).time_points), counterTp+counterTr);
 shiftTp = 0;
 shiftTr = counterTp;
@@ -55,7 +52,7 @@ self_deltaTr = [s.deltaTr];
 % FIXIT To discuss: does this struct bring extra complexity to this function?
 workStructTS = struct('matrix', matrix, 'deltaTp', deltaTp, 'deltaTr', deltaTr,...
             'self_deltaTp', self_deltaTp, 'self_deltaTr', self_deltaTr, ...
-            'norm_div', norm_div, 'norm_subt', norm_subt);
+            'norm_div', norm_div, 'norm_subt', norm_subt, 'name', s(1).name);
 end
 
 % FIXIT Please simplify this part, get rid of loops.
