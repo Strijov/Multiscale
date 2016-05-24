@@ -1,4 +1,11 @@
 function fid = include_subfigs(fid, report)
+% Inputs figures, generated during the experiments, into the file, specified with fid  
+% Inputs: 
+% report.res is a structure that contains necessary information to cimstrut the
+% table: 
+%   res.names {1 x n_experiments} = names of figures to display 
+%   res.captions {1 x n_experiments} = the corresponding captions
+%   
 
 report = report.res;
 

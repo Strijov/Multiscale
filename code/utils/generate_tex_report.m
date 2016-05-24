@@ -1,11 +1,12 @@
 function generate_tex_report(report_struct, tex_filename)
-% 
-% %% fignames, captions, table_results
-% \usepackage{ecltree}
-% \drawwith{\dottedline{1}}
-% \setlength{\GapDepth}{1mm}
-% \setlength{\GapWidth}{2mm}
-% then insert the tex string
+% Generates report in latex format, using functions specified in
+% report_struct.handles. Options: @horizontal_res_table, @vertical_res_table, 
+% @include_subfigs. 
+% Inputs:
+% report_struct. The structure of report_struct depends on the
+% expriment to be reported. For more information look inside specific
+% functions
+% tex_filename = name of the output latex file
 
 REPORT_FOLDER = 'reports';
 tex_filename = fullfile(REPORT_FOLDER, tex_filename);

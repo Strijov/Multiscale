@@ -11,7 +11,7 @@ ylabel('Samples', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
 set(gca, 'FontSize', 16, 'FontName', 'Times')
 if exist('fname', 'var')
     fname = strcat('generation_', fname);
-    saveas(h, fullfile('fig', fname), 'eps');
+    saveas(h, fullfile('fig', fname), 'psc2');
     close(h);
     caption = strcat('Feature generation results for\t', regexprep(fname, '_', '.'), '.\t', ...
                         title_txt);

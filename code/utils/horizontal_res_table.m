@@ -1,4 +1,13 @@
 function fid = horizontal_res_table(fid, report)
+% Writes results of model comparison into the file, specified with fid  
+% Inputs: 
+% report is a structure that contains necessary information to cimstrut the
+% table: 
+%   report.algos {1 x n_models} = names of compared models. Models are arranged horizontally 
+%   report.headers {1 x n_headers} = names of the quality criteria, arranged horizontally
+%   report.res = array of res structures
+%       res.data = string, name of the data set
+%       res.errors [n_models x n_headers] = values of the quality criteria
 
 algos = report.algos;
 headers = report.headers;

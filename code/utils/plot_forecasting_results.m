@@ -32,7 +32,7 @@ axis tight;
 hold off;
 if exist('figname', 'var')
     figname = strcat('res_', figname);
-    saveas(h, fullfile('fig', figname), 'eps');
+    saveas(h, fullfile('fig', figname), 'psc2');
     close(h);
     caption = strcat('Forecasting results for\t', regexprep(figname, '_', '.'), '.\t', ...
                         strjoin(model_names, ', '));
