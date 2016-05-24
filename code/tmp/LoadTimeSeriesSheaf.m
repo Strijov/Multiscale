@@ -42,23 +42,23 @@ if strcmp(computer,'MACI64'), WIN_XLS = false;
 else WIN_XLS = true; end % Fix for xlsread.
 
 addpath(genpath(cd));
-filename = 'data/orig/SL2.xls';
+filename = 'data/EnergyWeatherTS/orig/SL2.xls';
 sheet = 'Arkusz1';
 xlRange = 'D3:AA1098';
-ts0 = xlsread(filename,sheet,xlRange,'basic');
+
+[ts0, txt] = xlsread(filename,sheet,xlRange,'basic');
+%ts0_train = xlsread(filename,sheet,xlRange,'basic');
+%ts0_test = xlsread(filename,sheet,xlRange,'basic');
 if ~WIN_XLS, ts0(:, 1:3) = []; end % TODO If there is no Windows the xlsread does not work.
 ts0 = reshape(ts0', numel(ts0), 1);
 
-tmp = xlsread('data/orig/weatherdata.xls', 'weatherdata', 'E2:J1093','basic');
+tmp = xlsread('data/EnergyWeatherTS/orig/weatherdata.xls', 'weatherdata', 'E2:J1093','basic');
 if ~WIN_XLS, tmp(:, 1:4) = []; end % TODO If there is no Windows the xlsread does not work.
 if WIN_XLS, tmp(:, 1:4) = []; end % AM: This leaves columns that correspond to ts_legend below
-% ts = {ts0};
-% for i = 1:size(tmp, 2)
-%     ts{i+1} = tmp(:, i);
-% end
+
 
 ts  = [ts0, num2cell(tmp,1)];
-ts_length = 155;
+ts_length = 155; % ???
 ts_legend = {'Consumption', 'Max Temperature','Min Temperature',...
                 'Precipitation','Wind','Relative Humidity','Solar'};
 time_step = {1, 24,24,24,24,24,24};
