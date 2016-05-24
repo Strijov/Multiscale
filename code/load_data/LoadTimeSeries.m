@@ -1,7 +1,10 @@
 function ts = LoadTimeSeries(dirnames)
 % Data loader
 %
-% Input: dirnames - cell array of directory names
+% Input: dirnames - cell array, contains names of folders inside data/
+% directory, where the desired datasets are stored. Each folder 'DataName' inside
+% data/ directory has a corresponding loader 'LoadDataName'.
+%
 % Output: a cell array of ts structures
 
 if nargin < 1

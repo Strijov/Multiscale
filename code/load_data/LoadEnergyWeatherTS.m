@@ -1,11 +1,25 @@
 function tsSheaf = LoadEnergyWeatherTS(dirname)
-
+% Loads a set of time series and returns the cell array of ts structres.
+%
+% The structure ts has the fields: % FIXIT please move this help where this
+% structure is defined and put the reference in.
+%
+% Describes time series 
+% t [T,1] Time in milliseconds since 1/1/1970 (UNIX format)
+% x [T, N] Columns of the matrix are time series; missing values are NaNs
+% legend {1, N} Time series descriptions ts.x, e.g. ts.legend={?Consumption, ?Price?, ?Temperature?};
+% readme [string] Data information (source, formation time etc.)
+% type [1,N] (optional) Time series types ts.x, 1-real-valued, 2-binary, k ? k-valued
+% timegen [T,1]=func_timegen(timetick) (optional) Time ticks generator, may
+% contain the start (or end) time in UNIX format and a function to generate the vector t of the size [T,1]
+%
+% Iput:
+% dirname [string] named of folder with the loaded data. 
+% Output:
+% tsSheaf [struct]
 
 folders = strsplit(fullfile(dirname), filesep);
 folder_name = folders(end-1);
-
-%addpath(genpath(cd));
-
 
 [filename_train, filename_test, filename_weather] = read_missing_value_dir(dirname);    
 
@@ -43,9 +57,6 @@ end
 
 
 function [target_ts, weather_data] = load_train_test_weather(train, test, weather)
-
-%filename_train = fullfile('orig', 'SL2.xls');
-%filename_test = fullfile('orig', 'PL.xls');
 [~, ~, extension] = fileparts(train);
 if strcmp(extension, '.csv')
     target_ts1 = ProcessCSVOutput(test);
