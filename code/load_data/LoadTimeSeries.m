@@ -21,5 +21,4 @@ for dirname = dirnames
     ts = [ts, feval(loader_func_handle, dirname)];
 end
 
-
 end
