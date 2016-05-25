@@ -31,8 +31,8 @@ set(gca, 'FontSize', 16, 'FontName', 'Times')
 axis tight;
 hold off;
 if exist('figname', 'var')
-    figname = strcat('res_', figname);
-    saveas(h, fullfile('fig', figname), 'psc2');
+    figname = strcat('res_', figname, '.eps');
+    saveas(h, fullfile('fig', figname), 'epsc');
     close(h);
     caption = strcat('Forecasting results for\t', regexprep(figname, '_', '.'), '.\t', ...
                         strjoin(model_names, ', '));

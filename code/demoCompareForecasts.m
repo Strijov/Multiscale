@@ -5,7 +5,6 @@
 addpath(genpath(cd));
 
 % Data and models.
-nameTsSheaf = 'SL2';                            % The only dataset to test.
 nameModel = {'VAR', 'SVR', 'Neural network'};   % Set of models. 
 handleModel = {@VarForecast, @SVRMethod, @NnForecast};
 nModels = numel(nameModel);
@@ -29,7 +28,7 @@ numDataSets = numel(ts_struct_array);
 
 report_struct = struct('handles', [], 'algos', [], 'headers', [],...
                  'res',  []); 
-report_struct.handles = {@include_subfigs, @horizontal_res_table};   
+report_struct.handles = {@include_subfigs, @vertical_res_table};   
 report_struct.algos = nameModel;
 report_struct.headers = {'MAPE target', 'MAPE full', 'AIC'};
 report_struct.res = cell(1, numDataSets);
