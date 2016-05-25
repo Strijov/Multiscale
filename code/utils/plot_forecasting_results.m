@@ -11,7 +11,7 @@ idx_models = extractfield(model, 'error') < max_error;
 if ~all(idx_models)
     model_names = extractfield(model, 'name');
     disp(['Error exceeds ', num2str(max_error), ' for the following models: ', ...
-        model_names, '.']);
+        strjoin(model_names(~idx_models), ', '), '.']);
     disp(['The forecasts for ', strjoin(model_names(~idx_models), ', '), ' are not displayed.']);
 end
 model = model(idx_models);

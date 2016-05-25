@@ -1,4 +1,4 @@
-% Script demoCompareForecasts runs one forecasting experiments.
+% Script demoCompareForecasts runs one forecasting experiment.
 % It applies several competitive models to single dataet. 
 
 % FIXIT Plese type DONE here after your changes.
@@ -12,7 +12,6 @@ nModels = numel(nameModel);
 model = struct('handle', handleModel, 'name', nameModel, 'params', [], ...
     'error', [], 'unopt_flag', true, 'forecasted_y', []);
 
-
 % Experiment settings. 
 alpha_coeff = 0; % FIXIT Please explain. 
 K = 1; % FIXIT Please explain. 
@@ -20,7 +19,6 @@ K = 1; % FIXIT Please explain.
 %Generating extra features:
 generator_names = {'SSA', 'NW', 'Cubic', 'Conv'};
 generator_handles = {@SsaGenerator, @NwGenerator, @CubicGenerator, @ConvGenerator};
-
 
 % Load and prepare dataset.
 ts_struct_array  = LoadTimeSeries();
@@ -46,7 +44,6 @@ workStructTS = GenerateFeatures(workStructTS, generator_handles);
 disp(['Generation finished. Total number of features: ', num2str(workStructTS.deltaTp)]);
 [gen_fname, gen_caption] = plot_generated_feature_matrix(workStructTS.matrix, ...
                                            generator_names, workStructTS.name);
-
 
 for i = 1:nModels
     disp(['Fitting model: ', nameModel{i}])
@@ -75,8 +72,13 @@ for i = 1:nModels % FIXIT, please.
 end
 
 
+
 report_struct.res{nDataSet} = struct('data', workStructTS.name, 'errors', [MAPE_target, MAPE_full, AIC]);
 report_struct.res{nDataSet}.figs = figs;
+report_struct.res{nDataSet} = struct('data', workStructTS.name, 'names', [],...
+                             'captions', [], 'errors', [MAPE_target, MAPE_full, AIC]);
+report_struct.res{nDataSet}.names = {gen_fname, fname};
+report_struct.res{nDataSet}.captions = {gen_caption, caption};
 %report_struct.res{nDataSet}.errors = [MAPE_target, MAPE_full, AIC];
 
 table(MAPE_target, MAPE_full, AIC, 'RowNames', nameModel)
