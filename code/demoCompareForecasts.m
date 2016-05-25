@@ -32,10 +32,14 @@ report_struct.handles = {@include_subfigs, @vertical_res_table};
 report_struct.algos = nameModel;
 report_struct.headers = {'MAPE target', 'MAPE full', 'AIC'};
 report_struct.res = cell(1, numDataSets);
-
+figs = struct('names', cell(1,2), 'captions', cell(1,2));
 
 for nDataSet = 1:numDataSets
 inputStructTS = ts_struct_array{nDataSet};
+[fname, caption] = plot_energy_ts(inputStructTS(1));
+figs(1).names = fname;
+figs(1).captions = caption;
+
 workStructTS = CreateRegMatrix(inputStructTS);    % Construct regression matrix.
 
 workStructTS = GenerateFeatures(workStructTS, generator_handles);
@@ -52,7 +56,8 @@ end
 % plot 1:24 forecasts of real_y if the error does not exceed 1e3
 [fname, caption] = plot_forecasting_results(real_y, model, 1:24, 1e3, ...
                                             workStructTS.name);
-
+figs(2).names = {gen_fname, fname};
+figs(2).captions = {gen_caption, caption};
 
 % VAR results are not plotted because it's unstable on samples [MxN] where
 % M < N, just like our case. Feature selection is vital for it.
@@ -70,10 +75,8 @@ for i = 1:nModels % FIXIT, please.
 end
 
 
-report_struct.res{nDataSet} = struct('data', workStructTS.name, 'names', [],...
-                             'captions', [], 'errors', [MAPE_target, MAPE_full, AIC]);
-report_struct.res{nDataSet}.names = {gen_fname, fname};
-report_struct.res{nDataSet}.captions = {gen_caption, caption};
+report_struct.res{nDataSet} = struct('data', workStructTS.name, 'errors', [MAPE_target, MAPE_full, AIC]);
+report_struct.res{nDataSet}.figs = figs;
 %report_struct.res{nDataSet}.errors = [MAPE_target, MAPE_full, AIC];
 
 table(MAPE_target, MAPE_full, AIC, 'RowNames', nameModel)

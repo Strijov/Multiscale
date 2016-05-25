@@ -20,8 +20,8 @@ column_specs = strjoin(column_specs, '|');
 
 header_cols = strcat('Data & Models & ', strjoin(headers, ' & '));
 
-fprintf(fid,'\\begin{table}\n');
-fprintf(fid, strcat('\\begin{tabular}{|p{2cm}|c|', column_specs,'|}\n'));
+%fprintf(fid,'\\begin{table}\n');
+fprintf(fid, strcat('\\begin{longtable}{|p{2cm}|c|', column_specs,'|}\n'));
 fprintf(fid,'\\hline\n');
 
 fprintf(fid, strcat(header_cols, '\\\\ \n'));
@@ -38,7 +38,7 @@ for i = 1:n_data
     end
     fprintf(fid,'\\hline\n');
 end
-fprintf(fid,'\\end{tabular}\n');
-fprintf(fid,'\\end{table}\n');
+fprintf(fid,'\\end{longtable}\n');
+%fprintf(fid,'\\end{table}\n');
 
 end

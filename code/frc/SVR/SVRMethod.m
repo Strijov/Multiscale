@@ -40,6 +40,9 @@ for i = 1:size(trainY, 2)
                                                          pars.kerneloption);
     end
 end
-disp(['Warning: svmreg converged with empty set of support vectors for ', ...
+if n_failed > 0
+    disp(['Warning: svmreg converged with empty set of support vectors for ', ...
         num2str(n_failed), ' target dimensions out of ', num2str(size(trainY, 2))]);
+end
+
 end
