@@ -28,12 +28,19 @@ end
 function str = include_figs_from_list(fig_list, captions)
     str = '';
     subfigs = 'abcdefghijklmnop';
-    for i = 1:numel(fig_list)        
-       str = strcat(str, '\\subfloat[]{\\includegraphics[width=0.5\\textwidth]{',...
-        fig_list{i}, '}}\n');
+    if ~iscell(fig_list)
+        fig_list = regexprep(fig_list, '\\', '/');
+        str = strcat(str, '\\includegraphics[width=0.5\\textwidth]{',...
+        fig_list, '}\n');
+    else
+        for i = 1:numel(fig_list) 
+            fig_list{i} = regexprep(fig_list{i}, '\\', '/');
+           str = strcat(str, '\\subfloat[]{\\includegraphics[width=0.5\\textwidth]{',...
+            fig_list{i}, '}}\n');
+        end
     end
     
-    if numel(captions) ~= numel(fig_list)
+    if ~iscell(captions)%numel(captions) ~= numel(fig_list)
        str = strcat(str, '\\caption{', captions, '}\n');
     else
         str = strcat(str, '\\caption{');
