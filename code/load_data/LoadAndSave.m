@@ -1,8 +1,9 @@
-function ts = LoadTimeSeries(datasets)
+function LoadAndSave(dirnames)
 % Data loader
 %
-% Input: datasets - cell array, contains names of the folders inside data/
-% directory
+% Input: dirnames - cell array, contains names of folders inside data/
+% directory, where the desired datasets are stored. Each folder 'DataName' inside
+% data/ directory has a corresponding loader 'LoadDataName'.
 %
 % Output: a cell array of ts structures
 % Description of the time series structure: 
@@ -22,18 +23,34 @@ function ts = LoadTimeSeries(datasets)
 
 
 if nargin < 1
-    datasets = {'NNcompetition', 'EnergyWeather'};
+    dirnames = {'NNcompetition/', 'EnergyWeatherTS/orig/', 'EnergyWeatherTS/missing_value/', ...
+        'EnergyWeatherTS/missing_value/'};
 end
 
-filenames = dir(fullfile('data','ProcessedData', '*.mat'));
+if ~iscell(dirnames)
+   dirnames = {dirnames}; 
+end
 
-ts = {};
-for i = 1:numel(filenames)
-   load(filenames(i).name);   
-   if ismember(ts_struct(1).dataset, datasets)
-    ts{end+1} = ts_struct;
-   end
+save_dirname = fullfile('data','ProcessedData');
+if ~exist(save_dirname, 'dir')
+    mkdir(save_dirname);
+end
+
+for dirname = dirnames
+    dirname = fullfile('data', dirname{1});
+    folders = strsplit(dirname, filesep);
+    parent_dir = folders{2};
+    loader_func_handle = str2func(['Load', parent_dir]);
+    ts_struct = feval(loader_func_handle, dirname);
+    save_them_all(ts_struct, save_dirname);
 end
 
 end
 
+function save_them_all(ts, save_dirname)
+
+    for i = 1:numel(ts)
+        ts_struct = ts{i};     
+        save(fullfile(save_dirname, [ts_struct(1).name, '.mat']), 'ts_struct');
+    end
+end
