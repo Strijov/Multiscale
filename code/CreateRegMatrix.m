@@ -1,72 +1,81 @@
-function workStructTS = CreateRegMatrix(s, legend) % FIXIT why this variable is here?
-% It does something. FIXIT
+function s = CreateRegMatrix(s) 
+% This function creates a design matrix from the input time series structure
+% and and returns a single updated the structure 
 %
 % FIXIT and TODO make one simple structure and declare it in one place.
 % Put link to this place here&
 %
 % Input:
-% s         [struct]with fields:
-% x         [1xn] cell with time-series
-% time_step	[1xn] cell with ints - time step for each TS
-% legend	[1xn] cell with strings, containing lengend of each TS
-% deltaTp	[1xn] cell with ints, corresponds to number of feature columns
-% deltaTr	[1xn] cell with ints,corresponds to number of target columns (Y)
-% time_points  [1xn] cell with vectors of TS time-ticks
+% s         [1xn_ts] array of structures with fields:
+% x         [nx1] vector, time-series
+% time	    [nx1] time stamps, date serials in Unix format
+% legend	[string] contains lengend of each TS
+% deltaTp	[int] number of local history points to consider
+% deltaTr	[int] number of time points to forecast
+% name  	[string] reference name of the particular time series
+% readme  	[string] (optional) data description, needed for report
+% dataser  	[string] reference name of the dataset
 %
 % Output:
-% workStructTS struct with fields:
+% this function adds the following fields:
 % matrix	[NxM] object-features matrix
-% legend    [1xn] cell with strings, containing lengend of each TS
-% deltaTp	[int] corresponds to number of feature columns (X)
-% deltaTr	[int] corresponds to number of target columns (Y)
-% self_deltaTp	[1xn] cell with ints, corresponds to number of feature columns
-% self_deltaTr	[1xn] cell with ints,corresponds to number of target columns (Y)
 % norm_div	[1xn] cell with normalization multiplier.
 % norm_subt	[1xn] cell with minimum for each TS. 
-%                           To get back to real values shold multiply with
+%                           To get back to real values should multiply with
 %                           the first value and sum up with second.
 
 ts_num = numel(s);
-counterTp = sum(extractfield(s, 'deltaTp'));
-counterTr = sum(extractfield(s, 'deltaTr'));
 
-matrix = zeros(numel(s(1).time_points), counterTp+counterTr);
-shiftTp = 0;
-shiftTr = counterTp;
-norm_div = zeros(1,ts_num);
-norm_subt = zeros(1, ts_num);
-for i = 1:ts_num
-    [nozmalized_ts, norm_div(i), norm_subt(i)] = NormalizeTS(s(i));
-    small_matrix = CreateRegMatrix_small(nozmalized_ts, s(i).time_points, s(i).deltaTp, s(i).deltaTr);
-    [tmpX,tmpY] = SplitIntoXY(small_matrix, s(i).deltaTp, s(i).deltaTr);
-    matrix(:, shiftTp+1:shiftTp+s(i).deltaTp) = tmpX;
-    matrix(:, shiftTr+1:shiftTr+s(i).deltaTr) = tmpY;
-    shiftTp = shiftTp + s(i).deltaTp;
-    shiftTr = shiftTr + s(i).deltaTr;
-end
-deltaTp = sum([s.deltaTp]);
-self_deltaTp = [s.deltaTp];
-deltaTr = sum([s.deltaTr]);
-self_deltaTr = [s.deltaTr];
+%s().norm_div = [];
+%s().norm_subt = [];
 
-% FIXIT To discuss: does this struct bring extra complexity to this function?
-workStructTS = struct('matrix', matrix, 'deltaTp', deltaTp, 'deltaTr', deltaTr,...
-            'self_deltaTp', self_deltaTp, 'self_deltaTr', self_deltaTr, ...
-            'norm_div', norm_div, 'norm_subt', norm_subt, 'name', s(1).name);
+[normalized_ts, s(1).norm_div, s(1).norm_subt] = NormalizeTS(s(1));
+[Y, X, timeY] = create_matrix_from_target(s(1), normalized_ts);
+
+if ts_num == 1
+   s = s(1);
+   s.matrix = [X, Y]; 
+   return
 end
 
-% FIXIT Please simplify this part, get rid of loops.
-function [matrix] = CreateRegMatrix_small(ts, time_points, deltaTp, deltaTr)
-    obj_len = deltaTp + deltaTr;
-    matrix = zeros(numel(time_points), obj_len);
-    %FIXIT: first create zero-filled matrix, then add there real values -
-    %increases computing speed.
-    for i = 1:numel(time_points)
-        tp = time_points(i);
-        object = ts(tp - obj_len + 1 : tp);
-        if (size(object, 1) > size(object, 2))
-            object = object';
-        end
-        matrix(i, :) = matrix(i,:) + object;
-    end  
+for i = 2:ts_num
+    [normalized_ts, ~, ~] = NormalizeTS(s(i));
+    X = [X, add_timeseries(s(i), normalized_ts, timeY)];
+end
+
+s = s(1);
+s.matrix = [X, Y];
+%s.deltaTp = size(X, 2);
+
+end
+
+function [Y, X, timeY] = create_matrix_from_target(s, nozmalized_ts)
+
+% reverse time series, so that the top row is allways to be forecasted
+ts = flip(nozmalized_ts);
+time = flip(s.time);
+
+idx_rows = 1:s.deltaTr:numel(ts) - s.deltaTr - s.deltaTp + 1;
+idx = repmat(idx_rows', 1, s.deltaTr + s.deltaTp)...
+    + repmat(0:s.deltaTr + s.deltaTp - 1, numel(idx_rows), 1);
+
+Y = ts(idx(:, 1:s.deltaTr));
+X = ts(idx(:, s.deltaTr + 1:s.deltaTr + s.deltaTp));
+timeY = time(idx_rows + s.deltaTr - 1);
+
+end
+
+function X = add_timeseries(s, nozmalized_ts, timeY)
+
+% reverse time series, so that the top row is allways to be forecasted
+ts = flip(nozmalized_ts);
+time = flip(s.time);
+
+X = zeros(numel(timeY), s.deltaTp);
+for i = 1:numel(timeY)
+   idx_rows = find(time < timeY(i));
+   idx_rows = idx_rows(1:s.deltaTp);  
+   X(i, :) = ts(idx_rows);
+end
+
 end

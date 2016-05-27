@@ -10,6 +10,6 @@ function add_features = IdentityGenerator(workStructTS)
 % Output:
 % X [m x deltaTp] matrix of the current features
 
-add_features = workStructTS.matrix(:, 1:workStructTS.deltaTp);
+add_features = workStructTS.matrix;
     
 end

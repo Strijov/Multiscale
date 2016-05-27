@@ -32,35 +32,34 @@ report_struct.headers = {'MAPE target', 'MAPE full', 'AIC'};
 report_struct.res = cell(1, numDataSets);
 figs = struct('names', cell(1,2), 'captions', cell(1,2));
 
-for nDataSet = 1:numDataSets
-inputStructTS = ts_struct_array{nDataSet};
-[fname, caption] = feval(inputStructTS(1).plot_handle, inputStructTS(1));
+for nDataSet = 1:numDataSets    
+StructTS = ts_struct_array{nDataSet};
+[fname, caption] = plot_ts(StructTS);
 figs(1).names = fname;
 figs(1).captions = caption;
 
-workStructTS = CreateRegMatrix(inputStructTS);    % Construct regression matrix.
+StructTS = CreateRegMatrix(StructTS);    % Construct regression matrix.
 
-workStructTS = GenerateFeatures(workStructTS, generator_handles);
-disp(['Generation finished. Total number of features: ', num2str(workStructTS.deltaTp)]);
-[gen_fname, gen_caption] = plot_generated_feature_matrix(workStructTS.matrix, ...
+
+StructTS = GenerateFeatures(StructTS, generator_handles);
+disp(['Generation finished. Total number of features: ', num2str(StructTS.deltaTp)]);
+[gen_fname, gen_caption] = plot_generated_feature_matrix(StructTS.matrix, ...
                                 generator_names, ...
-                                workStructTS.name, inputStructTS(1).dataset);
+                                StructTS.name, StructTS.dataset);
 
 for i = 1:nModels
     disp(['Fitting model: ', nameModel{i}])
-    [~, model(i), real_y] = ComputeForecastingErrors(workStructTS, K, alpha_coeff, model(i));
+    [~, model(i), real_y] = ComputeForecastingErrors(StructTS, K, alpha_coeff, model(i));
 end
 
 
 N_PREDICTIONS = 5;
-idx_target = 1:min(workStructTS.deltaTr*N_PREDICTIONS, numel(real_y));
+idx_target = 1:min(StructTS.deltaTr*N_PREDICTIONS, numel(real_y));
 % plot idx_target forecasts of real_y if the error does not exceed 1e3
-try
-[fname, caption] = plot_forecasting_results(real_y, model, 1:workStructTS.deltaTr, 1e3, ...
-                                         workStructTS.name, inputStructTS(1).dataset);
-catch
-    disp('')
-end
+
+[fname, caption] = plot_forecasting_results(real_y, model, 1:StructTS.deltaTr, 1e3, ...
+                                         StructTS.name, StructTS.dataset);
+
 figs(2).names = {gen_fname, fname};
 figs(2).captions = {gen_caption, caption};
 
@@ -76,12 +75,12 @@ for i = 1:nModels % FIXIT, please.
     epsilon_target = epsilon_full(idx_target);
     MAPE_target(i) = mean(abs(epsilon_target./real_y(idx_target)));
     MAPE_full(i) = mean(abs(epsilon_full./real_y)); % is this MAPE??
-    AIC(i) = 2*workStructTS.deltaTp + size(workStructTS.matrix, 1) * log(norm(epsilon_full));
+    AIC(i) = 2*StructTS.deltaTp + size(StructTS.matrix, 1) * log(norm(epsilon_full));
 end
 
 
 
-report_struct.res{nDataSet} = struct('data', workStructTS.name, 'errors', [MAPE_target, MAPE_full, AIC]);
+report_struct.res{nDataSet} = struct('data', StructTS.name, 'errors', [MAPE_target, MAPE_full, AIC]);
 report_struct.res{nDataSet}.figs = figs;
 
 table(MAPE_target, MAPE_full, AIC, 'RowNames', nameModel)

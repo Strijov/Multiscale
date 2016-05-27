@@ -14,9 +14,9 @@ Xnew = [];
 for generator  = generators
     Xnew = [Xnew, feval(generator{1}, workStructTS)];
 end
-[X,Y] = SplitIntoXY(workStructTS.matrix, workStructTS.deltaTp, workStructTS.deltaTr);
+Y = workStructTS.matrix(:, end - workStructTS.deltaTr+1:end);
 workStructTS.matrix = [Xnew, Y];
-workStructTS.deltaTp = size(Xnew, 2);
+%workStructTS.deltaTp = size(Xnew, 2);
     
 end    
    
