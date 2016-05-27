@@ -14,7 +14,7 @@ axis tight;
 figname = fullfile('fig', ts.dataset, strcat('data_', ts.name, '.eps'));
 saveas(h, figname, 'epsc');
 close(h);
-caption = strcat(ts.readme,'\tTarget time series\t', regexprep(ts.name, '_', '.'),'\t');
+caption = strcat(ts.readme,'\tTarget time series\t', regexprep(ts.name, '_', '.'),'.\t');
 
 if strcmp(ts.dataset, 'EnergyWeather')  
     figname = {figname, ''};

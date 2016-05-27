@@ -23,7 +23,7 @@ function LoadAndSave(dirnames)
 
 
 if nargin < 1
-    dirnames = {'HascData/walk', 'NNcompetition/', 'EnergyWeatherTS/orig/', 'EnergyWeatherTS/missing_value/', ...
+    dirnames = {'HascData/sequence', 'NNcompetition/', 'EnergyWeatherTS/orig/', 'EnergyWeatherTS/missing_value/', ...
         'EnergyWeatherTS/missing_value/'};
 end
 
