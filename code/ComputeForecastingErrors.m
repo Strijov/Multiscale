@@ -2,7 +2,7 @@ function [MAPE, model, real_y] = ComputeForecastingErrors(ts, K, alpha_coeff, mo
 
 
 matrix = ts.matrix; % TODO please remove these duplicates.
-deltaTp = ts.deltaTp;
+deltaTp = size(matrix, 2) - ts.deltaTr;
 deltaTr = ts.deltaTr;
 
 model.forecasted_y = zeros(1,deltaTr*K);

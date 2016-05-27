@@ -3,7 +3,7 @@ function [fname, caption] = plot_generated_feature_matrix(X, generator_names, fn
 caption = '';
 
 h = figure;
-pcolor(X)
+imagesc(X);
 title_txt = strjoin(generator_names, ', ');
 title(title_txt);
 xlabel('Features', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');

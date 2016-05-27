@@ -1,22 +1,8 @@
-function [figname, caption] = plot_energy_ts(ts, folder)
+function [figname, caption] = plot_energy_ts(ts)
 
 MAX_PERIODS = 10;
 
-[figname{1}, caption] = plot_ts(ts, folder);
-%{
-h = figure;
-plot(ts.x(1:max_time), 'LineWidth', 2);
-
-xlabel('Time, $t$', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
-ylabel('Data', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
-set(gca, 'FontSize', 16, 'FontName', 'Times')
-axis tight;
-
-figname{1} = strcat('data_', ts.name, '.eps');
-saveas(h, fullfile('fig', figname{1}), 'epsc');
-close(h);
-caption = strcat(ts.readme,'\t(a) Target time series\t', regexprep(ts.name, '_', '.'),'\t');
-%}
+%[figname{1}, caption] = plot_ts(ts);
 
 h = figure;
 n_periods = min(floor(numel(ts.x)/ts.deltaTr), MAX_PERIODS);
@@ -27,10 +13,10 @@ xlabel('Time, $t$', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
 ylabel('Data', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
 set(gca, 'FontSize', 16, 'FontName', 'Times')
 axis tight;
-figname{2} = fullfile(ts.dataset, strcat('data_segms_', ts.name, '.eps'));
-saveas(h, fullfile('fig', figname{2}), 'epsc');
+figname = fullfile(ts.dataset, strcat('data_segms_', ts.name, '.eps'));
+saveas(h, fullfile('fig', figname), 'epsc');
 close(h);
-caption = strcat(caption, '(b) Periods of electricity time series\t', regexprep(ts.name, '_', '.'),'\t');
+caption = strcat('\tPeriods of electricity time series\t', regexprep(ts.name, '_', '.'),'\t');
 
 
 

@@ -1,8 +1,6 @@
 function [figname, caption] = plot_ts(ts)
 
 MAX_TIME = 2000;
-
-
 max_time = min(MAX_TIME, size(ts.x, 1));
 
 h = figure;
@@ -16,10 +14,12 @@ axis tight;
 figname = fullfile('fig', ts.dataset, strcat('data_', ts.name, '.eps'));
 saveas(h, figname, 'epsc');
 close(h);
-caption = strcat(ts.readme,'\t(a) Target time series\t', regexprep(ts.name, '_', '.'),'\t');
+caption = strcat(ts.readme,'\tTarget time series\t', regexprep(ts.name, '_', '.'),'\t');
 
-
-
-
+if strcmp(ts.dataset, 'EnergyWeather')  
+    figname = {figname, ''};
+    caption = {caption, ''};
+   [figname{2}, caption{2}] = plot_energy_ts(ts);    
+end
 
 end
