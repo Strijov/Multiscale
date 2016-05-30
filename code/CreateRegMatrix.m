@@ -49,20 +49,23 @@ s.matrix = [X, Y];
 
 end
 
-function [Y, X, timeY] = create_matrix_from_target(s, nozmalized_ts)
+function [Y, X, timeY] = create_matrix_from_target(s, normalized_ts)
 
 % reverse time series, so that the top row is allways to be forecasted
-ts = flip(nozmalized_ts);
+ts = flip(normalized_ts);
 time = flip(s.time);
 
 idx_rows = 1:s.deltaTr:numel(ts) - s.deltaTr - s.deltaTp + 1;
 idx = repmat(idx_rows', 1, s.deltaTr + s.deltaTp)...
     + repmat(0:s.deltaTr + s.deltaTp - 1, numel(idx_rows), 1);
 
-Y = ts(idx(:, 1:s.deltaTr));
-X = ts(idx(:, s.deltaTr + 1:s.deltaTr + s.deltaTp));
+Y = fliplr(ts(idx(:, 1:s.deltaTr)));
+X = fliplr(ts(idx(:, s.deltaTr + 1:s.deltaTr + s.deltaTp)));
 timeY = time(idx_rows + s.deltaTr - 1);
 
+% test: uravel Y and plot it against original timeseries
+% this should be an identity plot
+% plot(reshape(flip(Y)', 1, numel(Y)), normalized_ts(s.deltaTp+1:end))
 end
 
 function X = add_timeseries(s, nozmalized_ts, timeY)
@@ -74,7 +77,7 @@ time = flip(s.time);
 X = zeros(numel(timeY), s.deltaTp);
 for i = 1:numel(timeY)
    idx_rows = find(time < timeY(i));
-   idx_rows = idx_rows(1:s.deltaTp);  
+   idx_rows = idx_rows(s.deltaTp:-1:1);  
    X(i, :) = ts(idx_rows);
 end
 
