@@ -1,4 +1,4 @@
-function [matTrain, matTest, natVal] = TrainTestSplit(mat, alpha_coeff)
+function [idxTrain, idxTest, idxVal] = TrainTestSplit(nSamples, alpha_coeff)
 %Splits matrix to train, test & validation.
 %
 % Input:
@@ -10,9 +10,11 @@ function [matTrain, matTest, natVal] = TrainTestSplit(mat, alpha_coeff)
 % matTest       [M2 x N]
 % matVal        [1 x N]
 
-natVal = mat(1,:);
-mat(1,:) = []; % FIXIT Please remove this line and change addresses.
-test_size = floor(alpha_coeff * (size(mat, 1) - 1));
-matTest = mat(1:test_size,:);
-matTrain = mat(test_size+1:end, :);
+train_size = floor((1 - alpha_coeff) * (nSamples - 1));
+idxTrain = 2:train_size + 1;
+idxTest = train_size + 2:nSamples;
+idxVal = 1;
+%mat(1,:) = []; % FIXIT Please remove this line and change addresses.
+%matTest = mat(1:test_size,:);
+%matTrain = mat(test_size+1:end, :);
 end
