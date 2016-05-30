@@ -1,32 +1,47 @@
-function [MAPE, model, real_y] = ComputeForecastingErrors(ts, K, alpha_coeff, model)
+function [testMAPE, trainMAPE, model] = ComputeForecastingErrors(ts, K, alpha_coeff, model)
 
 
-matrix = ts.matrix; % TODO please remove these duplicates.
-deltaTp = size(matrix, 2) - ts.deltaTr;
-deltaTr = ts.deltaTr;
 
-model.forecasted_y = zeros(1,deltaTr*K);
-real_y = zeros(1,deltaTr*K);
-m = size(matrix,1);
+model.forecasted_y = zeros(size(ts.matrix, 1) * ts.deltaTr, ts.deltaTr*K);
 
-MAPE = zeros(1, K);
+trainMAPE = zeros(1, K);
+testMAPE = zeros(1, K);
 for n = 1:K
-    matrix_n = matrix(n:n+m-1, :);
-    [trainX, trainY, testX, testY, validation_x, validation_y] = ...
-                        FullSplit(matrix_n, alpha_coeff, deltaTp, deltaTr);
+    [idxTrain, ~, idxVal, idxX, idxY] = FullSplit(size(ts.matrix, 1), ...
+                                size(ts.matrix, 2), alpha_coeff, ts.deltaTr);
     
-    forecast_y = feval(model.handle, validation_x, model, trainX, trainY); 
-    model.forecasted_y((n-1)*deltaTr+1:n*deltaTr) = forecast_y;
-    real_y((n-1)*deltaTr+1:n*deltaTr) = validation_y;
-    residuals = (validation_y - forecast_y); %NOW IS MAPE!!!
-    MAPE(n) = mean(abs(residuals./validation_y));
+    [forecastY, trainForecastY, model] = feval(model.handle, ts.matrix(idxVal, idxX), model, ...
+                                ts.matrix(idxTrain, idxX), ts.matrix(idxTrain, idxY)); 
+    
+    trainMAPE(n) = calcSymMAPE(ts.matrix(idxTrain, idxY), trainForecastY);
+    testMAPE(n) = calcSymMAPE(ts.matrix(idxVal, idxY), forecastY);
+    forecasts = zeros(size(ts.matrix, 1), ts.deltaTr);
+    forecasts(idxTrain, :) = trainForecastY;
+    forecasts(idxVal, :) = forecastY;
+    model.forecasted_y = unravel_target_var(forecasts);
 end
-model.error = MAPE;
+model.testError = testMAPE;
+model.trainError = trainMAPE;
+
 
 end
 
 % DISCUSS: Compute quality of forecast in extra function? Additional quality/error
 % functions?
+
+
+function vecY = unravel_forecasts(trainY, testY, idxTrain, idxTest, deltaTr)
+
+vecY = zeros((numel(idxTrain) + numel(idxTest))*deltaTr, 1);
+idxTrain = repmat(idxTrain(:), 1, deltaTr)' + repmat(0:deltaTr-1, numel(idxTrain), 1)';
+idxTrain = idxTrain(:);
+idxTest = repmat(idxTest(:), 1, deltaTr)' + repmat(0:deltaTr-1, numel(idxTest), 1)';
+idxTest = idxTest(:);
+
+vecY(idxTrain) = reshape((trainY));
+vecY(idxTest) = testY;
+    
+end
 
 
          
