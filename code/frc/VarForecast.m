@@ -1,4 +1,4 @@
-function forecasted_y = VarForecast(validation_x, model,trainX, trainY)
+function [forecasted_y, train_forecast, model] = VarForecast(validation_x, model,trainX, trainY)
 % Compute forecast using VAR model with fixed parameters.
 %
 % Input:
@@ -14,11 +14,11 @@ function forecasted_y = VarForecast(validation_x, model,trainX, trainY)
 
 if model.unopt_flag
     model.params = inv(trainX'*trainX)*trainX'*trainY;
-    model.tuned_func = [];
     model.unopt_flag = false; % AM 
 end
 
 W = model.params;
 forecasted_y = validation_x*W;
+train_forecast = trainX*W;
 
 end

@@ -1,4 +1,4 @@
-function forecasted_y = SVRMethod(validation_x, model, trainX, trainY)
+function [forecasted_y, train_forecast, model] = SVRMethod(validation_x, model, trainX, trainY)
 % Compute forecast using SVR model with fixed parameters.
 %
 % Input:
@@ -14,6 +14,7 @@ function forecasted_y = SVRMethod(validation_x, model, trainX, trainY)
 % forecast_y  [1 x deltaTr] forecasted values of y (regression of x)
 
 forecasted_y = zeros(1, size(trainY, 2));
+train_forecast = zeros(size(trainY));
 
 if model.unopt_flag % For now, no optimization
     model.unopt_flag = false; % AM
@@ -37,6 +38,8 @@ for i = 1:size(trainY, 2)
         n_failed = n_failed + 1;
     else
         forecasted_y(:, i) = svmval(validation_x, xsup, w, b, pars.kernel, ...
+                                                         pars.kerneloption);
+        train_forecast(:, i) = svmval(trainX, xsup, w, b, pars.kernel, ...
                                                          pars.kerneloption);
     end
 end
