@@ -25,6 +25,10 @@ if nargin < 1
     datasets = {'NNcompetition', 'EnergyWeather'};
 end
 
+if ~iscell(datasets)
+    datasets = {datasets};
+end
+
 filenames = dir(fullfile('data','ProcessedData', '*.mat'));
 
 ts = {};

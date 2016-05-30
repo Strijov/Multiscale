@@ -1,5 +1,5 @@
 function ts = ReplaceNans(ts)
 
-ts(isnan(ts)) = 0;
+ts(isnan(ts)) = median(ts(~isnan(ts)));
 
 end

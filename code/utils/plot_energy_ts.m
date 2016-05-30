@@ -6,7 +6,7 @@ MAX_PERIODS = 10;
 
 h = figure;
 n_periods = min(floor(numel(ts.x)/ts.deltaTr), MAX_PERIODS);
-idx = repmat([1:ts.deltaTr]', 1, n_periods) + repmat(0:n_periods-1, ts.deltaTr, 1);
+idx = repmat([1:ts.deltaTr]', 1, n_periods) + repmat((0:n_periods-1)*ts.deltaTr, ts.deltaTr, 1);
 plot(ts.x(idx), 'LineWidth', 2);
 
 xlabel('Time, $t$', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');

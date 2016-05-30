@@ -10,7 +10,7 @@ function tsSheaf = LoadEnergyWeatherTS(dirname)
 % tsSheaf [struct]
 
 folders = strsplit(fullfile(dirname), filesep);
-folder_name = folders{end-1};
+folder_name = folders{end};
 
 readme = struct('orig', 'Original time energy-weather series',...
                 'missing_value', 'Energy-weather time series with artificially inserted missing values',...
@@ -26,8 +26,10 @@ for i = 1:numel(filename_train)
                                              filename_weather{i});
                                          
                                     
-    tsSheaf{2*i-1} = make_struct(train_ts, train_weather, time_train, filename_train{i}, folder_name, readme);
-    tsSheaf{2*i} = make_struct(test_ts, test_weather, time_test, filename_test{i}, folder_name, readme);
+    tsSheaf{2*i-1} = make_struct(train_ts, train_weather, time_train, ...
+                                    filename_train{i}, folder_name, readme);
+    tsSheaf{2*i} = make_struct(test_ts, test_weather, time_test, ...
+                                    filename_test{i}, folder_name, readme);
     
 end
 
