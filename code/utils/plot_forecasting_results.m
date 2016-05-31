@@ -7,8 +7,8 @@ if nargin < 4
     max_error = MAX_ERROR;
 end
 
-model_names = extractfield(model, 'name');
-idx_models = extractfield(model, 'error') < max_error;
+model_names =  {model().name};
+idx_models = [model().testError] < max_error;
 max_errors_str = '';
 if ~all(idx_models)
     max_errors_str = [max_errors_str, '\tError exceeds ', num2str(max_error), ' for the following models: ', ...
