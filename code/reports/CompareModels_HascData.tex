@@ -1,0 +1,966 @@
+\documentclass[12pt]{article}
+\extrafloats{100}
+\usepackage{a4wide}
+\usepackage{multicol, multirow}
+\usepackage[cp1251]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath, amsfonts, amssymb, amsthm, amscd}
+\usepackage{graphicx, epsfig, subfig, epstopdf}
+\usepackage{longtable}
+\graphicspath{ {../fig/} {../} }
+\begin{document}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1001.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1001	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1001.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1001.png}}
+\caption{(a)	Feature generation results for	HASC1001.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1001.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1002.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1002	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1002.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1002.png}}
+\caption{(a)	Feature generation results for	HASC1002.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1002.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1003.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1003	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1003.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1003.png}}
+\caption{(a)	Feature generation results for	HASC1003.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1003.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1004.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1004	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1004.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1004.png}}
+\caption{(a)	Feature generation results for	HASC1004.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1004.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1005.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1005	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1005.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1005.png}}
+\caption{(a)	Feature generation results for	HASC1005.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1005.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1006.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1006	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1006.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1006.png}}
+\caption{(a)	Feature generation results for	HASC1006.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1006.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1007.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1007	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1007.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1007.png}}
+\caption{(a)	Feature generation results for	HASC1007.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1007.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1008.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1008	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1008.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1008.png}}
+\caption{(a)	Feature generation results for	HASC1008.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1008.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1009.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1009	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1009.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1009.png}}
+\caption{(a)	Feature generation results for	HASC1009.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1009.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1010.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1010	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1010.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1010.png}}
+\caption{(a)	Feature generation results for	HASC1010.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1010.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1011.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1011	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1011.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1011.png}}
+\caption{(a)	Feature generation results for	HASC1011.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1011.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1012.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1012	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1012.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1012.png}}
+\caption{(a)	Feature generation results for	HASC1012.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1012.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1013.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1013	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1013.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1013.png}}
+\caption{(a)	Feature generation results for	HASC1013.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1013.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1014.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1014	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1014.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1014.png}}
+\caption{(a)	Feature generation results for	HASC1014.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1014.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1015.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1015	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1015.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1015.png}}
+\caption{(a)	Feature generation results for	HASC1015.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1015.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1016.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1016	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1016.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1016.png}}
+\caption{(a)	Feature generation results for	HASC1016.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1016.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1017.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1017	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1017.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1017.png}}
+\caption{(a)	Feature generation results for	HASC1017.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1017.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1018.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1018	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1018.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1018.png}}
+\caption{(a)	Feature generation results for	HASC1018.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1018.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1161.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1161	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1161.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1161.png}}
+\caption{(a)	Feature generation results for	HASC1161.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1161.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1162.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1162	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1162.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1162.png}}
+\caption{(a)	Feature generation results for	HASC1162.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1162.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1163.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1163	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1163.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1163.png}}
+\caption{(a)	Feature generation results for	HASC1163.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1163.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1164.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1164	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1164.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1164.png}}
+\caption{(a)	Feature generation results for	HASC1164.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1164.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1165.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1165	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1165.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1165.png}}
+\caption{(a)	Feature generation results for	HASC1165.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1165.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1166.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1166	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1166.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1166.png}}
+\caption{(a)	Feature generation results for	HASC1166.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1166.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1167.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1167	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1167.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1167.png}}
+\caption{(a)	Feature generation results for	HASC1167.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1167.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1168.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1168	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1168.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1168.png}}
+\caption{(a)	Feature generation results for	HASC1168.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1168.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1169.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1169	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1169.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1169.png}}
+\caption{(a)	Feature generation results for	HASC1169.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1169.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1170.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1170	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1170.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1170.png}}
+\caption{(a)	Feature generation results for	HASC1170.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1170.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1171.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1171	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1171.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1171.png}}
+\caption{(a)	Feature generation results for	HASC1171.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1171.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1172.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1172	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1172.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1172.png}}
+\caption{(a)	Feature generation results for	HASC1172.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1172.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1173.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1173	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1173.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1173.png}}
+\caption{(a)	Feature generation results for	HASC1173.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1173.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1174.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1174	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1174.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1174.png}}
+\caption{(a)	Feature generation results for	HASC1174.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1174.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1175.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1175	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1175.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1175.png}}
+\caption{(a)	Feature generation results for	HASC1175.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1175.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1176.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1176	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1176.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1176.png}}
+\caption{(a)	Feature generation results for	HASC1176.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1176.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1177.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1177	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1177.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1177.png}}
+\caption{(a)	Feature generation results for	HASC1177.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1177.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1178.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1178	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1178.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1178.png}}
+\caption{(a)	Feature generation results for	HASC1178.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1178.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1179.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1179	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1179.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1179.png}}
+\caption{(a)	Feature generation results for	HASC1179.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1179.		Error exceeds 1000 for the following models: VAR, SVR, Neural network.The forecasts for VAR, SVR, Neural network are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1180.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1180	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1180.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1180.png}}
+\caption{(a)	Feature generation results for	HASC1180.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1180.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1181.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1181	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1181.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1181.png}}
+\caption{(a)	Feature generation results for	HASC1181.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1181.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1182.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1182	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1182.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1182.png}}
+\caption{(a)	Feature generation results for	HASC1182.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1182.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1183.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1183	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1183.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1183.png}}
+\caption{(a)	Feature generation results for	HASC1183.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1183.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1184.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1184	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1184.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1184.png}}
+\caption{(a)	Feature generation results for	HASC1184.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1184.	SVR, Neural network	Error exceeds 1000 for the following models: VAR.The forecasts for VAR are not displayed.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{fig/HascData/data_HASC1185.png}
+\caption{Accelerometry time series from HASC project. Target time series	HASC1185	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/generation_HASC1185.png}}
+\subfloat[]{\includegraphics[width=0.5\textwidth]{fig/HascData/res_HASC1185.png}}
+\caption{(a)	Feature generation results for	HASC1185.	SSA, NW, Cubic, Conv	(b)	Forecasting results for	HASC1185.		Error exceeds 1000 for the following models: VAR, SVR, Neural network. The forecasts for VAR, SVR, Neural network are not displayed.	}
+\end{figure}
+
+
+\begin{longtable}{|p{2cm}|c|c|c|c|}
+\hline
+Data & Models & MAPE target & MAPE full & AIC\\
+\hline
+\multirow{3}{*}{1} &VAR &   1120304570816.356 &    1120304570816.356 &    6907.577\\
+\cline{2-5}
+ &SVR &   1.214 &    1.214 &    538.965\\
+\cline{2-5}
+ &Neural network &   0.661 &    0.661 &    465.974\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{2} &VAR &   6039408138201.831 &    6039408138201.831 &    7206.588\\
+\cline{2-5}
+ &SVR &   1.337 &    1.337 &    488.377\\
+\cline{2-5}
+ &Neural network &   1.279 &    1.279 &    514.971\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{3} &VAR &   6988686166.756 &    6988686166.756 &    5851.561\\
+\cline{2-5}
+ &SVR &   0.289 &    0.289 &    217.969\\
+\cline{2-5}
+ &Neural network &   0.428 &    0.428 &    318.439\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{4} &VAR &   1690270546.666 &    1690270546.666 &    5453.202\\
+\cline{2-5}
+ &SVR &   0.695 &    0.695 &    461.662\\
+\cline{2-5}
+ &Neural network &   0.767 &    0.767 &    505.080\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{5} &VAR &   417246658469.861 &    417246658469.861 &    6717.623\\
+\cline{2-5}
+ &SVR &   0.533 &    0.533 &    338.911\\
+\cline{2-5}
+ &Neural network &   0.630 &    0.630 &    392.916\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{6} &VAR &   1795670105962.151 &    1795670105962.151 &    7102.525\\
+\cline{2-5}
+ &SVR &   0.785 &    0.785 &    458.761\\
+\cline{2-5}
+ &Neural network &   0.664 &    0.664 &    463.748\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{7} &VAR &   760658400670.849 &    760658400670.849 &    6840.654\\
+\cline{2-5}
+ &SVR &   0.810 &    0.810 &    486.241\\
+\cline{2-5}
+ &Neural network &   0.931 &    0.931 &    546.321\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{8} &VAR &   122095954208.764 &    122095954208.764 &    6485.710\\
+\cline{2-5}
+ &SVR &   0.808 &    0.808 &    494.041\\
+\cline{2-5}
+ &Neural network &   0.705 &    0.705 &    514.873\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{9} &VAR &   870930402818.931 &    870930402818.931 &    6866.990\\
+\cline{2-5}
+ &SVR &   0.738 &    0.738 &    439.700\\
+\cline{2-5}
+ &Neural network &   0.698 &    0.698 &    468.527\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{10} &VAR &   2257879192407.105 &    2257879192407.105 &    7146.840\\
+\cline{2-5}
+ &SVR &   1.095 &    1.095 &    473.892\\
+\cline{2-5}
+ &Neural network &   1.035 &    1.035 &    547.795\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{11} &VAR &   722974585332.060 &    722974585332.060 &    6975.583\\
+\cline{2-5}
+ &SVR &   0.472 &    0.472 &    524.962\\
+\cline{2-5}
+ &Neural network &   0.586 &    0.586 &    594.106\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{12} &VAR &   134915153696.328 &    134915153696.328 &    6465.315\\
+\cline{2-5}
+ &SVR &   0.662 &    0.662 &    492.203\\
+\cline{2-5}
+ &Neural network &   0.906 &    0.906 &    552.600\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{13} &VAR &   259584915183.095 &    259584915183.095 &    6691.148\\
+\cline{2-5}
+ &SVR &   0.695 &    0.695 &    425.604\\
+\cline{2-5}
+ &Neural network &   0.765 &    0.765 &    477.582\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{14} &VAR &   28562396677.239 &    28562396677.239 &    6198.002\\
+\cline{2-5}
+ &SVR &   0.649 &    0.649 &    540.584\\
+\cline{2-5}
+ &Neural network &   0.551 &    0.551 &    540.832\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{15} &VAR &   32954861541.872 &    32954861541.872 &    6059.772\\
+\cline{2-5}
+ &SVR &   0.962 &    0.962 &    503.383\\
+\cline{2-5}
+ &Neural network &   0.783 &    0.783 &    499.527\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{16} &VAR &   13156158543201.650 &    13156158543201.650 &    7469.809\\
+\cline{2-5}
+ &SVR &   1.641 &    1.641 &    445.430\\
+\cline{2-5}
+ &Neural network &   1.053 &    1.053 &    411.494\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{17} &VAR &   204113750894.582 &    204113750894.582 &    6435.257\\
+\cline{2-5}
+ &SVR &   1.943 &    1.943 &    496.190\\
+\cline{2-5}
+ &Neural network &   1.276 &    1.276 &    524.516\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{18} &VAR &   5068127216048.081 &    5068127216048.081 &    7109.426\\
+\cline{2-5}
+ &SVR &   1.927 &    1.927 &    493.345\\
+\cline{2-5}
+ &Neural network &   1.948 &    1.948 &    540.622\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{19} &VAR &   32876731920963232.000 &    32876731920963232.000 &    2843.012\\
+\cline{2-5}
+ &SVR &   0.847 &    0.847 &    445.210\\
+\cline{2-5}
+ &Neural network &   0.699 &    0.699 &    432.327\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{20} &VAR &   33062597757652932.000 &    33062597757652932.000 &    2833.969\\
+\cline{2-5}
+ &SVR &   0.932 &    0.932 &    435.596\\
+\cline{2-5}
+ &Neural network &   0.138 &    0.138 &    337.222\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{21} &VAR &   3546260314784630.000 &    3546260314784630.000 &    1690.481\\
+\cline{2-5}
+ &SVR &   0.283 &    0.283 &    397.450\\
+\cline{2-5}
+ &Neural network &   0.375 &    0.375 &    407.805\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{22} &VAR &   20232478839226940.000 &    20232478839226940.000 &    1749.881\\
+\cline{2-5}
+ &SVR &   0.210 &    0.210 &    384.824\\
+\cline{2-5}
+ &Neural network &   0.256 &    0.256 &    391.737\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{23} &VAR &   9239926680388686.000 &    9239926680388686.000 &    1735.756\\
+\cline{2-5}
+ &SVR &   0.176 &    0.176 &    394.862\\
+\cline{2-5}
+ &Neural network &   0.219 &    0.219 &    404.739\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{24} &VAR &   1313981263100460.700 &    1313981263100460.700 &    1662.323\\
+\cline{2-5}
+ &SVR &   0.257 &    0.257 &    403.547\\
+\cline{2-5}
+ &Neural network &   0.319 &    0.319 &    408.984\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{25} &VAR &   2069304322706104.700 &    2069304322706104.700 &    1677.398\\
+\cline{2-5}
+ &SVR &   0.281 &    0.281 &    400.797\\
+\cline{2-5}
+ &Neural network &   0.323 &    0.323 &    408.007\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{26} &VAR &   13795457076978750.000 &    13795457076978750.000 &    1732.355\\
+\cline{2-5}
+ &SVR &   0.315 &    0.315 &    398.966\\
+\cline{2-5}
+ &Neural network &   0.735 &    0.735 &    428.075\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{27} &VAR &   2469829022196093.500 &    2469829022196093.500 &    1681.779\\
+\cline{2-5}
+ &SVR &   0.300 &    0.300 &    402.176\\
+\cline{2-5}
+ &Neural network &   0.249 &    0.249 &    396.151\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{28} &VAR &   5978082549783731.000 &    5978082549783731.000 &    1719.743\\
+\cline{2-5}
+ &SVR &   0.248 &    0.248 &    407.195\\
+\cline{2-5}
+ &Neural network &   0.450 &    0.450 &    427.467\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{29} &VAR &   4097900730587129.000 &    4097900730587129.000 &    1739.159\\
+\cline{2-5}
+ &SVR &   0.199 &    0.199 &    410.548\\
+\cline{2-5}
+ &Neural network &   0.113 &    0.113 &    378.580\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{30} &VAR &   102062068921590260.000 &    102062068921590260.000 &    1850.206\\
+\cline{2-5}
+ &SVR &   0.348 &    0.348 &    405.777\\
+\cline{2-5}
+ &Neural network &   0.473 &    0.473 &    421.186\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{31} &VAR &   944078123779268740.000 &    944078123779268740.000 &    1932.571\\
+\cline{2-5}
+ &SVR &   0.169 &    0.169 &    384.956\\
+\cline{2-5}
+ &Neural network &   0.292 &    0.292 &    404.421\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{32} &VAR &   111357584338780590.000 &    111357584338780590.000 &    1860.089\\
+\cline{2-5}
+ &SVR &   0.144 &    0.144 &    383.413\\
+\cline{2-5}
+ &Neural network &   0.226 &    0.226 &    398.816\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{33} &VAR &   16976855728563968.000 &    16976855728563968.000 &    1788.319\\
+\cline{2-5}
+ &SVR &   0.138 &    0.138 &    389.323\\
+\cline{2-5}
+ &Neural network &   0.110 &    0.110 &    371.847\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{34} &VAR &   25511822208236780.000 &    25511822208236780.000 &    1764.769\\
+\cline{2-5}
+ &SVR &   0.315 &    0.315 &    408.234\\
+\cline{2-5}
+ &Neural network &   0.391 &    0.391 &    414.318\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{35} &VAR &   204791457966511140.000 &    204791457966511140.000 &    1827.957\\
+\cline{2-5}
+ &SVR &   0.391 &    0.391 &    403.998\\
+\cline{2-5}
+ &Neural network &   0.318 &    0.318 &    395.923\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{36} &VAR &   24687961790276116.000 &    24687961790276116.000 &    1755.140\\
+\cline{2-5}
+ &SVR &   0.540 &    0.540 &    409.002\\
+\cline{2-5}
+ &Neural network &   1.146 &    1.146 &    432.234\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{37} &VAR &   Inf &    Inf &    1752.454\\
+\cline{2-5}
+ &SVR &   NaN &    NaN &    440.867\\
+\cline{2-5}
+ &Neural network &   Inf &    Inf &    418.055\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{38} &VAR &   18111287948275848.000 &    18111287948275848.000 &    1741.611\\
+\cline{2-5}
+ &SVR &   0.269 &    0.269 &    394.542\\
+\cline{2-5}
+ &Neural network &   0.467 &    0.467 &    410.864\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{39} &VAR &   1233301332725942.200 &    1233301332725942.200 &    1653.853\\
+\cline{2-5}
+ &SVR &   0.269 &    0.269 &    396.851\\
+\cline{2-5}
+ &Neural network &   0.512 &    0.512 &    423.198\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{40} &VAR &   19446051632025556.000 &    19446051632025556.000 &    1753.934\\
+\cline{2-5}
+ &SVR &   0.276 &    0.276 &    402.672\\
+\cline{2-5}
+ &Neural network &   0.445 &    0.445 &    417.093\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{41} &VAR &   42277223647839136.000 &    42277223647839136.000 &    1771.458\\
+\cline{2-5}
+ &SVR &   0.182 &    0.182 &    379.808\\
+\cline{2-5}
+ &Neural network &   0.323 &    0.323 &    399.110\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{42} &VAR &   398852741185396740.000 &    398852741185396740.000 &    1853.649\\
+\cline{2-5}
+ &SVR &   0.375 &    0.375 &    401.497\\
+\cline{2-5}
+ &Neural network &   0.499 &    0.499 &    418.491\\
+\cline{2-5}
+\hline
+\multirow{3}{*}{43} &VAR &   Inf &    Inf &    1769.162\\
+\cline{2-5}
+ &SVR &   Inf &    Inf &    415.065\\
+\cline{2-5}
+ &Neural network &   Inf &    Inf &    424.767\\
+\cline{2-5}
+\hline
+\end{longtable}
+
+
+\end{document} 
