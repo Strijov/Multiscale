@@ -4,21 +4,28 @@
 % FIXIT Plese type DONE here after your changes.
 addpath(genpath(cd));
 
-% Data and models.
+% Feature selection:
+pars = struct('maxComps', 50, 'expVar', 90, 'plot', @plot_pca_results);
+feature_selection_mdl = struct('handle', @DimReducePCA, 'params', pars);
+
+
+% Models
 nameModel = {'VAR', 'SVR', 'Random Forest', 'Neural network'};   % Set of models. 
 handleModel = {@VarForecast, @SVRMethod, @TreeBaggerForecast, @NnForecast};
-nModels = numel(nameModel);
 
 model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'obj', [],...
     'trainError', [], 'testError', [], 'unopt_flag', true, 'forecasted_y', []);
+%model = model(1);
+%nameModel = nameModel(1);
+nModels = numel(model);
 
 % Experiment settings. 
 alpha_coeff = 0; % FIXIT Please explain. 
 K = 1; % FIXIT Please explain. 
 
 %Generating extra features:
-generator_names = {'Identity'};%{'SSA', 'NW', 'Cubic', 'Conv'};
-generator_handles = {@IdentityGenerator}; %{@SsaGenerator, @NwGenerator, @CubicGenerator, @ConvGenerator};
+generator_names = {'SSA', 'NW', 'Cubic', 'Conv'}; %{'Identity'};
+generator_handles = {@SsaGenerator, @NwGenerator, @CubicGenerator, @ConvGenerator}; %{@IdentityGenerator};
 
 % Load and prepare dataset.
 %LoadAndSave('EnergyWeatherTS/orig');
@@ -42,14 +49,26 @@ figs(1).names = fname;
 figs(1).captions = caption;
 
 
+%
 StructTS = GenerateFeatures(StructTS, generator_handles);
 disp(['Generation finished. Total number of features: ', num2str(StructTS.deltaTp)]);
-[gen_fname, gen_caption] = plot_generated_feature_matrix(StructTS.matrix, ...
-                                generator_names, ...
-                                StructTS.name, StructTS.dataset);
+%[gen_fname, gen_caption] = plot_generated_feature_matrix(StructTS.matrix, ...
+%                                generator_names, ...
+%                                StructTS.name, StructTS.dataset);
 
+[StructTS, feature_selection_mdl] = FeatureSelection(StructTS, feature_selection_mdl);
+[fs_name, fs_caption] = feval(feature_selection_mdl.params.plot, feature_selection_mdl.res, ...
+                                                            generator_names,...
+                                                            StructTS); 
+
+
+
+%}
+                            
 MAPE_test = zeros(nModels,1);
 MAPE_train = zeros(nModels,1); 
+AIC = zeros(nModels,1);
+
 model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'obj', [],...
     'trainError', [], 'testError', [], 'unopt_flag', true, 'forecasted_y', []);
 
@@ -60,12 +79,11 @@ for i = 1:nModels
 end
 
 
-N_PREDICTIONS = 5;
+N_PREDICTIONS = 10;
 idx_target = 1:min(StructTS.deltaTr*N_PREDICTIONS, numel(StructTS.x));
 % plot idx_target forecasts of real_y if the error does not exceed 1e3
 
-[fname, caption] = plot_forecasting_results(StructTS.x, model, 1:StructTS.deltaTr, 1e3, ...
-                                         StructTS.name, StructTS.dataset);
+[fname, caption] = plot_forecasting_results(StructTS, model, 1:StructTS.deltaTr, 1e3);
 
 figs(2).names = {gen_fname, fname};
 figs(2).captions = {gen_caption, caption};
@@ -73,15 +91,15 @@ figs(2).captions = {gen_caption, caption};
 % VAR results are not plotted because it's unstable on samples [MxN] where
 % M < N, just like our case. Feature selection is vital for it.
 
-AIC = zeros(nModels,1);
 
+%{
 for i = 1:nModels % FIXIT, please.
     AIC(i) = 2*StructTS.deltaTp + size(StructTS.matrix, 1) * log(norm(epsilon_full));
 end
+%}
 
 
-
-report_struct.res{nDataSet} = struct('data', StructTS.name, 'errors', [MAPE_target, MAPE_full, AIC]);
+report_struct.res{nDataSet} = struct('data', StructTS.name, 'errors', [MAPE_test, MAPE_train, AIC]);
 report_struct.res{nDataSet}.figs = figs;
 
 table(MAPE_test, MAPE_train, AIC, 'RowNames', nameModel)
