@@ -13,15 +13,20 @@ for n = 1:K
     [forecastY, trainForecastY, model] = feval(model.handle, ts.matrix(idxVal, idxX), model, ...
                                 ts.matrix(idxTrain, idxX), ts.matrix(idxTrain, idxY)); 
     
+    % Remember that forecasts and ts.matrix are normalized
     trainMAPE(n) = calcSymMAPE(ts.matrix(idxTrain, idxY), trainForecastY);
     testMAPE(n) = calcSymMAPE(ts.matrix(idxVal, idxY), forecastY);
     forecasts = zeros(size(ts.matrix, 1), ts.deltaTr);
     forecasts(idxTrain, :) = trainForecastY;
     forecasts(idxVal, :) = forecastY;
-    model.forecasted_y = unravel_target_var(forecasts);
+    forecasts = unravel_target_var(forecasts);
+    % Denormalize forecasts:
+    model.forecasted_y = forecasts*ts.norm_div + ts.norm_subt;
 end
 model.testError = testMAPE;
 model.trainError = trainMAPE;
+
+
 
 
 end
