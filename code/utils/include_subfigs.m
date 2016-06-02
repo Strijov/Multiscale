@@ -27,16 +27,25 @@ end
 
 function str = include_figs_from_list(fig_list, captions)
     str = '';
+    % Magic:
+    widths = [0.5, 0.45, 0.35, 0.45];
+    eof_str = {'', '', '',  '';...
+               '', '', '',  '\\\\';...
+               '', '', '\\\\', '';
+               '', '', '',   '\\\\'};
+    
     subfigs = 'abcdefghijklmnop';
     if ~iscell(fig_list)
         fig_list = regexprep(fig_list, '\\', '/');
         str = strcat(str, '\\includegraphics[width=0.5\\textwidth]{',...
         fig_list, '}\n');
     else
+        width = num2str(widths(numel(fig_list)));
         for i = 1:numel(fig_list) 
             fig_list{i} = regexprep(fig_list{i}, '\\', '/');
-           str = strcat(str, '\\subfloat[]{\\includegraphics[width=0.5\\textwidth]{',...
-            fig_list{i}, '}}\n');
+           str = strcat(str, '\\subfloat[]{\\includegraphics[width=', ...
+               width, '\\textwidth]{',...
+            fig_list{i}, '}}', eof_str{i, numel(fig_list)},'\n');
         end
     end
     
