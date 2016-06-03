@@ -15,22 +15,21 @@ handleModel = {@VarForecast, @SVRMethod, @TreeBaggerForecast, @NnForecast};
 
 model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'obj', [],...
     'trainError', [], 'testError', [], 'unopt_flag', true, 'forecasted_y', []);
-%model = model(1);
-%nameModel = nameModel(1);
 nModels = numel(model);
 
 % Experiment settings. 
 alpha_coeff = 0; % FIXIT Please explain. 
-K = 1; % FIXIT Please explain. 
 
 %Generating extra features:
 generator_names = {'SSA', 'NW', 'Cubic', 'Conv'}; %{'Identity'};
 generator_handles = {@SsaGenerator, @NwGenerator, @CubicGenerator, @ConvGenerator}; %{@IdentityGenerator};
+generators = struct('handle', generator_handles, 'name', generator_names, 'transform', []);
+
 
 % Load and prepare dataset.
 %LoadAndSave('EnergyWeatherTS/orig');
 ts_struct_array  = LoadTimeSeries('EnergyWeather');
-numDataSets = numel(ts_struct_array);
+numDataSets = 1;%numel(ts_struct_array);
 
 report_struct = struct('handles', [], 'algos', [], 'headers', [],...
                  'res',  []); 
@@ -38,33 +37,35 @@ report_struct.handles = {@include_subfigs, @vertical_res_table};
 report_struct.algos = nameModel;
 report_struct.headers = {'MAPE test', 'MAPE train', 'AIC'};
 report_struct.res = cell(1, numDataSets);
-figs = struct('names', cell(1,2), 'captions', cell(1,2));
+figs = struct('names', cell(1,4), 'captions', cell(1,4));
+
 
 for nDataSet = 1:numDataSets    
 StructTS = ts_struct_array{nDataSet};
 
-StructTS = CreateRegMatrix(StructTS);    % Construct regression matrix.
+% Add regression matrix to the main structure:
+StructTS = CreateRegMatrix(StructTS);    
+
+% Plot time series and a range of segments to forecast
 [fname, caption] = plot_ts(StructTS);
 figs(1).names = fname;
 figs(1).captions = caption;
 
 
 %
-StructTS = GenerateFeatures(StructTS, generator_handles);
+StructTS = GenerateFeatures(StructTS, generatorss);
 disp(['Generation finished. Total number of features: ', num2str(StructTS.deltaTp)]);
-%[gen_fname, gen_caption] = plot_generated_feature_matrix(StructTS.matrix, ...
-%                                generator_names, ...
-%                                StructTS.name, StructTS.dataset);
+[gen_fname, gen_caption] = plot_generated_feature_matrix(StructTS, ...
+                                                         generator_names);
 
 [StructTS, feature_selection_mdl] = FeatureSelection(StructTS, feature_selection_mdl);
-[fs_name, fs_caption] = feval(feature_selection_mdl.params.plot, feature_selection_mdl.res, ...
+[fs_fname, fs_caption] = feval(feature_selection_mdl.params.plot, feature_selection_mdl.res, ...
                                                             generator_names,...
                                                             StructTS); 
-
-
-
-%}
-                            
+figs(2).names = [gen_fname, fs_fname];
+figs(2).captions = [gen_caption, fs_caption];
+                                                        
+                                                        
 MAPE_test = zeros(nModels,1);
 MAPE_train = zeros(nModels,1); 
 AIC = zeros(nModels,1);
@@ -75,35 +76,28 @@ model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'obj', []
 
 for i = 1:nModels
     disp(['Fitting model: ', nameModel{i}])
-    [MAPE_test(i), MAPE_train(i), model(i)] = ComputeForecastingErrors(StructTS, K, alpha_coeff, model(i));
+    [MAPE_test(i), MAPE_train(i), model(i)] = ComputeForecastingErrors(...
+                                            StructTS, alpha_coeff, model(i));
+    AIC(i) = 2*StructTS.deltaTp + size(StructTS.matrix, 1) * ...
+                        log(nan_norm(StructTS.x(StructTS.deltaTp + 1:end) - ...
+                        model(i).forecasted_y'));
 end
 
 
 N_PREDICTIONS = 10;
 idx_target = 1:min(StructTS.deltaTr*N_PREDICTIONS, numel(StructTS.x));
+
 % plot idx_target forecasts of real_y if the error does not exceed 1e3
-
-[fname, caption] = plot_forecasting_results(StructTS, model, 1:StructTS.deltaTr, 1e3);
-
-figs(2).names = {gen_fname, fname};
-figs(2).captions = {gen_caption, caption};
-
-% VAR results are not plotted because it's unstable on samples [MxN] where
-% M < N, just like our case. Feature selection is vital for it.
-
-
-%{
-for i = 1:nModels % FIXIT, please.
-    AIC(i) = 2*StructTS.deltaTp + size(StructTS.matrix, 1) * log(norm(epsilon_full));
-end
-%}
-
+[fname, caption, fname_by_models, caption_by_models] = plot_forecasting_results(StructTS, model, 1:StructTS.deltaTr, 1e3);
+figs(3).names = fname;
+figs(3).captions = caption;
+figs(4).names = fname_by_models;
+figs(4).captions = caption_by_models;
 
 report_struct.res{nDataSet} = struct('data', StructTS.name, 'errors', [MAPE_test, MAPE_train, AIC]);
 report_struct.res{nDataSet}.figs = figs;
 
 table(MAPE_test, MAPE_train, AIC, 'RowNames', nameModel)
-
 
 end
 save('report_struct_EW.mat', 'report_struct');
