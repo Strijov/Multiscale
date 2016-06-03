@@ -1,4 +1,4 @@
-function add_features = NwGenerator(workStructTS)
+function [add_features, mdl] = NwGenerator(ts, mdl)
 % Performs smoothing of the local prehistory (current features).
 %
 % Input:
@@ -10,14 +10,20 @@ function add_features = NwGenerator(workStructTS)
 % [m x deltaTp] matrix of the new features to add
 
 % smoothing is only applied to the target time series
-add_features = zeros(size(workStructTS.matrix,1), workStructTS.deltaTp);
-for i = 1:size(workStructTS.matrix,1)
-    x = workStructTS.matrix(i, 1:workStructTS.deltaTp);
-    x_smoothed = NWSmoothing(x);
-    add_features(i,:) = x_smoothed;
-end
-
+add_features = transform(ts.matrix(:, 1:end-ts.deltaTr));
+mdl.transform = @(x) transform(x);
 
 % RN: Sourse TS is being replaced with the smoothed one, that's why dims
 %don't change. Smoothed TS overwrites old one in X immediately. 
+end
+
+function X = transform(X)
+
+
+for i = 1:size(X,1)
+    x_smoothed = NWSmoothing(X(i, :));
+    X(i,:) = x_smoothed;
+end
+
+
 end

@@ -1,4 +1,4 @@
-function add_features = CubicGenerator(workStructTS)
+function [add_features, mdl] = CubicGenerator(ts, mdl)
 % Generates new features based on the coefficients of the polynomial (cubic) 
 % model fitted to the current feature matrix.
 %
@@ -11,12 +11,19 @@ function add_features = CubicGenerator(workStructTS)
 % [m x 4] matrix of the new features to add
 
 n = 3;
-add_features = zeros(size(workStructTS.matrix,1), n + 1);
-x = [1:size(workStructTS.matrix,2)];
-for i = [1:size(workStructTS.matrix,1)]
-    y = workStructTS.matrix(i,:);
-    p = polyfit(x,y,n);
-    add_features(i, :) = p;
+add_features = transform(ts.matrix(:, 1:end - ts.deltaTr), n);
+mdl.transform = @(y) transform(y, n); 
+
 end
-    
+
+function res = transform(X, n)
+
+res = zeros(size(X,1), n + 1);
+idx = 1:size(X, 2);
+for i = 1:size(X,1)
+    y = X(i, :);
+    p = polyfit(idx, y, n);
+    res(i, :) = p;
+end
+
 end

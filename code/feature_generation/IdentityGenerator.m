@@ -1,4 +1,4 @@
-function add_features = IdentityGenerator(workStructTS)
+function [add_features, mdl] = IdentityGenerator(workStructTS, mdl)
 % Returns the features matrix as it is. To be used when no feature
 % generation is required.
 %
@@ -11,5 +11,6 @@ function add_features = IdentityGenerator(workStructTS)
 % X [m x deltaTp] matrix of the current features
 
 add_features = workStructTS.matrix;
+mdl.transform = @(x) x;
     
 end
