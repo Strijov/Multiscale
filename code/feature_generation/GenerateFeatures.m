@@ -12,20 +12,17 @@ function [StructTS] = GenerateFeatures(StructTS, generators, ...
 % workStructTS with new feature matrix
 
 if nargin == 2
-   idxTrain = (1:size(StructTS.matrix, 1))';
+   idxTrain = (1:size(StructTS.X, 1))';
    idxTest = zeros(0, 1);
 elseif nargin == 3
-    idxTest = (1:size(StructTS.matrix, 1))';
+    idxTest = (1:size(StructTS.X, 1))';
     idxTest = idxTest(~ismember(idxTest, idxTrain));
 end
 
 
 % only use the original feature matrix to generate new features: 
-Xold = StructTS.matrix(:, 1:StructTS.deltaTp);
+Xold = StructTS.X;
 
-Y = StructTS.matrix(:, end - StructTS.deltaTr+1:end);
-
-StructTS.matrix = [Xold(idxTrain, :), Y(idxTrain, :)];
 trainXnew = [];
 testXnew = [];    
 for i  = 1:numel(generators)
@@ -37,7 +34,7 @@ end
 Xnew = zeros(size(Y, 1), size(trainXnew, 2));
 Xnew(idxTrain, :) = trainXnew;
 Xnew(idxTest, :) = testXnew;
-StructTS.matrix = [Xnew, Y];
+StructTS.X = Xnew;
 %workStructTS.deltaTp = size(Xnew, 2);
     
 end    

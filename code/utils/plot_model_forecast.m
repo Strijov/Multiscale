@@ -1,6 +1,6 @@
 function [figname, caption] = plot_model_forecast(ts, model, time_frc_ratio, ls, folder, string)
 
-time =  1 + ts.deltaTp: ts.deltaTp + ts.deltaTr * size(ts.matrix, 1);
+time =  1 + ts.deltaTp: ts.deltaTp + numel(ts.Y);
 min_time_frc = fix(max(time - ts.deltaTp)*(1 - time_frc_ratio));
 time_frc = time(min_time_frc:end - ts.deltaTp);
 

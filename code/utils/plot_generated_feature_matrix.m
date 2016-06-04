@@ -7,9 +7,8 @@ if nargin < 4
    string = ''; 
 end
 
-X = ts.matrix(:, 1:end - ts.deltaTr);
 h = figure;
-imagesc(X);
+imagesc(ts.X);
 title_txt = strjoin(generator_names, ', ');
 title(title_txt);
 xlabel('Features', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');

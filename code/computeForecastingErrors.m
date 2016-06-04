@@ -24,20 +24,16 @@ function [testMAPE, trainMAPE, model] = computeForecastingErrors(ts, ...
 %        set...
 
 if nargin < 4
-    [idxTrain, ~, idxVal, idxX, idxY] = FullSplit(size(ts.matrix, 1), ...
-                            size(ts.matrix, 2), alpha_coeff, ts.deltaTr);
-else
-    idxX = 1:size(ts.matrix, 2) - ts.deltaTr;
-    idxY = size(ts.matrix, 2) - ts.deltaTr + 1: size(ts.matrix, 2);
+    [idxTrain, ~, idxVal] = TrainTestSplit(size(ts.X, 1), alpha_coeff);
 end
 
-[forecastY, trainForecastY, model] = feval(model.handle, ts.matrix(idxVal, idxX), model, ...
-                            ts.matrix(idxTrain, idxX), ts.matrix(idxTrain, idxY)); 
+[forecastY, trainForecastY, model] = feval(model.handle, ts.X(idxVal, :), model, ...
+                            ts.X(idxTrain, :), ts.Y(idxTrain, :)); 
 
 % Remember that forecasts and ts.matrix are normalized
-trainMAPE = calcSymMAPE(ts.matrix(idxTrain, idxY), trainForecastY);
-testMAPE = calcSymMAPE(ts.matrix(idxVal, idxY), forecastY);
-forecasts = zeros(size(ts.matrix, 1), ts.deltaTr);
+trainMAPE = calcSymMAPE(ts.Y(idxTrain, :), trainForecastY);
+testMAPE = calcSymMAPE(ts.Y(idxVal, :), forecastY);
+forecasts = zeros(size(ts.Y));
 forecasts(idxTrain, :) = trainForecastY;
 forecasts(idxVal, :) = forecastY;
 forecasts = unravel_target_var(forecasts);

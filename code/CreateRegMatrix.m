@@ -57,7 +57,7 @@ for i = 2:ts_num
 end
 
 s = s(1);
-s.matrix = [X, Y];
+%s.matrix = [X, Y];
 s.X = X;
 s.Y = Y;
 

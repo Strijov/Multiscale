@@ -4,7 +4,7 @@ MAX_TIME = 2000;
 MAX_PERIODS = 20;
 max_time = min(MAX_TIME, size(ts.x, 1));
 
-max_periods = min(MAX_PERIODS, size(ts.matrix, 1));
+max_periods = min(MAX_PERIODS, size(ts.Y, 1));
 if nargin < 2
    folder = 'fig'; 
 end
@@ -27,7 +27,7 @@ close(h);
 caption{1} = strcat(ts.readme,'\tTarget time series\t', regexprep(ts.name, '_', '.'),'.\t');
 
 h = figure;
-plot(ts.matrix(1:max_periods, end-ts.deltaTr+1:end)', 'LineWidth', 2);
+plot(ts.Y(1:max_periods, :)', 'LineWidth', 2);
 
 xlabel('Time, $t$', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
 ylabel('Data', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');

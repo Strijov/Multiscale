@@ -32,7 +32,7 @@ saveas(h, figname{1}, 'epsc');
 close(h)
 
 h = figure;
-imagesc(ts.matrix(:, 1:end - ts.deltaTr));
+imagesc(ts.X);
 %title('Total percentage of variance explained');
 legend(feature_names, 'Location', 'SouthEast');
 xlabel('Number of component', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
