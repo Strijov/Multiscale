@@ -3,6 +3,7 @@ function [newX, mdl] = DimReducePCA(X, mdl)
 EXPLAINED_VAR = 99;
 MAX_COMPS = 20;
 
+
 if nargin < 2 
     pars.expVar = EXPLAINED_VAR;
     pars.maxComps = MAX_COMPS;
@@ -12,7 +13,7 @@ else
     pars = mdl.params;
 end
 
-if size(X, 2) > size(X, 1)
+if size(X, 2) > size(X, 1) || det(cov(X)) == 0
     algo = 'svd';
 else
     algo = 'eig';
