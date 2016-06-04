@@ -1,4 +1,4 @@
-function s = CreateRegMatrix(s) 
+function s = CreateRegMatrix(s, n_predictions) 
 % This function creates a design matrix from the input time series structure
 % and and returns a single updated the structure 
 %
@@ -14,7 +14,9 @@ function s = CreateRegMatrix(s)
 % deltaTr	[int] number of time points to forecast
 % name  	[string] reference name of the particular time series
 % readme  	[string] (optional) data description, needed for report
-% dataser  	[string] reference name of the dataset
+% dataset  	[string] reference name of the dataset
+% n_predictions  [int] (optional) number of predictions to make. Specifies
+%                       horizon length as n_predictions*deltaTr
 %
 % Output:
 % this function adds the following fields:
@@ -24,7 +26,18 @@ function s = CreateRegMatrix(s)
 %                           To get back to real values should multiply with
 %                           the first value and sum up with second.
 
+
+
+if nargin < 2
+    n_predictions = 1;
+end
+
+
 ts_num = numel(s);
+% remember deltaTr value:
+deltaTr = s(1).deltaTr;
+% temporarily replace it deltaTr value:
+s(i).deltaTr = deltaTr*n_predictions;
 
 %s().norm_div = [];
 %s().norm_subt = [];
@@ -45,7 +58,11 @@ end
 
 s = s(1);
 s.matrix = [X, Y];
-%s.deltaTp = size(X, 2);
+s.X = X;
+s.Y = Y;
+
+% finally, return deltaTr value to its place:
+s.deltaTr = deltaTr;
 
 end
 
