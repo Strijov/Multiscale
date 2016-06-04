@@ -31,7 +31,7 @@ for i  = 1:numel(generators)
     testXnew = [testXnew, feval(generators(i).transform, Xold(idxTest, :))];
 end
 
-Xnew = zeros(size(Y, 1), size(trainXnew, 2));
+Xnew = zeros(size(Xold, 1), size(trainXnew, 2));
 Xnew(idxTrain, :) = trainXnew;
 Xnew(idxTest, :) = testXnew;
 StructTS.X = Xnew;

@@ -2,7 +2,7 @@ function [ts, feature_selection_mdl] = FeatureSelection(ts, feature_selection_md
                                                         idxTrain, idxTest)
 
 if nargin < 3
-    idxTrain = 1:size(ts.matrix, 1);
+    idxTrain = 1:size(ts.X, 1);
     idxTest = [];
 end
 feature_selection_mdl.params.minComps = ts.deltaTr;
@@ -10,7 +10,7 @@ feature_selection_mdl.params.minComps = ts.deltaTr;
                                    ts.X(idxTrain, :), ...
                                    feature_selection_mdl);
 Xtest = ts.X(idxTest, :);
-X = zeros(size(Y, 1), size(Xtrain, 2));
+X = zeros(size(ts.X, 1), size(Xtrain, 2));
 if ~isempty(idxTest)
     X(idxTest, :) = feature_selection_mdl.transform(Xtest);
 end

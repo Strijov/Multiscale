@@ -4,9 +4,9 @@ function runDemos(dataset, tsname)
 
 
 addpath(genpath(cd));
-LoadAndSave('HascData/sequence/');
+LoadAndSave('NNcompetition/');
 if nargin == 0
-    dataset = 'HascData';
+    dataset = 'NNcompetition';
     tsname = 'orig_train';
 end
 ts_struct_array  = LoadTimeSeries(dataset);

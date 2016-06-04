@@ -59,13 +59,16 @@ figs(1).names = fname;
 figs(1).captions = caption;
 
 
+[idxTrain, ~, idxTest] = TrainTestSplit(size(StructTS.Y, 1), 0);
+
 %
-StructTS = GenerateFeatures(StructTS, generators);
+StructTS = GenerateFeatures(StructTS, generators, idxTrain, idxTest);
 disp(['Generation finished. Total number of features: ', num2str(StructTS.deltaTp)]);
 [gen_fname, gen_caption] = plot_generated_feature_matrix(StructTS, ...
                                                          generator_names);
 
-[StructTS, feature_selection_mdl] = FeatureSelection(StructTS, feature_selection_mdl);
+[StructTS, feature_selection_mdl] = FeatureSelection(StructTS, feature_selection_mdl,...
+                                                        idxTrain, idxTest);
 [fs_fname, fs_caption] = feval(feature_selection_mdl.params.plot, feature_selection_mdl.res, ...
                                                             generator_names,...
                                                             StructTS); 
@@ -73,23 +76,12 @@ figs(2).names = [gen_fname, fs_fname];
 figs(2).captions = [gen_caption, fs_caption];
                                                         
                                                         
-MAPE_test = zeros(nModels,1);
-MAPE_train = zeros(nModels,1); 
-AIC = zeros(nModels,1);
 
 model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'obj', [],...
     'trainError', [], 'testError', [], 'unopt_flag', true, 'forecasted_y', []);
 
-
-for i = 1:nModels
-    disp(['Fitting model: ', nameModel{i}])
-    [MAPE_test(i), MAPE_train(i), model(i)] = computeForecastingErrors(...
-                                            StructTS, model(i), alpha_coeff);
-    AIC(i) = 2*StructTS.deltaTp + size(StructTS.X, 1) * ...
-                        log(nan_norm(StructTS.x(StructTS.deltaTp + 1:...
-                                      StructTS.deltaTp + numel(Y)) - ...
-                        model(i).forecasted_y'));
-end
+[MAPE_test, MAPE_train, AIC, model] = calcErrorsByModel(StructTS, model, ...
+                                                        idxTrain, idxTest);
 
 
 N_PREDICTIONS = 10;
