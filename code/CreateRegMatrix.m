@@ -37,7 +37,7 @@ ts_num = numel(s);
 % remember deltaTr value:
 deltaTr = s(1).deltaTr;
 % temporarily replace it deltaTr value:
-s(i).deltaTr = deltaTr*n_predictions;
+s(1).deltaTr = deltaTr*n_predictions;
 
 %s().norm_div = [];
 %s().norm_subt = [];

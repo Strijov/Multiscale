@@ -21,16 +21,16 @@ nModels = numel(model);
 alpha_coeff = 0; % FIXIT Please explain. 
 
 %Generating extra features:
-generator_names = {'SSA', 'NW', 'Cubic', 'Conv'}; %{'Identity'};
+generator_names = {'SSA', 'Cubic', 'Conv', 'NW'}; %{'Identity'};
 generator_handles = {@SsaGenerator, @NwGenerator, @CubicGenerator, @ConvGenerator}; %{@IdentityGenerator};
 generators = struct('handle', generator_handles, 'name', generator_names, ...
                                          'replace', true, 'transform', []);
 
 
 % Load and prepare dataset.
-%LoadAndSave('EnergyWeatherTS/orig');
+LoadAndSave('EnergyWeatherTS/orig');
 ts_struct_array  = LoadTimeSeries('EnergyWeather');
-numDataSets = 1;%numel(ts_struct_array);
+numDataSets = numel(ts_struct_array);
 
 report_struct = struct('handles', [], 'algos', [], 'headers', [],...
                  'res',  []); 
@@ -39,6 +39,12 @@ report_struct.algos = nameModel;
 report_struct.headers = {'MAPE test', 'MAPE train', 'AIC'};
 report_struct.res = cell(1, numDataSets);
 figs = struct('names', cell(1,4), 'captions', cell(1,4));
+
+FOLDER = fullfile('fig', ts_struct_array{1}(1).dataset);
+% If necessary, create dir
+if ~exist(FOLDER, 'dir')
+    mkdir(FOLDER);
+end
 
 
 for nDataSet = 1:numDataSets    
@@ -54,7 +60,7 @@ figs(1).captions = caption;
 
 
 %
-StructTS = GenerateFeatures(StructTS, generatorss);
+StructTS = GenerateFeatures(StructTS, generators);
 disp(['Generation finished. Total number of features: ', num2str(StructTS.deltaTp)]);
 [gen_fname, gen_caption] = plot_generated_feature_matrix(StructTS, ...
                                                          generator_names);

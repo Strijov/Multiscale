@@ -12,10 +12,10 @@ function [StructTS] = GenerateFeatures(StructTS, generators, ...
 % workStructTS with new feature matrix
 
 if nargin == 2
-   idxTrain = (1:size(ts.matrix, 1))';
+   idxTrain = (1:size(StructTS.matrix, 1))';
    idxTest = zeros(0, 1);
 elseif nargin == 3
-    idxTest = (1:size(ts.matrix, 1))';
+    idxTest = (1:size(StructTS.matrix, 1))';
     idxTest = idxTest(~ismember(idxTest, idxTrain));
 end
 
