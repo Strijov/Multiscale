@@ -20,14 +20,16 @@ elseif nargin == 3
 end
 
 
-Xold = StructTS.matrix(:, 1:end - StructTS.deltaTr);
+% only use the original feature matrix to generate new features: 
+Xold = StructTS.matrix(:, 1:StructTS.deltaTp);
+
 Y = StructTS.matrix(:, end - StructTS.deltaTr+1:end);
 
 StructTS.matrix = [Xold(idxTrain, :), Y(idxTrain, :)];
 trainXnew = [];
 testXnew = [];    
 for i  = 1:numel(generators)
-    [trainX, generators(i)] = feval(generators(i).handle, StructTS, generators(i));
+    [trainX, generators(i)] = feval(generators(i).handle, Xold(idxTrain, :), generators(i));
     trainXnew = [trainXnew, trainX];
     testXnew = [testXnew, feval(generators(i).transform, Xold(idxTest, :))];
 end

@@ -1,4 +1,4 @@
-function [add_features, mdl] = ConvGenerator(workStructTS, mdl)
+function [add_features, mdl] = ConvGenerator(X, mdl)
 % Generates new features based on statistics of the current feature matrix.
 %
 % Input:
@@ -9,9 +9,14 @@ function [add_features, mdl] = ConvGenerator(workStructTS, mdl)
 % Output:
 % [m x 5] matrix of the new features to add
 
-    X = workStructTS.matrix(:, 1:end - workStructTS.deltaTr);
     add_features = [sum(X, 2), mean(X, 2), min(X, [], 2), max(X, [], 2), std(X, 0, 2)]; 
-    mdl.transform = @(X) [sum(X, 2), mean(X, 2), min(X, [], 2), max(X, [], 2), std(X, 0, 2)];
+    if ~mdl.replace
+        add_features = [X, add_features];
+        mdl.transform = @(X) [X, sum(X, 2), mean(X, 2), min(X, [], 2), max(X, [], 2), std(X, 0, 2)];
+    else
+        mdl.transform = @(X) [sum(X, 2), mean(X, 2), min(X, [], 2), max(X, [], 2), std(X, 0, 2)];
+    end
+    
     
     %{
     for i = [1:size(workStructTS.matrix,1)]

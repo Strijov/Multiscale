@@ -1,4 +1,4 @@
-function [add_features, mdl] = SsaGenerator(ts, mdl)
+function [add_features, mdl] = SsaGenerator(X, mdl)
 % Performs SSA of of each feature row and returns its eigenvaluesas new features.
 %
 % Input:
@@ -10,9 +10,13 @@ function [add_features, mdl] = SsaGenerator(ts, mdl)
 % [m x N_COMP] matrix of the new features to add
 
 N_COMP = 3;
-add_features = transform(ts.matrix(:, 1:end - ts.deltaTr), N_COMP); 
-mdl.transform = @(x) transform(x, N_COMP);
-
+add_features = transform(X, N_COMP); 
+if ~mdl.replace
+    add_features = [X, add_features];
+    mdl.transform = @(X) [X, transform(X, N_COMP)];
+else
+    mdl.transform = @(X) transform(X, N_COMP);
+end
 end
 
 function res = transform(X, n)

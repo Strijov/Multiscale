@@ -1,4 +1,4 @@
-function [add_features, mdl] = CubicGenerator(ts, mdl)
+function [add_features, mdl] = CubicGenerator(X, mdl)
 % Generates new features based on the coefficients of the polynomial (cubic) 
 % model fitted to the current feature matrix.
 %
@@ -11,8 +11,14 @@ function [add_features, mdl] = CubicGenerator(ts, mdl)
 % [m x 4] matrix of the new features to add
 
 n = 3;
-add_features = transform(ts.matrix(:, 1:end - ts.deltaTr), n);
-mdl.transform = @(y) transform(y, n); 
+add_features = transform(X, n);
+if ~mdl.replace
+    add_features = [X, add_features];
+    mdl.transform = @(X) [X, transform(X, n)];
+else
+    mdl.transform = @(X) transform(X, n);
+end
+ 
 
 end
 
