@@ -68,7 +68,7 @@ end
 
 function [Y, X, timeY] = create_matrix_from_target(s, normalized_ts)
 
-% reverse time series, so that the top row is allways to be forecasted
+% reverse time series, so that the top row is always to be forecasted
 ts = flip(normalized_ts);
 time = flip(s.time);
 
