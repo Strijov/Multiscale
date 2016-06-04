@@ -47,7 +47,8 @@ s(1).deltaTr = deltaTr*n_predictions;
 
 if ts_num == 1
    s = s(1);
-   s.matrix = [X, Y]; 
+   s.X = X;
+   s.Y = Y; 
    return
 end
 

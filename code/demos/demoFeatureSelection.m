@@ -45,10 +45,7 @@ figs(1).names = fname;
 figs(1).captions = caption;
 
 % Split data into train and test:
-[idxTrain, ~, idxTest, ~, ~] = FullSplit(size(StructTS.matrix, 1), ...
-                                                size(StructTS.matrix, 2), ...
-                                                0, ...
-                                                StructTS.deltaTr);
+[idxTrain, ~, idxTest] = TrainTestSplit(size(StructTS.X, 1), 0);
                                             
 %
 %--------------------------------------------------------------------------
