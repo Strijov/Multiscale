@@ -1,4 +1,4 @@
-function smape = calcSymMAPE(forecasts, y)
+function smape = calcSymMAPE(y, forecasts)
 
 
 forecasts = forecasts(:);
