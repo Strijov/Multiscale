@@ -1,4 +1,4 @@
-function [figname, caption] = plot_model_forecast(ts, model, time_frc_ratio, ls)
+function [figname, caption] = plot_model_forecast(ts, model, time_frc_ratio, ls, folder, string)
 
 time =  1 + ts.deltaTp:numel(ts.x);
 min_time_frc = fix(max(time - ts.deltaTp)*(1 - time_frc_ratio));
@@ -22,8 +22,8 @@ axis tight;
 hold off;
 caption = strcat('Forecasting results for\t', ...,
                     regexprep(regexprep(ts.name, '_', '.'), '\\', '/'), ',\t', ...
-                    model.name, '.\t');
-figname = fullfile('fig', ts.dataset, strcat('res_', ts.name, '_', model.name, '.eps'));
+                    regexprep(model.name, ' ', '_') , '.\t');
+figname = fullfile(folder, ts.dataset, strcat('res_', ts.name, '_', model.name, string, '.eps'));
 saveas(h, figname, 'epsc');
 close(h);
 

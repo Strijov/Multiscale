@@ -23,7 +23,8 @@ alpha_coeff = 0; % FIXIT Please explain.
 %Generating extra features:
 generator_names = {'SSA', 'NW', 'Cubic', 'Conv'}; %{'Identity'};
 generator_handles = {@SsaGenerator, @NwGenerator, @CubicGenerator, @ConvGenerator}; %{@IdentityGenerator};
-generators = struct('handle', generator_handles, 'name', generator_names, 'transform', []);
+generators = struct('handle', generator_handles, 'name', generator_names, ...
+                                         'replace', true, 'transform', []);
 
 
 % Load and prepare dataset.

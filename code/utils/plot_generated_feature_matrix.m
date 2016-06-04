@@ -1,7 +1,13 @@
-function [fname, caption] = plot_generated_feature_matrix(X, generator_names, fname, folder)
+function [fname, caption] = plot_generated_feature_matrix(ts, generator_names, folder, string)
 
-caption = '';
+if nargin < 3
+   folder = 'fig'; 
+end
+if nargin < 4
+   string = ''; 
+end
 
+X = ts.matrix(:, 1:end - ts.deltaTr);
 h = figure;
 imagesc(X);
 title_txt = strjoin(generator_names, ', ');
@@ -9,13 +15,10 @@ title(title_txt);
 xlabel('Features', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
 ylabel('Samples', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
 set(gca, 'FontSize', 16, 'FontName', 'Times')
-if exist('fname', 'var')
-    caption = strcat('Feature generation results for\t', regexprep(regexprep(fname, '_', '.'), '\\', '/'), ...
-        '.\t', title_txt);
-    fname = fullfile('fig', folder, strcat('generation_', fname, '.eps'));
-    saveas(h, fname, 'epsc');
-    close(h);
-    
-end
+caption = strcat('Feature generation results for\t', regexprep(regexprep(ts.name, '_', '.'), '\\', '/'), ...
+    '.\t', title_txt);
+fname = fullfile(folder, ts.dataset, strcat('generation_', ts.name, string, '.eps'));
+saveas(h, fname, 'epsc');
+close(h);
 
 end

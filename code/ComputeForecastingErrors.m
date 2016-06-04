@@ -1,28 +1,30 @@
-function [testMAPE, trainMAPE, model] = ComputeForecastingErrors(ts, K, alpha_coeff, model)
+function [testMAPE, trainMAPE, model] = ComputeForecastingErrors(ts, ...
+                                                alpha_coeff, model, ...
+                                                idxTrain,...
+                                                idxVal)
 
 
 
-model.forecasted_y = zeros(size(ts.matrix, 1) * ts.deltaTr, ts.deltaTr*K);
-
-trainMAPE = zeros(1, K);
-testMAPE = zeros(1, K);
-for n = 1:K
+if nargin < 4
     [idxTrain, ~, idxVal, idxX, idxY] = FullSplit(size(ts.matrix, 1), ...
-                                size(ts.matrix, 2), alpha_coeff, ts.deltaTr);
-    
-    [forecastY, trainForecastY, model] = feval(model.handle, ts.matrix(idxVal, idxX), model, ...
-                                ts.matrix(idxTrain, idxX), ts.matrix(idxTrain, idxY)); 
-    
-    % Remember that forecasts and ts.matrix are normalized
-    trainMAPE(n) = calcSymMAPE(ts.matrix(idxTrain, idxY), trainForecastY);
-    testMAPE(n) = calcSymMAPE(ts.matrix(idxVal, idxY), forecastY);
-    forecasts = zeros(size(ts.matrix, 1), ts.deltaTr);
-    forecasts(idxTrain, :) = trainForecastY;
-    forecasts(idxVal, :) = forecastY;
-    forecasts = unravel_target_var(forecasts);
-    % Denormalize forecasts:
-    model.forecasted_y = forecasts*ts.norm_div + ts.norm_subt;
+                            size(ts.matrix, 2), alpha_coeff, ts.deltaTr);
+else
+    idxX = 1:size(ts.matrix, 2) - ts.deltaTr;
+    idxY = size(ts.matrix, 2) - ts.deltaTr + 1: size(ts.matrix, 2);
 end
+
+[forecastY, trainForecastY, model] = feval(model.handle, ts.matrix(idxVal, idxX), model, ...
+                            ts.matrix(idxTrain, idxX), ts.matrix(idxTrain, idxY)); 
+
+% Remember that forecasts and ts.matrix are normalized
+trainMAPE = calcSymMAPE(ts.matrix(idxTrain, idxY), trainForecastY);
+testMAPE = calcSymMAPE(ts.matrix(idxVal, idxY), forecastY);
+forecasts = zeros(size(ts.matrix, 1), ts.deltaTr);
+forecasts(idxTrain, :) = trainForecastY;
+forecasts(idxVal, :) = forecastY;
+forecasts = unravel_target_var(forecasts);
+% Denormalize forecasts:
+model.forecasted_y = forecasts*ts.norm_div + ts.norm_subt;
 model.testError = testMAPE;
 model.trainError = trainMAPE;
 
