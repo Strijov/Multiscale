@@ -4,16 +4,16 @@ function runDemos(dataset, tsname)
 
 
 addpath(genpath(cd));
-
+LoadAndSave('HascData/sequence/');
 if nargin == 0
-    dataset = 'EnergyWeather';
+    dataset = 'HascData';
     tsname = 'orig_train';
 end
 ts_struct_array  = LoadTimeSeries(dataset);
 ts = ts_struct_array{1};
 
 demoFeatureSelection(ts);
-
+%demoForecastHorizon(ts);
 
 
 end
