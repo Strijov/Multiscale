@@ -30,8 +30,8 @@ FOLDER = fullfile('fig/feature_selection/');
 if ~exist(FOLDER, 'dir')
     mkdir(FOLDER);
 end
-if ~exist(fullfile(FOLDER, StructTS(1).name), 'dir')
-    mkdir(fullfile(FOLDER, StructTS(1).name));
+if ~exist(fullfile(FOLDER, StructTS(1).dataset), 'dir')
+    mkdir(fullfile(FOLDER, StructTS(1).dataset));
 end
 
 
@@ -151,7 +151,7 @@ report_struct.res{3 + nGenerators}.figs = figs;
 
 %--------------------------------------------------------------------------
 % save results and generate report:
-save('report_struct_fs.mat', 'report_struct');
+save(['report_struct_fs_', StructTS.name ,'.mat'], 'report_struct');
 generate_tex_report(report_struct, 'FeatureSelection.tex');
 
 
