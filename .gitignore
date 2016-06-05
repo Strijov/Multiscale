@@ -1,2 +1,5 @@
 *.m~
 *.asv
+*.log
+*.aux
+*.bbl
