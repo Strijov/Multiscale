@@ -1,19 +1,19 @@
-function [forecasted_y, train_forecast, model] = SVRMethod(validation_x, model, trainX, trainY)
+function [forecasted_y, train_forecast, model] = SVRMethod(validationX, model, trainX, trainY)
 % Compute forecast using SVR model with fixed parameters.
 %
 % Input:
-% validation_x [1 x nx] feature row for foreasted point
+% validationX [mtest x nx] feature row for foreasted point
 % model [struct] containing model and its parameters;
 %   model.params stores parameters of SVM model, stored in structure with fields:
 %   C, lambda, epsilon, kernel, kerneloption, verbose
 % trainX, trainY stores training data:
-%   trainX [m x nx] stores features
-%   trainY [m x ny] stores target variables
+%   trainX [mtrain x nx] stores features
+%   trainY [mtrain x ny] stores target variables
 %
 % Output:
-% forecast_y  [1 x ny] forecasted values of y (regression of x)
+% forecast_y  [mtest x ny] forecasted values of y (regression of x)
 
-forecasted_y = zeros(1, size(trainY, 2));
+forecasted_y = zeros(size(validationX, 1), size(trainY, 2));
 train_forecast = zeros(size(trainY));
 
 if model.unopt_flag % For now, no optimization
@@ -37,7 +37,7 @@ for i = 1:size(trainY, 2)
     if isempty(xsup) || any(isnan(w)) % AM
         n_failed = n_failed + 1;
     else
-        forecasted_y(:, i) = svmval(validation_x, xsup, w, b, pars.kernel, ...
+        forecasted_y(:, i) = svmval(validationX, xsup, w, b, pars.kernel, ...
                                                          pars.kerneloption);
         train_forecast(:, i) = svmval(trainX, xsup, w, b, pars.kernel, ...
                                                          pars.kerneloption);
