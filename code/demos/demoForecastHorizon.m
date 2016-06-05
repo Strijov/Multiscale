@@ -62,12 +62,13 @@ for i = 1:length(frc_horizons)
 
     %Plot results:
     [fname, caption, ~, ~] = plot_forecasting_results(ts, model, 1:ts.deltaTr, ...
-                                                       1e3, FOLDER, '_fs_all');
+                            10, FOLDER, ['_hor_', num2str(frc_horizons(i))]);
     % Put results into report_struct
     figs = struct('names', cell(1), 'captions', cell(1));
     figs(1).names = {gen_fname, fname};
     figs(1).captions = {gen_caption, caption};
-    report_struct.res{i} = struct('data', 'All', 'errors', [MAPE_test, MAPE_train, AIC]);
+    report_struct.res{i} = struct('data', 'All', 'errors', [MAPE_test, ...
+                                                            MAPE_train, AIC]);
     report_struct.res{i}.figs = figs;    
 end
 
