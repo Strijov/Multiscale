@@ -10,9 +10,9 @@ function [idxTrain, idxTest, idxVal] = TrainTestSplit(nSamples, alpha_coeff)
 % idxTest       [1 x M2] indices of the test set
 % idxVal        1 - index of validation object, constant ...
 
-train_size = floor((1 - alpha_coeff) * (nSamples - 1));
-idxTrain = 2:train_size + 1;
-idxTest = train_size + 2:nSamples;
+test_size = floor(alpha_coeff*(nSamples - 1));
+idxTest = 2:test_size + 1;
+idxTrain = test_size + 2:nSamples;
 idxVal = 1;
  
 end
