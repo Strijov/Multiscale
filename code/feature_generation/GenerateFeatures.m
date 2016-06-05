@@ -1,5 +1,4 @@
-function [ts] = GenerateFeatures(ts, generators, ...
-                                            idxTrain, idxTest)
+function [ts, generators] = GenerateFeatures(ts, generators, idxTrain, idxTest)
 % Generates new feature matrix using methods, specified with generators.
 %
 % Input:
@@ -29,7 +28,7 @@ end
 
 
 % Only use the original feature matrix to generate new features: 
-Xold = StructTS.X(:, 1:ts.deltaTp); % FIXIT this way only historical points are used
+Xold = ts.X(:, 1:ts.deltaTp); % FIXIT this way only historical points are used
 
 trainXnew = [];
 testXnew = [];    

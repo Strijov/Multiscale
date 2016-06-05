@@ -1,24 +1,20 @@
-function demoForecastHorizon(StructTS)
+function demoForecastHorizon(ts)
 
 % Models
 nameModel = {'VAR', 'SVR', 'Random Forest', 'Neural network'};   % Set of models. 
 handleModel = {@VarForecast, @SVRMethod, @TreeBaggerForecast, @NnForecast};
 
 %Generating extra features:
-generator_names = {'SSA', 'NW', 'Cubic', 'Conv'}; %{'Identity'};
-generator_handles = {@SsaGenerator, @NwGenerator, @CubicGenerator, @ConvGenerator}; %{@IdentityGenerator};
+generator_names = {'Identity'};
+generator_handles = {@IdentityGenerator};
 generators = struct('handle', generator_handles, 'name', generator_names, ...
                                             'replace', true, 'transform', []);
-                                        
-
+                               
 % Feature selection:
-pars = struct('maxComps', 50, 'expVar', 90, 'plot', @plot_pca_results);
-feature_selection_mdl = struct('handle', @DimReducePCA, 'params', pars);
-
+feature_selection_mdl = struct('handle', @IdentityGenerator, 'params', {});
 
 % A range of forcast horizon values:
 frc_horizons = [1:10];
-
 
 % Init structure to generate report:
 report_struct = struct('handles', [], 'algos', [], 'headers', [],...
@@ -34,8 +30,8 @@ FOLDER = fullfile('fig/frc_horizon/');
 if ~exist(FOLDER, 'dir')
     mkdir(FOLDER);
 end
-if ~exist(fullfile(FOLDER, StructTS(1).dataset), 'dir')
-    mkdir(fullfile(FOLDER, StructTS(1).dataset));
+if ~exist(fullfile(FOLDER, ts(1).dataset), 'dir')
+    mkdir(fullfile(FOLDER, ts(1).dataset));
 end
 
 
@@ -48,25 +44,33 @@ AIC = zeros(1, length(frc_horizons));
 % length
 for i = 1:length(frc_horizons)
     % Add regression matrix to the main structure:
-    StructTS = CreateRegMatrix(StructTS, frc_horions(i));
+    ts = CreateRegMatrix(ts, frc_horions(i));
+    % Generate more eatures:
+    ts = GenerateFeatures(ts, generators);
+    % Select best features:
+    ts = FeatureSelection(ts, feature_selection_mdl);
 
     % Init models:
     model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'obj', [],...
         'trainError', [], 'testError', [], 'unopt_flag', true, 'forecasted_y', []);
 
-    [MAPE_test(i), MAPE_train(i), AIC(i), model] = calcErrorsByModel(StructTS, model,...
+    % Train models, obtain forecasts and calc errors:
+    [MAPE_test(i), MAPE_train(i), AIC(i), model] = calcErrorsByModel(ts, model,...
                                                           idxTrain, idxTest);
     disp('Results with all generators:')
     table(MAPE_test, MAPE_train, AIC, 'RowNames', nameModel)
 
-    [fname, caption, ~, ~] = plot_forecasting_results(StructTS, model, 1:StructTS.deltaTr, ...
+    %Plot results:
+    [fname, caption, ~, ~] = plot_forecasting_results(ts, model, 1:ts.deltaTr, ...
                                                        1e3, FOLDER, '_fs_all');
+    % Put results into report_struct
     figs = struct('names', cell(1), 'captions', cell(1));
     figs(1).names = {gen_fname, fname};
     figs(1).captions = {gen_caption, caption};
     report_struct.res{i} = struct('data', 'All', 'errors', [MAPE_test, MAPE_train, AIC]);
     report_struct.res{i}.figs = figs;    
 end
+
 
 %--------------------------------------------------------------------------
 % save results and generate report:
