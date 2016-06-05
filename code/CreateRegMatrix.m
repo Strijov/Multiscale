@@ -77,6 +77,10 @@ Y = fliplr(ts(idx(:, 1:s.deltaTr)));
 X = fliplr(ts(idx(:, s.deltaTr + 1:s.deltaTr + s.deltaTp)));
 timeY = time(idx_rows + s.deltaTr - 1);
 
+if numel(idx_rows) == 1
+    Y = Y';
+    X = X';
+end
 % test: uravel Y and plot it against original timeseries
 % this should be an identity plot
 % plot(reshape(flip(Y)', 1, numel(Y)), normalized_ts(s.deltaTp+1:end))
