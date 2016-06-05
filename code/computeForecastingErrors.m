@@ -9,8 +9,8 @@ function [testMAPE, trainMAPE, model] = computeForecastingErrors(ts, ...
 % train set and applies it to foreast the test set
 % Input:
 % ts - basic time series structure (for more details see createRegMatrix.m)
-%       ts.matrix [m x n] stores the design matrix, where the last [m x
-%       ts.deltaTr] columns store the target variable
+%       ts.X [m x n] and ts.Y [m x ts.deltaTr] store the independent and
+%        the target variables of the design matrix
 % model - basic model structure (see Systemdocs.doc)
 %       model.handle: handle to the forecasting model, 
 %       model.params: model parameters
@@ -19,8 +19,8 @@ function [testMAPE, trainMAPE, model] = computeForecastingErrors(ts, ...
 %       original time series ts.x [T x 1]
 % alpha_coeff - test to train ratio in train-test-validation split. Takes values in 
 %       range [0, 1]. "0" coressponds to no test set, only validetion FIXIT
-% idxTrain - row indices of ts.matrix
-% idxVal   - row indices of ts.matrix. FIXIT Validation set is used as test
+% idxTrain - indices of train objects from design matrix
+% idxVal   - test (validation) indices of test objects. FIXIT Validation set is used as test
 %        set...
 
 if nargin < 4
@@ -30,7 +30,7 @@ end
 [forecastY, trainForecastY, model] = feval(model.handle, ts.X(idxVal, :), model, ...
                             ts.X(idxTrain, :), ts.Y(idxTrain, :)); 
 
-% Remember that forecasts and ts.matrix are normalized
+% Remember that forecasts and ts.X, ts.Y are normalized, while ts.x is not
 trainMAPE = calcSymMAPE(ts.Y(idxTrain, :), trainForecastY);
 testMAPE = calcSymMAPE(ts.Y(idxVal, :), forecastY);
 forecasts = zeros(size(ts.Y));

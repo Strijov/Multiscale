@@ -2,29 +2,25 @@ function s = CreateRegMatrix(s, n_predictions)
 % This function creates a design matrix from the input time series structure
 % and and returns a single updated the structure 
 %
-% FIXIT and TODO make one simple structure and declare it in one place.
-% Put link to this place here&
 %
 % Input:
-% s         [1xn_ts] array of structures with fields:
-% x         [nx1] vector, time-series
-% time	    [nx1] time stamps, date serials in Unix format
-% legend	[string] contains lengend of each TS
-% deltaTp	[int] number of local history points to consider
-% deltaTr	[int] number of time points to forecast
-% name  	[string] reference name of the particular time series
-% readme  	[string] (optional) data description, needed for report
-% dataset  	[string] reference name of the dataset
+% s is a cell array of ts structures (see load_data/LoadAndSave.m for details)
+% with main fields:
+%   x       [nx1] vector, time-series
+%   time	[nx1] time stamps, date serials in Unix format
+%   deltaTp	[int] number of local history points to consider
+%   deltaTr	[int] number of time points to forecast
 % n_predictions  [int] (optional) number of predictions to make. Specifies
 %                       horizon length as n_predictions*deltaTr
 %
 % Output:
 % this function adds the following fields:
-% matrix	[NxM] object-features matrix
+% X	[m x N] feature columns of the design matrix
+% Y	[m x deltaTr*n_predictions] target columns of the design matrix
 % norm_div	[1xn] cell with normalization multiplier.
 % norm_subt	[1xn] cell with minimum for each TS. 
-%                           To get back to real values should multiply with
-%                           the first value and sum up with second.
+%                 To get back to real values should multiply with
+%                 the first value and sum up with second.
 
 
 

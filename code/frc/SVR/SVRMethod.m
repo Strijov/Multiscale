@@ -2,16 +2,16 @@ function [forecasted_y, train_forecast, model] = SVRMethod(validation_x, model, 
 % Compute forecast using SVR model with fixed parameters.
 %
 % Input:
-% x [1 x deltaTp] feature string for last period
+% validation_x [1 x nx] feature row for foreasted point
 % model [struct] containing model and its parameters;
 %   model.params stores parameters of SVM model, stored in structure with fields:
 %   C, lambda, epsilon, kernel, kerneloption, verbose
 % trainX, trainY stores training data:
-%   trainX [m x deltaTp] stores features
-%   trainY [m x deltaTr] stores target variables
+%   trainX [m x nx] stores features
+%   trainY [m x ny] stores target variables
 %
 % Output:
-% forecast_y  [1 x deltaTr] forecasted values of y (regression of x)
+% forecast_y  [1 x ny] forecasted values of y (regression of x)
 
 forecasted_y = zeros(1, size(trainY, 2));
 train_forecast = zeros(size(trainY));

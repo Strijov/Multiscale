@@ -2,15 +2,15 @@ function [forecasted_y, train_forecast, model] = VarForecast(validation_x, model
 % Compute forecast using VAR model with fixed parameters.
 %
 % Input:
-% validation_x [1 x deltaTp] feature string for last period
+% validation_x [1 x nx] feature row for the forecasted period
 % model [struct] containing model and its parameters;
-%   model.params stores AR parameters matrix W [deltaTp x deltaTr] 
+%   model.params stores AR parameters matrix W [nx x ny] 
 % trainX, trainY stores training data:
-%   trainX [m x deltaTp] stores features
-%   trainY [m x deltaTr] stores target variables
+%   trainX [m x nx] stores features
+%   trainY [m x ny] stores target variables
 %
 % Output:
-% forecast_y  [1 x deltaTr] forecasted values of y (regression of x)
+% forecast_y  [1 x ny] forecasted values of y (regression of x)
 
 if model.unopt_flag
     model.params = inv(trainX'*trainX)*trainX'*trainY;

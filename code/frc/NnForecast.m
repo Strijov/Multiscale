@@ -1,18 +1,18 @@
 function [forecasted_y, train_forecast, model] = NnForecast(validation_x, model, trainX, trainY)
-% Compute forecast using VAR model with fixed parameters.
+% Compute forecast using NN model with fixed parameters.
 %
 % Input:
-% validation_x [1 x deltaTp] feature string for last period
+% validation_x [1 x nx] feature row for the forecasted points
 % model [struct] containing NN model and its parameters:
-%   model.params stores the tuned network (network object), which expects [deltaTp x M]
-%   input and outputs [deltaTr x M] matrix
+%   model.obj stores the tuned network (network object), which expects [nx x M]
+%   input and outputs [ny x M] matrix
 % trainX, trainY store training data:
-%   trainX [m x deltaTp] stores features
-%   trainY [m x deltaTr] stores target variables
+%   trainX [m x nx] stores features
+%   trainY [m x ny] stores target variables
 % 
 %
 % Output:
-% forecast_y  [1 x deltaTr] forecasted values of y (regression of x)
+% forecast_y  [1 x ny] forecasted values of y (regression of x)
 
 HIDDEN_LAYER_SIZE = 10;
 
