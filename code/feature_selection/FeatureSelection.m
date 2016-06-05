@@ -22,6 +22,7 @@ if nargin < 3
     idxTrain = 1:size(ts.X, 1);
     idxTest = [];
 end
+
 feature_selection_mdl.params.minComps = ts.deltaTr;
 [Xtrain, feature_selection_mdl] = feval(feature_selection_mdl.handle, ...
                                    ts.X(idxTrain, :), ...
