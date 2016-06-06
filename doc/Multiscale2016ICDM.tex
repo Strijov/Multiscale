@@ -51,7 +51,7 @@
 
 
 \newcommand{\argmax}{\mathop{\rm arg\,max}\limits}
-\graphicspath{ {../code/fig/} {fig/}}
+\graphicspath{ {../code/fig/} {fig/} {../code/}}
 
 \renewcommand{\baselinestretch}{1.3}
 \begin{document}
@@ -94,16 +94,16 @@ Consider a large set of time series~$\fD=\{\bs^{(m)}| \; m = 0\dots, {M}\}$, whe
 is a sequence of observations $s_i = s(t_i)$ of some real-valued signal $s(t)$\footnote{The signal s(t) and the resultant time series $\bs$ are potentially multivariate. We use the same notation for multivariate and univariate time series. }.
 Each time series $\bs^{(m)}$ has its own sampling rate $1/\tau^{(m)}$:
 \[t_i^{(m)} = {i}\cdot\tau^{(m)}.\]
-  
- The task is to obtain forecasts $\hat{s}^{(0)}(t_i)$ for  $\dtr <  t_i \leq T_{\max} + \dtr$, given the set  $\fD$. (Fig.~\ref{fg:online_frc}), which minimise mean absolute percentage errors~\ref{fg:retrospective} 
+
+ The task is to obtain forecasts $\hat{s}^{(0)}(t_i)$ for  $\dtr <  t_i \leq T_{\max} + \dtr$, given the set  $\fD$. (Fig.~\ref{fg:online_frc}), which minimise mean absolute percentage errors~\ref{fg:retrospective}
 % \begin{equation}\label{eq:forecasting_problem}
 % \end{equation}
  \[ MAPE(\bs, \hat{\bs}) = \frac{1}{r}\sum_{i = 1}^{r} \frac{|s_i - \hat{s}_i|}{|s_i|}. \]
 Here MAPE is evaluated for the retrospective forecasts~\ref{fg:retrospective}, where the most recent historical samples $\bx_0^{*}$ are concealed and forecasted as if they were unknown. Then the quality of the model $\fx$ is evaluated according to its performance on these concealed samples.
- 
- 
+
+
  We consider the forecasting problem as the multivariate regression problem, where target variables are the vectors of lagged values $s^{(0)}(t_i)$ of the target time series $\bs^{(0)}$. form an object set at a set Let $\bx^{*}$ denote rows of the design matrix for the regression problem. Each vector~$\bx^{*} = [\by| \bx]$ collects all the time series over the time period~$\dtp$ (Fig.~\ref{fg:draw}), which stands for the local \emph{prehistory}. The vector $\bx^{*}$ includes samples from previous history of time series from $\fD$ as well as any derivatives $\vf$, which are called generated features.
- 
+
 
 
 \begin{figure}[!ht]
@@ -136,7 +136,7 @@ without intersection in target parts  $\y_i$:
 \begin{equation}\label{eq:strategy2} |t_{i+1} - t_i| > \dtr.
 \end{equation}
 Following~\eqref{eq:segment} and~\eqref{eq:strategy2}, extract segments $[\bx^{(m)}_i | \by^{(m)}_i]$, $i = 1, \dots, q$ from all time series $\bs^{(m)} \in \fD$ and form the matrix
- \[
+ \begin{equation}\label{eq:design_matrix}
 \bX^*= \left[
 \begin{array}{c|c}
  \underset{q{\times}n}\bX & \underset{q{\times}r}\bY  \\
@@ -152,7 +152,7 @@ Following~\eqref{eq:segment} and~\eqref{eq:strategy2}, extract segments $[\bx^{(
 \hline
 \bx^{(0)} &  \bx^{(1)} & \dots & \bx^{(M)} &  {\by}^{(0)}   \\
 \end{array}
-\right]. \]
+\right]. \end{equation}
 
 Denote a row from the pair~$\bY,\bX$ as $\by,\bx$ and call these vectors the target and the features.
 
@@ -162,9 +162,9 @@ Denote a row from the pair~$\bY,\bX$ as $\by,\bx$ and call these vectors the tar
 \end{figure}
 
 Now we are able the regression problem as follows:
-\begin{equation*}
+\begin{equation}\label{eq:regression_problem}
 \hat{\y} = f(\x, \hat{\w}), \text{~where~}
-\end{equation*}
+\end{equation}
 \[ \hat{\w} = \argmin_{\hat{\w}}\frac{r}{q}\sum_{i=1}^{q} MAPE(\y_i, f(\x_i, \w)).\]
 
 \section{Feature generation}
@@ -234,17 +234,157 @@ TODO
 
 
 \section{Computational experiment}
-The goal of the experiment is to compare the following four approaches to the multiscale forecasting:
-1) Bayesian mixture model approach,
-2) random multumodel,
-3) vector random decision forest and
-4) vector adaboost.
-The last two algorithms are modifications of \hl{[link]}. The modifications are needed to produce the vector of multiscale time series as their outputs. The experiment is performed on 1) non-modified autoregression data and on 2) data with additionally generated features as it is described in the corresponding section.
+The goal of the experiment is to study the performance of multivariate regression approach to the problem of 
+time series forecasting.
+
+This section presents the results of computational comparison of the forecasting models presented above. To test each model, we used several datasets, described below.
+
+\paragraph{Datasets}
+\begin{itemize}
+\item Energy consumption dataset. The dataset consists of the Polish electricity load time series~\cite{EnergyWeatherData} and weather time series in Warsaw (Longtitude: 21.25, Latitude: 52.30, Elevation: 94). Energy time series contain hourly records, weather time series were measured daily. The dataset comprises two original time multiscale series, which correspond to the periods of 1999--2001 and 2002-2004 and is augmented with artificially modified versions of these two time series. \hl{More on data preparation.}
+\item Accelerometry dataset. This dataset consists of accelerometry time series from the Human Activity Sensing Consortium~\cite{HASCdata}. Each time series in the datasets is a sequence of acceleration records. The time series were recorded for 120 seconds while a subject performed a sequence of activities: stay, walk, jog, skip, stair up or stair down. The sampling rate varies between 10 and 100Hz, but stays constant for each time series.
+\item Financial dataset~\cite{NNcompetition}.  The dataset A (final, complete) from the 2006/07 Forecasting Competition for Neural Networks \& Computational Intelligence. The dataset contains 111 monthly time series drawn from homogeneous population of empirical business time series.
+\end{itemize}
+
+\paragraph{Experimental results}
+Each time series from the datasets was converted to the design matrix~\eqref{eq:design_matrix} and used as input data to train regression models according to~\eqref{eq:regression_problem}. 
+
+Table~\ref{fg:feature_selection_res_HASC1} lists forecasting errors for the proposed feature generation strategies applied to the test time series from the HASC dataset.
+ 
+
+
 
 \begin{figure}[!t]
 \centering\includegraphics[width=0.45\textwidth]{02_A0.png}
 \label{fg:IDEF}
 \caption{Multiscale forecasting pipeline.}
+\end{figure}
+
+
+\begin{table}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Feature set & Models &MAPE test & MAPE train & AIC\\
+\hline
+\multirow{4}{*}{History} &VAR &   7.215 &    0.067 &    1427.927\\
+\cline{2-5}
+ &SVR &   0.718 &    0.320 &    1396.463\\
+\cline{2-5}
+ &Random Forest &   0.463 &    0.206 &    1388.668\\
+\cline{2-5}
+ &Neural network &   0.624 &    0.407 &    1389.319\\
+\cline{2-5}
+\hline
+\multirow{4}{*}{SSA} &VAR &   0.755 &    0.402 &    1375.959\\
+\cline{2-5}
+ &SVR &   1.348 &    0.434 &    1401.053\\
+\cline{2-5}
+ &Random Forest &   0.746 &    0.335 &    1413.181\\
+\cline{2-5}
+ &Neural network &   0.544 &    0.387 &    1379.299\\
+\cline{2-5}
+\hline
+\multirow{4}{*}{Cubic} &VAR &   0.562 &    0.382 &    1371.387\\
+\cline{2-5}
+ &SVR &   0.779 &    0.418 &    1373.299\\
+\cline{2-5}
+ &Random Forest &   0.647 &    0.320 &    1412.390\\
+\cline{2-5}
+ &Neural network &   0.795 &    0.387 &    1371.354\\
+\cline{2-5}
+\hline
+\multirow{4}{*}{Conv} &VAR &   2.182 &    2.180 &    2252.866\\
+\cline{2-5}
+ &SVR &   2.986 &    0.537 &    1413.103\\
+\cline{2-5}
+ &Random Forest &   0.583 &    0.323 &    1408.932\\
+\cline{2-5}
+ &Neural network &   0.743 &    0.406 &    1373.955\\
+\cline{2-5}
+\hline
+\multirow{4}{*}{NW} &VAR &   2.021 &    0.041 &    1605.095\\
+\cline{2-5}
+ &SVR &   0.714 &    0.323 &    1398.156\\
+\cline{2-5}
+ &Random Forest &   0.427 &    0.195 &    1381.996\\
+\cline{2-5}
+ &Neural network &   0.815 &    0.425 &    1389.418\\
+\cline{2-5}
+\hline
+\multirow{4}{*}{All} &VAR &   2.000 &    2.000 &    9910.259\\
+\cline{2-5}
+ &SVR &   0.751 &    0.324 &    1395.951\\
+\cline{2-5}
+ &Random Forest &   0.415 &    0.194 &    1381.906\\
+\cline{2-5}
+ &Neural network &   1.254 &    0.399 &    1381.405\\
+\cline{2-5}
+\hline
+\multirow{4}{*}{PCA} &VAR &   0.712 &    0.310 &    1388.756\\
+\cline{2-5}
+ &SVR &   0.748 &    0.323 &    1395.828\\
+\cline{2-5}
+ &Random Forest &   0.504 &    0.214 &    1378.500\\
+\cline{2-5}
+ &Neural network &   0.563 &    0.392 &    1377.608\\
+\cline{2-5}
+\hline
+\end{tabular}
+\caption{Forecasting errors measured as symmetric MAPE.}
+\label{fg:feature_selection_res_HASC1}
+\end{table}
+
+
+\begin{figure}
+\centering
+%\subfloat[]{\includegraphics[width=0.18\textwidth]{fig/feature_selection/HascData/data_HASC1001.png}}
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/feature_selection/HascData/data_segms_HASC1001.png}}
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001.png}}
+\caption{Accelerometry time series from HASC project. 
+(a) Target segments of the time series HASC1001. (b) Forecasting results for	HASC1001 (VAR, SVR, Random Forest, Neural network).}
+\end{figure}
+
+\begin{figure}
+\centering
+\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_VAR.png}}
+\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_SVR.png}}\\
+\subfloat[Random forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_Random_Forest.png}}
+\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_Neural_network.png}}\\
+\caption{Forecasts of HASC1001 with historical features only.}
+\end{figure}
+
+%\begin{figure}
+%\centering
+%\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_VAR_fs_Conv.png}}
+%\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_SVR_fs_Conv.png}}\\
+%\subfloat[Random forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_Random_Forest_fs_Conv.png}}
+%\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_Neural_network_fs_Conv.png}}\\
+%\caption{Forecasts of HASC1001 with convolutional features added.}
+%\end{figure}
+
+\begin{figure}
+\centering
+\subfloat[SSA]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/generation_HASC1001_fs_SSA.png}}
+\subfloat[SSA]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_SSA.png}}\\
+\subfloat[Cubic]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/generation_HASC1001_fs_Cubic.png}}
+\subfloat[Cubic]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_Cubic.png}} \\
+\subfloat[Conv]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/generation_HASC1001_fs_Conv.png}}
+\subfloat[Conv]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_Conv.png}} \\
+\subfloat[NW]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/generation_HASC1001_fs_NW.png}}
+\subfloat[NW]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_NW.png}} \\
+\subfloat[All]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/generation_HASC1001_fs_all.png}}
+\subfloat[All]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_all.png}}
+\caption{Forecasting results for various feature generation strategies, HASC1001.}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_VAR_fs_pca.png}}
+\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_SVR_fs_pca.png}}\\
+\subfloat[Random Forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_Random_Forest_fs_pca.png}}
+\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_Neural_network_fs_pca.png}}\\
+\caption{ Forecasting results for HASC1001 with all feature generation strategies applied and PCA feature selection.}
 \end{figure}
 
 \nocite{*}
