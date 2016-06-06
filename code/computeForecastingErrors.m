@@ -27,18 +27,18 @@ if nargin < 4
     [idxTrain, ~, idxVal] = TrainTestSplit(size(ts.X, 1), alpha_coeff);
 end
 
-[forecastY, trainForecastY, model] = feval(model.handle, ts.X(idxVal, :), model, ...
+[forecastY, matTrainForecastY, model] = feval(model.handle, ts.X(idxVal, :), model, ...
                             ts.X(idxTrain, :), ts.Y(idxTrain, :)); 
 
 % Remember that forecasts and ts.X, ts.Y are normalized, while ts.x is not
-trainMAPE = calcSymMAPE(ts.Y(idxTrain, :), trainForecastY);
+trainMAPE = calcSymMAPE(ts.Y(idxTrain, :), matTrainForecastY);
 testMAPE = calcSymMAPE(ts.Y(idxVal, :), forecastY);
-forecasts = zeros(size(ts.Y));
-forecasts(idxTrain, :) = trainForecastY;
-forecasts(idxVal, :) = forecastY;
-forecasts = unravel_target_var(forecasts);
+vecForecasts = zeros(size(ts.Y));
+vecForecasts(idxTrain, :) = matTrainForecastY;
+vecForecasts(idxVal, :) = forecastY;
+vecForecasts = unravel_target_var(vecForecasts);
 % Denormalize forecasts:
-model.forecasted_y = forecasts*ts.norm_div + ts.norm_subt;
+model.forecasted_y = vecForecasts*ts.norm_div + ts.norm_subt;
 model.testError = testMAPE;
 model.trainError = trainMAPE;
 

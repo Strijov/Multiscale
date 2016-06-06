@@ -8,7 +8,7 @@ function [ts, generators] = GenerateFeatures(ts, generators, idxTrain, idxTest)
 %   are @ConvGenerator, @CubicGenerator, @NwGenerator, @SsaGenerator. When no
 %   feature generation is required, use {@IdentityGenerator}
 %   generator.transform - handle to the feature generation on the test set.
-%   generator.replace - this parameter speifies weather the new features
+%   generator.replace - this parameter specifies weather the new features
 %   replace old matrix or add up on the left.
 % idxTrain - indices of train set, optional 
 % idxTest  - indices of test set, optional. If idxTrain and idxTest are
