@@ -11,11 +11,7 @@ feature_selection_mdl = struct('handle', @DimReducePCA, 'params', pars);
 
 % Models
 nameModel = {'VAR', 'SVR', 'Random Forest', 'Neural network'};   % Set of models. 
-handleModel = {@VarForecast, @SVRMethod, @TreeBaggerForecast, @NnForecast};
-
-model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'obj', [],...
-    'trainError', [], 'testError', [], 'unopt_flag', true, 'forecasted_y', []);
-nModels = numel(model);
+handleModel = {@TreeBaggerForecast, @VarForecast, @SVRMethod, @NnForecast};
 
 % Experiment settings. 
 alpha_coeff = 0; % FIXIT Please explain. 
@@ -77,7 +73,7 @@ figs(2).captions = [gen_caption, fs_caption];
                                                         
                                                         
 
-model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'obj', [],...
+model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'transform', [],...
     'trainError', [], 'testError', [], 'unopt_flag', true, 'forecasted_y', []);
 
 [MAPE_test, MAPE_train, AIC, model] = calcErrorsByModel(StructTS, model, ...

@@ -70,7 +70,7 @@ report_struct.res{1}.figs = figs;
 %--------------------------------------------------------------------------
 % Next, try transformations by one:
 for n_gen = 1:nGenerators
-    model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'obj', [],...
+    model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'transform', [],...
         'trainError', [], 'testError', [], 'unopt_flag', true, 'forecasted_y', []);
     
     newStructTS = GenerateFeatures(StructTS, generators(n_gen), idxTrain, idxTest);

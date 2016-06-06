@@ -24,7 +24,7 @@ if model.unopt_flag % For now, no optimization
     model.params.kerneloption = 1;
     model.params.kernel='gaussian';
     model.params.verbose=0;
-    model = train_svr(trainY, model);
+    model = train_svr(trainX, trainY, model);
 else
     model = ExtraOptimization(trainX, trainY, model);
 end
@@ -36,26 +36,28 @@ train_forecast = feval(model.transform, trainX);
 end
 
 
-function model = train_svr(trainY, model)
+function model = train_svr(trainX, trainY, model)
 
 %test_forecast = zeros(size(validationX, 1), size(trainY, 2));
 %train_forecast = zeros(size(trainY));
 
 pars = model.params;
-model.params.trained = cell(1, size(trainY, 2));
+model.params.trained = struct('w', cell(1, size(trainY, 2)), 'b', [], 'xsup', []);
 for i = 1:size(trainY, 2)
     train_y = trainY(:, i);
     [xsup, ~, w, b] = svmreg(trainX, train_y, pars.C, pars.epsilon, ...
                 pars.kernel, pars.kerneloption, pars.lambda, pars.verbose);
     
-    model.params.trained(i) = {'w':w, 'b':b, 'xsup':xsup};
+    model.params.trained(i).w = w; 
+    model.params.trained(i).b = b; 
+    model.params.trained(i).xsup = xsup;
         %test_forecast(:, i) = svmval(validationX, xsup, w, b, pars.kernel, ...
         %                                                 pars.kerneloption);
         %train_forecast(:, i) = svmval(trainX, xsup, w, b, pars.kernel, ...
         %                                                 pars.kerneloption);
         
 end
-model.transform = @(X) transform(X, model.params.trained, pars.kernel);
+model.transform = @(X) transform(X, model.params.trained, pars);
 
 
 end
@@ -66,7 +68,7 @@ frc = zeros(size(X, 1), numel(model_pars));
 n_failed = 0; % keep track of badly converged dimensions
 
 for j = 1:numel(model_pars)
-    if isempty(model_pars(j).xsup) || any(model_pars(j).isnan(w)) % AM
+    if isempty(model_pars(j).xsup) || any(isnan(model_pars(j).w))
         n_failed = n_failed + 1;
     else
     frc(:, j) = svmval(X, model_pars(j).xsup, model_pars(j).w, model_pars(j).b, ...

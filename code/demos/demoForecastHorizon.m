@@ -64,7 +64,7 @@ for i = 1:length(frc_horizons)
     ts = FeatureSelection(ts, feature_selection_mdl, idxTrain, idxTest);
 
     % Init models:
-    model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'obj', [],...
+    model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'transform', [],...
         'trainError', [], 'testError', [], 'unopt_flag', true, 'forecasted_y', []);
 
     % Train models, obtain forecasts and calc errors:
