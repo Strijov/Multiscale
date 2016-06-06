@@ -22,8 +22,9 @@ axis tight;
 hold off;
 caption = strcat('Forecasting results for\t', ...,
                     regexprep(regexprep(ts.name, '_', '.'), '\\', '/'), ',\t', ...
-                    regexprep(model.name, ' ', '_') , '.\t');
-figname = fullfile(folder, ts.dataset, strcat('res_', ts.name, '_', model.name, string, '.eps'));
+                    model.name , '.\t');
+figname = fullfile(folder, ts.dataset, strcat('res_', ts.name, '_', ...
+                            regexprep(model.name, ' ', '_'), string, '.eps'));
 saveas(h, figname, 'epsc');
 close(h);
 

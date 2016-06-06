@@ -55,6 +55,7 @@ for i = 1:length(frc_horizons)
     [idxTrain, idxTest, idxVal] = TrainTestSplit(size(ts.X, 1), 1 - TRAIN_TEST_RATIO);
     idxTest = [idxVal, idxTest];
     if isempty(idxTrain)
+       max_frc = i - 1;
        break; 
     end
     % Generate more eatures:
@@ -81,11 +82,11 @@ for i = 1:length(frc_horizons)
     figs(1).captions = caption;
     figs(1).names = fname_m;
     figs(1).captions = caption_m;
-    report_struct.res{i} = struct('data', 'All', 'errors', [MAPE_test, ...
-                                                            MAPE_train, AIC]);
+    report_struct.res{i} = struct('data', 'All', 'errors', [MAPE_test(:,i),...
+                                                MAPE_train(:,i), AIC(:, i)]);
     report_struct.res{i}.figs = figs;    
 end
-
+report_struct.res = report_struct.res(1:max_frc);
 
 %--------------------------------------------------------------------------
 % save results and generate report:
