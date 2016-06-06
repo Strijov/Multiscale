@@ -34,14 +34,14 @@ if model.unopt_flag
     
     test_forecast = zeros(size(validationX, 1), size(trainY, 2));
     train_forecast = zeros(size(trainY));
-    tb = zeros(1, size(trainY, 2));
+    tb = cell(1, size(trainY, 2));
 
     for j = 1:size(trainY, 2)
-    tb(j) = TreeBagger(nTrees, trainX, trainY(:, j),...
+    tb{j} = TreeBagger(nTrees, trainX, trainY(:, j),...
                                   'Method', 'regression', ...
                                   'NVarToSample', model.params.nVars);
-    test_forecast(:, j) = tb(j).predict(validationX);
-    train_forecast(:, j) = tb(j).predict(trainX);                          
+    test_forecast(:, j) = tb{j}.predict(validationX);
+    train_forecast(:, j) = tb{j}.predict(trainX);                          
     end
     model.transform = @(x) transform(x, tb);
 else
