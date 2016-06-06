@@ -11,7 +11,7 @@ feature_selection_mdl = struct('handle', @DimReducePCA, 'params', pars);
 
 % Models
 nameModel = {'VAR', 'SVR', 'Random Forest', 'Neural network'};   % Set of models. 
-handleModel = {@TreeBaggerForecast, @VarForecast, @SVRMethod, @NnForecast};
+handleModel = {@VarForecast, @SVRMethod, @TreeBaggerForecast, @NnForecast};
 
 % Experiment settings. 
 alpha_coeff = 0; % FIXIT Please explain. 
