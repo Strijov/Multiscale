@@ -1,4 +1,4 @@
-function [forecasted_y, train_forecast, model] = TreeBaggerForecast(validationX, model, trainX, trainY)
+function [test_forecast, train_forecast, model] = TreeBaggerForecast(validationX, model, trainX, trainY)
 % Compute forecasts using 'Random Forest' model with fixed parameters.
 %
 % Input:
@@ -11,7 +11,9 @@ function [forecasted_y, train_forecast, model] = TreeBaggerForecast(validationX,
 % 
 %
 % Output:
-% forecast_y  [test x ny] forecasted values of y (regression of x)
+% test_forecast  [mtest x ny] forecasted values of test y (regression of x)
+% train_forecast  [mtrain x ny] forecasted values of train y (regression of x)
+% model - ipdated model structure
 
 ALPHA = 0.0005;
 N_PREDICTORS = 20;
@@ -28,20 +30,35 @@ if model.unopt_flag
     %plot([oobFrcError, oobFrcError + ALPHA*(1:length(oobFrcError))']);
     
     model.unopt_flag = false;
-    model.obj = tb;
     model.params.nTrees = nTrees;
-end
+    
+    test_forecast = zeros(size(validationX, 1), size(trainY, 2));
+    train_forecast = zeros(size(trainY));
+    tb = zeros(1, size(trainY, 2));
 
-forecasted_y = zeros(size(validationX, 1), size(trainY, 2));
-train_forecast = zeros(size(trainY));
-for j = 1:size(trainY, 2)
-    tb = TreeBagger(nTrees, trainX, trainY(:, j),...
+    for j = 1:size(trainY, 2)
+    tb(j) = TreeBagger(nTrees, trainX, trainY(:, j),...
                                   'Method', 'regression', ...
                                   'NVarToSample', model.params.nVars);
-    forecasted_y(:, j) = model.obj.predict(validationX);
-    train_forecast(:, j) = model.obj.predict(trainX);
-                          
+    test_forecast(:, j) = tb(j).predict(validationX);
+    train_forecast(:, j) = tb(j).predict(trainX);                          
+    end
+    model.transform = @(x) transform(x, tb);
+else
+    train_forecast = fefal(model.transform, trainX);
+    test_forecast = fefal(model.transform, validationX);
 end
 
+
+end
+
+
+function frc = transform(X, tb)
+
+frc = zeros(size(X, 1), numel(tb));
+for j = 1:numel(tb)
+    frc(:, j) = tb.predict(X);
+end
+    
 
 end

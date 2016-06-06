@@ -1,4 +1,4 @@
-function [forecasted_y, train_forecast, model] = VarForecast(validationX, model,trainX, trainY)
+function [test_forecast, train_forecast, model] = VarForecast(validationX, model,trainX, trainY)
 % Compute forecast using VAR model with fixed parameters.
 %
 % Input:
@@ -10,7 +10,9 @@ function [forecasted_y, train_forecast, model] = VarForecast(validationX, model,
 %   trainY [mtrain x ny] stores target variables
 %
 % Output:
-% forecast_y  [mtest x ny] forecasted values of y (regression of x)
+% test_forecast  [mtest x ny] forecasted values of test y (regression of x)
+% train_forecast  [mtrain x ny] forecasted values of train y (regression of x)
+% model - ipdated model structure
 
 if model.unopt_flag
     model.params = inv(trainX'*trainX)*trainX'*trainY;
@@ -18,7 +20,9 @@ if model.unopt_flag
 end
 
 W = model.params;
-forecasted_y = validationX*W;
+test_forecast = validationX*W;
 train_forecast = trainX*W;
+
+model.transform = @(x) x*W;
 
 end
