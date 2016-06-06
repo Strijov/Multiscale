@@ -79,7 +79,7 @@ end
 
 if n_failed > 0
     disp(['Warning: svmreg converged with empty set of support vectors for ', ...
-        num2str(n_failed), ' target dimensions out of ', num2str(size(trainY, 2))]);
+        num2str(n_failed), ' target dimensions out of ', num2str(size(numel(model_pars), 2))]);
 end
 
 end

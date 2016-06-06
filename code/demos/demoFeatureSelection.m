@@ -50,7 +50,7 @@ figs(1).captions = caption;
 %
 %--------------------------------------------------------------------------
 % First, try with original features
-model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'obj', [],...
+model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'transform', [],...
     'trainError', [], 'testError', [], 'unopt_flag', true, 'forecasted_y', []);
 
 [MAPE_test, MAPE_train, AIC, model] = calcErrorsByModel(StructTS, model, idxTrain, idxTest);
@@ -97,7 +97,7 @@ end
 %}
 %--------------------------------------------------------------------------
 % Then for all features ...
-model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'obj', [],...
+model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'transform', [],...
         'trainError', [], 'testError', [], 'unopt_flag', true, 'forecasted_y', []);
     
 StructTS = GenerateFeatures(StructTS, generators, idxTrain, idxTest);
@@ -120,7 +120,7 @@ report_struct.res{2 + nGenerators}.figs = figs;
 
 %--------------------------------------------------------------------------
 % Finally, apply feature selection:
-model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'obj', [],...
+model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'transform', [],...
         'trainError', [], 'testError', [], 'unopt_flag', true, 'forecasted_y', []);
 
     
