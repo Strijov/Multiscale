@@ -77,10 +77,6 @@ model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'transfor
 [MAPE_test, MAPE_train, AIC, model] = calcErrorsByModel(StructTS, model, ...
                                                         idxTrain, idxTest);
 
-
-N_PREDICTIONS = 10;
-idx_target = 1:min(StructTS.deltaTr*N_PREDICTIONS, numel(StructTS.x));
-
 % plot idx_target forecasts of real_y if the error does not exceed 1e3
 [fname, caption, fname_by_models, caption_by_models] = plot_forecasting_results(StructTS, model, 1:StructTS.deltaTr, 1e3);
 figs(3).names = fname;
