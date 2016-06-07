@@ -1,11 +1,11 @@
+function demoCompareForecasts(tsStructArray)
 % Script demoCompareForecasts runs one forecasting experiment.
-% It applies several competitive models to single dataet. 
-
-% FIXIT Plese type DONE here after your changes.
-addpath(genpath(cd));
+% It applies several competitive models to single dataset. 
 
 % Feature selection:
-pars = struct('maxComps', 50, 'expVar', 90, 'plot', @plot_pca_results);
+MAX_COMPS = 50; % max number of selected features
+EXPLAINED_VARIANCE = % percantage of explained variance in PCA
+pars = struct('maxComps', MAX_COMPS, 'expVar', EXPLAINED_VARIANCE, 'plot', @plot_pca_results);
 feature_selection_mdl = struct('handle', @DimReducePCA, 'params', pars);
 
 
@@ -14,7 +14,7 @@ nameModel = {'VAR', 'SVR', 'Random Forest', 'Neural network'};   % Set of models
 handleModel = {@VarForecast, @SVRMethod, @TreeBaggerForecast, @NnForecast};
 
 % Experiment settings. 
-alpha_coeff = 0; % FIXIT Please explain. 
+alphaCoeff = 0; % Test to train ratio. 
 
 %Generating extra features:
 generator_names = {'SSA', 'Cubic', 'Conv', 'NW'}; %{'Identity'};
@@ -24,9 +24,7 @@ generators = struct('handle', generator_handles, 'name', generator_names, ...
 
 
 % Load and prepare dataset.
-LoadAndSave('EnergyWeatherTS/orig');
-ts_struct_array  = LoadTimeSeries('EnergyWeather');
-numDataSets = numel(ts_struct_array);
+numDataSets = numel(tsStructArray);
 
 report_struct = struct('handles', [], 'algos', [], 'headers', [],...
                  'res',  []); 
@@ -36,7 +34,7 @@ report_struct.headers = {'MAPE test', 'MAPE train', 'AIC'};
 report_struct.res = cell(1, numDataSets);
 figs = struct('names', cell(1,4), 'captions', cell(1,4));
 
-FOLDER = fullfile('fig', ts_struct_array{1}(1).dataset);
+FOLDER = fullfile('fig', tsStructArray{1}(1).dataset);
 % If necessary, create dir
 if ~exist(FOLDER, 'dir')
     mkdir(FOLDER);
@@ -44,7 +42,7 @@ end
 
 
 for nDataSet = 1:numDataSets    
-StructTS = ts_struct_array{nDataSet};
+StructTS = tsStructArray{nDataSet};
 
 % Add regression matrix to the main structure:
 StructTS = CreateRegMatrix(StructTS);    

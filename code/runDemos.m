@@ -9,9 +9,10 @@ if nargin == 0
     dataset = 'NNcompetition';
     tsname = 'orig_train';
 end
-ts_struct_array  = LoadTimeSeries(dataset);
-ts = ts_struct_array{1};
+tsStructArray  = LoadTimeSeries(dataset);
+ts = tsStructArray{1};
 
+demoCompareForeasts(tsStructArray);
 demoFeatureSelection(ts);
 %demoForecastHorizon(ts);
 
