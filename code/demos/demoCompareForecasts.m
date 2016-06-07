@@ -4,7 +4,7 @@ function demoCompareForecasts(tsStructArray)
 
 % Feature selection:
 MAX_COMPS = 50; % max number of selected features
-EXPLAINED_VARIANCE = % percantage of explained variance in PCA
+EXPLAINED_VARIANCE = 90; % percantage of explained variance in PCA
 pars = struct('maxComps', MAX_COMPS, 'expVar', EXPLAINED_VARIANCE, 'plot', @plot_pca_results);
 feature_selection_mdl = struct('handle', @DimReducePCA, 'params', pars);
 
@@ -96,4 +96,6 @@ table(MAPE_test, MAPE_train, AIC, 'RowNames', nameModel)
 end
 save('report_struct_EW.mat', 'report_struct');
 generate_tex_report(report_struct, 'CompareModels_EW.tex');
+
+end
 
