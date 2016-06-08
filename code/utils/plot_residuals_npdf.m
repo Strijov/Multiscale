@@ -1,9 +1,18 @@
-function plot_residuals_npdf(testRes, trainRes, trainPD, testPD)
+function [figname, caption] = plot_residuals_npdf(testRes, trainRes, trainPD, testPD, ...
+                                                  ts, model, folder, string)
 % Plot normal pdf and QQ-plots for train and test residuals
+figname = {'',''};
+caption = {'',''};
+if nargin < 8
+   string = '';
+end
+if nargin < 7   
+   folder = '';
+end
 
 allRes = sort([trainRes(:); testRes(:)]);
 
-figure;
+fig = figure;
 hold on;
 plot(allRes, pdf(trainPD, allRes), 'linewidth', 2);
 plot(allRes, pdf(testPD, allRes), 'linewidth', 2);
@@ -13,8 +22,16 @@ ylabel('Normal pdf', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex')
 set(gca, 'FontSize', 16, 'FontName', 'Times')
 axis tight;
 hold off;
+if nargin >= 6
+caption{1} = strcat('Normal probability density functions fitted to residuals of \t', ...
+                    model.name, ...
+                    regexprep(regexprep(ts.name, '_', '.'), '\\', '/'), '.\t');
+figname{1} = fullfile(folder, ts.dataset, strcat('npdf_', ts.name, string, '.eps'));
+saveas(fig, figname{1}, 'epsc');
+close(fig)
+end
 
-figure;
+fig = figure;
 hold on;
 h1 = qqplot(trainRes, trainPD);
 h2 = qqplot(testRes, testPD);
@@ -37,6 +54,14 @@ title('');
 set(gca, 'FontSize', 16, 'FontName', 'Times')
 axis tight;
 hold off;
+if nargin >= 6
+caption{2} = strcat('Quntile-qquantile plot for probability density functions fitted to residuals of \t', ...
+                    model.name, ...
+                    regexprep(regexprep(ts.name, '_', '.'), '\\', '/'), '.\t');
+figname{2} = fullfile(folder, ts.dataset, strcat('npdf_', ts.name, string, '.eps'));
+saveas(fig, figname{2}, 'epsc');
+close(fig)
+end
 
 
 end
