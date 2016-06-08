@@ -58,7 +58,7 @@ if nargin >= 6
 caption{2} = strcat('Quntile-qquantile plot for probability density functions fitted to residuals of \t', ...
                     model.name, ...
                     regexprep(regexprep(ts.name, '_', '.'), '\\', '/'), '.\t');
-figname{2} = fullfile(folder, ts.dataset, strcat('npdf_', ts.name, string, '.eps'));
+figname{2} = fullfile(folder, ts.dataset, strcat('qq_', ts.name, string, '.eps'));
 saveas(fig, figname{2}, 'epsc');
 close(fig)
 end

@@ -22,10 +22,10 @@ set(gca, 'FontSize', 16, 'FontName', 'Times')
 axis tight;
 hold off;
 if nargin >= 4
-caption = strcat('Quntile-qquantile plot for probability density functions fitted to residuals of \t', ...
+caption = strcat('Residual mean and standard deviation to residuals of \t', ...
                     model.name, ...
                     regexprep(regexprep(ts.name, '_', '.'), '\\', '/'), '.\t');
-figname = fullfile(folder, ts.dataset, strcat('npdf_', ts.name, string, '.eps'));
+figname = fullfile(folder, ts.dataset, strcat('stats_', ts.name, string, '.eps'));
 saveas(fig, figname, 'epsc');
 close(fig)
 end
