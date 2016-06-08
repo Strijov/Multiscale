@@ -45,8 +45,8 @@ if model.unopt_flag
     end
     model.transform = @(x) transform(x, tb);
 else
-    train_forecast = fefal(model.transform, trainX);
-    test_forecast = fefal(model.transform, validationX);
+    train_forecast = feval(model.transform, trainX);
+    test_forecast = feval(model.transform, validationX);
 end
 
 
@@ -57,7 +57,7 @@ function frc = transform(X, tb)
 
 frc = zeros(size(X, 1), numel(tb));
 for j = 1:numel(tb)
-    frc(:, j) = tb.predict(X);
+    frc(:, j) = tb{j}.predict(X);
 end
     
 
