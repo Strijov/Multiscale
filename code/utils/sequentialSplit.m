@@ -6,7 +6,6 @@ function idxSplits = sequentialSplit(nRowsTotal, nRowsSplit)
 nSplits = nRowsTotal - nRowsSplit; 
 
 % Create matrix idxSplits, where each row is a list of subsmple indices:  
-idxSplits = repmat(1:nRowsSplit, nSplits, 1) + ...
-           repmat((0:nSplits-1)', 1, nRowsSplit);
+idxSplits = bsxfun(@plus, 1:nRowsSplit, (0:nSplits-1)');
 
 end

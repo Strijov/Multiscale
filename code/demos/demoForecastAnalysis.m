@@ -60,6 +60,10 @@ trainRes = trainRes(:);
 testPD = fitdist(testRes, 'Normal');
 trainPD = fitdist(trainRes, 'Normal');
 
+disp('Residuals mean and standard deviation');
+table([testPD.mu, testPD.sigma; trainPD.mu, trainPD.sigma], 'RowNames', {'Test', 'Train'});
+
+
 % Plot normal pdf and QQ-plots for train and test residuals 
 [fname, caption] = plot_residuals_npdf(testRes, trainRes, testPD, trainPD, ...
                                           StructTS, model, FOLDER, ...
@@ -74,19 +78,16 @@ report_struct.res.figs = figs;
                                       
 %--------------------------------------------------------------------------
 % save results and generate report:
-save(['report_struct_fa_', StructTS.name ,'.mat'], 'report_struct');
-generate_tex_report(report_struct, 'FrcAnalysis.tex');
+%save(['report_struct_fa_', StructTS.name ,'.mat'], 'report_struct');
+%generate_tex_report(report_struct, 'FrcAnalysis.tex');
 
 
 end
 
 function [testFrc, trainFrc] = split_forecast(forecasts, idxTrain, idxTest, deltaTr)
 
-idxTrain = repmat(idxTrain, deltaTr, 1) + repmat((0:deltaTr-1)', 1, numel(idxTrain));
-%idxTrain = idxTrain(:);
-idxTest = repmat(idxTest, deltaTr, 1) + repmat((0:deltaTr-1)', 1, numel(idxTest));
-%idxTest = idxTest(:);
-
+idxTrain = bsxfun(@plus, idxTrain, (0:deltaTr - 1)');
+idxTest = bsxfun(@plus, idxTest, (0:deltaTr - 1)');
 
 testFrc = forecasts(idxTest);
 trainFrc = forecasts(idxTrain);

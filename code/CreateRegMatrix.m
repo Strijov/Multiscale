@@ -70,8 +70,7 @@ ts = flip(normalized_ts);
 time = flip(s.time);
 
 idx_rows = 1:s.deltaTr:numel(ts) - s.deltaTr - s.deltaTp + 1;
-idx = repmat(idx_rows', 1, s.deltaTr + s.deltaTp)...
-    + repmat(0:s.deltaTr + s.deltaTp - 1, numel(idx_rows), 1);
+idx = bsxfun(@plus, idx_rows', 0:s.deltaTr + s.deltaTp - 1);
 
 Y = fliplr(ts(idx(:, 1:s.deltaTr)));
 X = fliplr(ts(idx(:, s.deltaTr + 1:s.deltaTr + s.deltaTp)));
