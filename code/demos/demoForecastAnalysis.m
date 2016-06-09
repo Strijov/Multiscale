@@ -1,4 +1,4 @@
-function demoForecastAnalysis(StructTS, model)
+function demoForecastAnalysis(StructTS, model, generators, feature_selection_mdl)
 
 TRAIN_TEST_RATIO = 0.75;
 SUBSAMPLE_SIZE = 50;
@@ -30,11 +30,15 @@ nTest = size(idxTest, 2);
 
 testRes = zeros(size(StructTS.Y, 2), numel(idxTest));
 trainRes = zeros(size(StructTS.Y, 2), numel(idxTrain));
-
+StructTS = GenerateFeatures(StructTS, generators);
+    
 %--------------------------------------------------------------------------
 % Calc frc residuals by split: 
 for i = 1:nSplits
     ts = StructTS;
+    [ts, feature_selection_mdl] = FeatureSelection(ts, feature_selection_mdl, ...
+                                             idxTrain(i, :), idxTest(i, :));
+
     %idxSplit = [idxTest(i, :), idxTrain(i,:)];
     %ts.X = StructTS.X(idxSplit, :);
     %ts.Y = StructTS.Y(idxSplit, :);
@@ -49,8 +53,8 @@ end
 %--------------------------------------------------------------------------
 % Plot evolution of res mean and std by for each model 
 [stats_fname, stats_caption] = plot_residuals_stats(testRes', trainRes',...
-                                          StructTS, model, FOLDER, ...
-                                          regexprep(model.name, ' ', '_'));
+                                        StructTS, model, FOLDER, ...
+                                        ['_fs_',regexprep(model.name, ' ', '_')]);
 
 
 testRes = testRes(:);
@@ -61,13 +65,13 @@ testPD = fitdist(testRes, 'Normal');
 trainPD = fitdist(trainRes, 'Normal');
 
 disp('Residuals mean and standard deviation');
-table([testPD.mu, testPD.sigma; trainPD.mu, trainPD.sigma], 'RowNames', {'Test', 'Train'});
+table([testPD.mu, testPD.sigma; trainPD.mu, trainPD.sigma]);
 
 
 % Plot normal pdf and QQ-plots for train and test residuals 
 [fname, caption] = plot_residuals_npdf(testRes, trainRes, testPD, trainPD, ...
                                           StructTS, model, FOLDER, ...
-                                          regexprep(model.name, ' ', '_'));
+                                          ['_fs_',regexprep(model.name, ' ', '_')]);
 
 figs = struct('names', cell(1), 'captions', cell(1));
 figs.names = [stats_fname, fname];

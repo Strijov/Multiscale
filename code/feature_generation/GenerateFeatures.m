@@ -41,6 +41,10 @@ end
 Xnew = zeros(size(Xold, 1), size(trainXnew, 2));
 Xnew(idxTrain, :) = trainXnew;
 Xnew(idxTest, :) = testXnew;
+if ~any([generators().replace])
+   Xnew = [Xold, X]; 
+end
+
 ts.X = Xnew;
     
 end    

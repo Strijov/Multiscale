@@ -25,8 +25,6 @@ if model.unopt_flag % For now, no optimization
     model.params.kernel='gaussian';
     model.params.verbose=0;
     model = train_svr(trainX, trainY, model);
-else
-    model = ExtraOptimization(trainX, trainY, model);
 end
 
 test_forecast = feval(model.transform, validationX);

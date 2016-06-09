@@ -22,7 +22,7 @@ end
 [wcoeff,~,variance,~,var_ratio] = pca(X, 'algorithm', algo);
 nComps = choose_n_comps(var_ratio, pars.expVar);
 nComps = max([nComps, pars.minComps]);
-nComps = min([nComps, pars.maxComps]);
+nComps = min([nComps, pars.maxComps, size(wcoeff, 2)]);
 
 newX = X*wcoeff(:, 1:nComps);
 mdl.transform = @(x) x*wcoeff(:, 1:nComps);
