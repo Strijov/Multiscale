@@ -28,8 +28,28 @@ end
 
 
 % Only use the original feature matrix to generate new features: 
-Xold = ts.X(:, 1:ts.deltaTp); % FIXIT this way only historical points are used
+Xold = ts.X(:, 1:sum(ts.deltaTp)); % FIXIT this way only historical points are used
+xBlocks = [0, cumsum(ts.deltaTp)];
+X = [];
 
+% generate new features separately for all submatrices of different time
+% series:
+for i = 1:numel(ts.deltaTp)
+   [Xnew, generators] = genSubMatrix(generators, Xold(:, xBlocks(i) + 1:xBlocks(i+1)), idxTrain, idxTest); 
+   X = [X, Xnew];
+end
+
+if ~any([generators().replace])
+   Xnew = [Xold, X]; 
+end
+
+ts.X = Xnew;
+    
+end    
+
+
+function [Xnew, generators] = genSubMatrix(generators, Xold, idxTrain, idxTest)
+   
 trainXnew = [];
 testXnew = [];    
 for i  = 1:numel(generators)
@@ -41,15 +61,8 @@ end
 Xnew = zeros(size(Xold, 1), size(trainXnew, 2));
 Xnew(idxTrain, :) = trainXnew;
 Xnew(idxTest, :) = testXnew;
-if ~any([generators().replace])
-   Xnew = [Xold, X]; 
+
+    
+
 end
-
-ts.X = Xnew;
-    
-end    
-   
-    
-
-    
 

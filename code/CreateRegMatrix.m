@@ -1,4 +1,4 @@
-function s = CreateRegMatrix(s, n_predictions) 
+function s = CreateRegMatrix(s, nPredictions) 
 % This function creates a design matrix from the input time series structure
 % and and returns a single updated the structure 
 %
@@ -10,7 +10,7 @@ function s = CreateRegMatrix(s, n_predictions)
 %   time	[nx1] time stamps, date serials in Unix format
 %   deltaTp	[int] number of local history points to consider
 %   deltaTr	[int] number of time points to forecast
-% n_predictions  [int] (optional) number of predictions to make. Specifies
+% nPredictions  [int] (optional) number of predictions to make. Specifies
 %                       horizon length as n_predictions*deltaTr
 %
 % Output:
@@ -25,41 +25,47 @@ function s = CreateRegMatrix(s, n_predictions)
 
 
 if nargin < 2
-    n_predictions = 1;
+    nPredictions = 1;
 end
 
 
-ts_num = numel(s);
-% remember deltaTr value:
-deltaTr = s(1).deltaTr;
-% temporarily replace it deltaTr value:
-s(1).deltaTr = deltaTr*n_predictions;
+nTs = numel(s);
 
-%s().norm_div = [];
-%s().norm_subt = [];
+% compute the number of rows in design matrix
+nRows = floor((numel(s(1).x) - s(1).deltaTp)/s(1).deltaTr/nPredictions);
 
-[normalized_ts, s(1).norm_div, s(1).norm_subt] = NormalizeTS(s(1));
-[Y, X, timeY] = create_matrix_from_target(s(1), normalized_ts);
 
-if ts_num == 1
-   s = s(1);
-   s.X = X;
-   s.Y = Y; 
-   return
+% init normalization fields:
+norm_div = zeros(1, nTs);
+norm_subt = zeros(1, nTs);
+
+% define boundaries of var blocks in design matrix 
+xBlocks = [0, cumsum([s().deltaTp])];
+yBlocks = [0, cumsum([s().deltaTr])*nPredictions];
+X = zeros(nRows, xBlocks(end));
+Y = zeros(nRows, yBlocks(end));
+timeY = zeros(nRows, nTs); % for testing purposes, delete later
+
+% normalize time series before adding them to design matrix 
+for i = 1:nTs
+    [normalizedTs, norm_div(i), norm_subt(i)] = NormalizeTS(s(i));
+    [Y(:, yBlocks(i) +  1:yBlocks(i+1)), ...
+     X(:, xBlocks(i) + 1:xBlocks(i+1)), ...
+     timeY(:, i)] = create_matrix_from_target(s(i), normalizedTs);
 end
 
-for i = 2:ts_num
-    [normalized_ts, ~, ~] = NormalizeTS(s(i));
-    X = [X, add_timeseries(s(i), normalized_ts, timeY)];
+if ~ckeckTimeIsRight(timeY)
+    disp('CreateRegMatrix: Time entries might be inconsistent');
 end
 
+% write the results to one stuct:
+s(1).deltaTr = [s().deltaTr];
+s(1).deltaTp = [s().deltaTp];
 s = s(1);
-%s.matrix = [X, Y];
 s.X = X;
 s.Y = Y;
-
-% finally, return deltaTr value to its place:
-s.deltaTr = deltaTr;
+s.norm_subt = norm_subt;
+s.norm_div = norm_div;
 
 end
 
@@ -84,6 +90,13 @@ end
 % this should be an identity plot
 % plot(reshape(flip(Y)', 1, numel(Y)), normalized_ts(s.deltaTp+1:end))
 end
+
+function checkRes = ckeckTimeIsRight(timeY)
+
+checkRes =  ~any(max(timeY(2:end, :), [], 2) > min(timeY(1:end-1, :), [], 2));
+
+end
+
 
 function X = add_timeseries(s, nozmalized_ts, timeY)
 
