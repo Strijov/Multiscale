@@ -2,6 +2,7 @@ function demoForecastAnalysis(StructTS, model, generators, feature_selection_mdl
 
 TRAIN_TEST_RATIO = 0.75;
 SUBSAMPLE_SIZE = 50;
+N_PREDICTIONS = 10;
 % Create dir for saving figures:
 FOLDER = fullfile('fig/frc_analysis');
 if ~exist(FOLDER, 'dir')
@@ -21,12 +22,10 @@ report_struct.headers = {'Mean $\varepsilon$, test', 'Std $\varepsilon$, test',.
 
 
 %--------------------------------------------------------------------------
-StructTS = CreateRegMatrix(StructTS, 10);
+StructTS = CreateRegMatrix(StructTS, N_PREDICTIONS);
 % Split design matrix rows into subsamples of size SUBSAMPLE_SIZE
 [idxTest, idxTrain] = MultipleSplit(size(StructTS.X, 1), SUBSAMPLE_SIZE, TRAIN_TEST_RATIO);
 nSplits = size(idxTrain, 1);
-nTrain = size(idxTrain, 2);
-nTest = size(idxTest, 2);
 
 StructTS = GenerateFeatures(StructTS, generators);
 residuals = cell(nSplits, numel(StructTS.x));
@@ -38,48 +37,19 @@ for i = 1:nSplits
     [ts, feature_selection_mdl] = FeatureSelection(ts, feature_selection_mdl, ...
                                              idxTrain(i, :), idxTest(i, :));
 
-    %idxSplit = [idxTest(i, :), idxTrain(i,:)];
-    %ts.X = StructTS.X(idxSplit, :);
-    %ts.Y = StructTS.Y(idxSplit, :);
     [~, ~, model] = computeForecastingErrors(ts, model, 0, idxTrain(i,:), idxTest(i,:));
-    %residuals = [residuals, calcResidualsByTs(model.forecasted_y, ts.x, ts.deltaTp)];
     residuals(i, :) = calcResidualsByTs(model.forecasted_y, ts.x, ts.deltaTp);
-    %[testRes(:, (i-1)*nTest + 1:i*nTest), ...
-    % trainRes(:, (i-1)*nTrain + 1:i*nTrain)] = split_forecast(residuals, ...
-    %                            idxTrain(i, :), idxTest(i, :), ts.deltaTr);
+    
     
 end
 [testRes, trainRes] = split_forecast_by_ts(residuals, idxTrain, idxTest, ...
-                                           ts.deltaTr*size(StructTS.Y, 2)/sum(ts.deltaTr));
+                                           ts.deltaTr*N_PREDICTIONS);
 
 %--------------------------------------------------------------------------
 % Plot evolution of res mean and std by for each model 
+[fname, caption] = plot_results(testRes, trainRes, StructTS, model, ...
+                                ts.deltaTr*N_PREDICTIONS, FOLDER);
 
-for i = 1:numel(testRes)
-[stats_fname, stats_caption] = plot_residuals_stats(testRes{i}', trainRes{i}',...
-                                        StructTS, model, FOLDER, ...
-                                        [regexprep(StructTS.legend{i}, ' ', '_'), ...
-                                        '_fs_',regexprep(model.name, ' ', '_')]);
-
-
-testRes{i} = testRes{i}(:);
-trainRes{i} = trainRes{i}(:);
-
-% Fit residuals to normal distribution:
-testPD = fitdist(testRes{i}, 'Normal');
-trainPD = fitdist(trainRes{i}, 'Normal');
-
-disp('Residuals mean and standard deviation');
-table([testPD.mu, testPD.sigma; trainPD.mu, trainPD.sigma]);
-
-
-% Plot normal pdf and QQ-plots for train and test residuals 
-[fname, caption] = plot_residuals_npdf(testRes{i}, trainRes{i}, testPD, trainPD, ...
-                                          StructTS, model, FOLDER, ...
-                                          [regexprep(StructTS.legend{i}, ' ', '_'), ...
-                                        '_fs_',regexprep(model.name, ' ', '_')]);
-
-end
 figs = struct('names', cell(1), 'captions', cell(1));
 figs.names = [stats_fname, fname];
 figs.captions = [stats_caption, caption];
@@ -124,6 +94,39 @@ for i = 1:size(idxTrain, 1)
     testFrc(:, (i-1)*nTest + 1:i*nTest) = forecasts(idxTestMat);
     trainFrc(:, (i-1)*nTrain + 1:i*nTrain) = forecasts(idxTrainMat);
 end
+
+end
+
+function [fname, caption] = plot_results(testRes, trainRes, StructTS, model, ...
+                                           nPredictions, FOLDER)
+
+for i = 1:numel(testRes)
+    if nPredictions(i) > 1
+    [stats_fname, stats_caption] = plot_residuals_stats(testRes{i}', trainRes{i}',...
+                                            StructTS, model, FOLDER, ...
+                                            [regexprep(StructTS.legend{i}, ' ', '_'), ...
+                                            '_fs_',regexprep(model.name, ' ', '_')]);
+
+
+    testRes{i} = testRes{i}(:);
+    trainRes{i} = trainRes{i}(:);
+
+    % Fit residuals to normal distribution:
+    testPD = fitdist(testRes{i}, 'Normal');
+    trainPD = fitdist(trainRes{i}, 'Normal');
+
+
+    % Plot normal pdf and QQ-plots for train and test residuals 
+    [fname, caption] = plot_residuals_npdf(testRes{i}, trainRes{i}, testPD, trainPD, ...
+                                              StructTS, model, FOLDER, ...
+                                              [regexprep(StructTS.legend{i}, ' ', '_'), ...
+                                            '_fs_',regexprep(model.name, ' ', '_')]);
+
+    end
+end
+
+fname = [stats_fname, fname];
+caption = [stats_caption, caption];
 
 end
 

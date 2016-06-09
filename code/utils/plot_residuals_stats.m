@@ -12,7 +12,7 @@ if nargin < 5
 end
 
 fig = figure;
-errorbar(1:size(trainRes, 2), mean(trainRes, 1), std(trainRes, [], 1));
+errorbar(1:size(trainRes, 2), nanmean(trainRes, 1), nanstd(trainRes, [], 1));
 hold on;
 errorbar(1:size(testRes, 2), mean(testRes, 1), std(testRes, [], 1));
 legend({'Train', 'Test'}, 'Location', 'NorthWest');
