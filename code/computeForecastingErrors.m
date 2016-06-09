@@ -36,9 +36,9 @@ testMAPE = calcSymMAPE(ts.Y(idxVal, :), forecastY);
 vecForecasts = zeros(size(ts.Y));
 vecForecasts(idxTrain, :) = matTrainForecastY;
 vecForecasts(idxVal, :) = forecastY;
-vecForecasts = unravel_target_var(vecForecasts);
+model.forecasted_y = unravel_target_var(vecForecasts, ts.deltaTr, ts.norm_div, ts.norm_subt);
 % Denormalize forecasts:
-model.forecasted_y = vecForecasts*ts.norm_div + ts.norm_subt;
+%model.forecasted_y = vecForecasts*ts.norm_div + ts.norm_subt;
 model.testError = testMAPE;
 model.trainError = trainMAPE;
 
