@@ -55,7 +55,7 @@
 
 \renewcommand{\baselinestretch}{1.3}
 \begin{document}
-\title{Feature generation for multiscale time series forecasting multimodels}
+\title{Feature generation for multiscale time series forecasting}
 
 
 
@@ -234,7 +234,7 @@ TODO
 
 
 \section{Computational experiment}
-The goal of the experiment is to study the performance of multivariate regression approach to the problem of 
+The goal of the experiment is to study the performance of multivariate regression approach to the problem of
 time series forecasting.
 
 This section presents the results of computational comparison of the forecasting models presented above. To test each model, we used several datasets, described below.
@@ -247,10 +247,15 @@ This section presents the results of computational comparison of the forecasting
 \end{itemize}
 
 \paragraph{Experimental results}
-Each time series from the datasets was converted to the design matrix~\eqref{eq:design_matrix} and used as input data to train regression models according to~\eqref{eq:regression_problem}. 
+Each time series from the datasets was converted to the design matrix~\eqref{eq:design_matrix} and used as input data to train regression models according to~\eqref{eq:regression_problem}.
 
 Table~\ref{fg:feature_selection_res_HASC1} lists forecasting errors for the proposed feature generation strategies applied to the test time series from the HASC dataset.
- 
+
+Fig.~\ref{fg:target_data} displays an example of target time series HASC1001 and the results of forecasting a single segment of this time series with the baseline models.
+
+Fig.~\ref{fg:feature_gen_frc} illustrates the results of regression built on the design matrix, augmented with the particular data generation method.
+
+Fig.~\ref{fg:pca_frc} demonstrates the forecasts, obtained by each model in the proposed framework. Here the design matrix was augmented with the generated features and PCA was applied to select a subset of features.
 
 
 
@@ -340,18 +345,76 @@ Feature set & Models &MAPE test & MAPE train & AIC\\
 %\subfloat[]{\includegraphics[width=0.18\textwidth]{fig/feature_selection/HascData/data_HASC1001.png}}
 \subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/feature_selection/HascData/data_segms_HASC1001.png}}
 \subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001.png}}
-\caption{Accelerometry time series from HASC project. 
-(a) Target segments of the time series HASC1001. (b) Forecasting results for	HASC1001 (VAR, SVR, Random Forest, Neural network).}
+\caption{Accelerometry time series from HASC project.
+(a) Target segments of the time series HASC1001. (b) Forecasting results for	HASC1001 (VAR, SVR, Random Forest, Neural network).}\label{fg:target_data}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001VAR.png}}
+\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001SVR.png}}\\
+\subfloat[Random forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001Random_Forest.png}}
+\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001Neural_network.png}}\\
+\caption{Mean residual by number of forecasted point.}
 \end{figure}
 
 \begin{figure}
 \centering
-\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_VAR.png}}
-\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_SVR.png}}\\
-\subfloat[Random forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_Random_Forest.png}}
-\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_Neural_network.png}}\\
-\caption{Forecasts of HASC1001 with historical features only.}
+\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001VAR.png}}
+\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001SVR.png}}\\
+\subfloat[Random forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001Random_Forest.png}}
+\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001Neural_network.png}}\\
+\caption{Normal probability density functions fitted to residuals of each model.}
 \end{figure}
+
+\begin{figure}
+\centering
+\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/qq_HASC1001VAR.png}}
+\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/frc_analysis/HascData/qq_HASC1001SVR.png}}\\
+\subfloat[Random forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/qq_HASC1001Random_Forest.png}}
+\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/qq_HASC1001Neural_network.png}}\\
+\caption{Quantile-quantile plots for each model.}
+\end{figure}
+
+\begin{figure}
+\centering
+\subfloat[SSA]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_SSA.png}}
+\subfloat[Cubic]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_Cubic.png}} \\
+\subfloat[Conv]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_Conv.png}}
+\subfloat[NW]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_NW.png}} \\
+\subfloat[All]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_all.png}}
+\subfloat[PCA]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_pca.png}} \\
+\caption{Forecasting results for various feature generation strategies, HASC1001.}\label{fg:feature_gen_frc}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_VAR_fs_pca.png}}
+\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_SVR_fs_pca.png}}\\
+\subfloat[Random Forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_Random_Forest_fs_pca.png}}
+\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_Neural_network_fs_pca.png}}\\
+\caption{ Forecasting results for HASC1001 with all feature generation strategies applied and PCA feature selection.}\label{fg:pca_frc}
+\end{figure}
+
+\nocite{*}
+\bibliographystyle{IEEEtran}%{unsrt}
+\bibliography{MultiscaleForecasting}
+
+
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{figure}
+%\centering
+%\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_VAR.png}}
+%\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_SVR.png}}\\
+%\subfloat[Random forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_Random_Forest.png}}
+%\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_Neural_network.png}}\\
+%\caption{Forecasts of HASC1001 with historical features only.}\label{fg:hitorical_data_frc}
+%\end{figure}
+
+
 
 %\begin{figure}
 %\centering
@@ -362,34 +425,17 @@ Feature set & Models &MAPE test & MAPE train & AIC\\
 %\caption{Forecasts of HASC1001 with convolutional features added.}
 %\end{figure}
 
-\begin{figure}
-\centering
-\subfloat[SSA]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/generation_HASC1001_fs_SSA.png}}
-\subfloat[SSA]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_SSA.png}}\\
-\subfloat[Cubic]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/generation_HASC1001_fs_Cubic.png}}
-\subfloat[Cubic]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_Cubic.png}} \\
-\subfloat[Conv]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/generation_HASC1001_fs_Conv.png}}
-\subfloat[Conv]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_Conv.png}} \\
-\subfloat[NW]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/generation_HASC1001_fs_NW.png}}
-\subfloat[NW]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_NW.png}} \\
-\subfloat[All]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/generation_HASC1001_fs_all.png}}
-\subfloat[All]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_all.png}}
-\caption{Forecasting results for various feature generation strategies, HASC1001.}
-\end{figure}
-
-
-\begin{figure}
-\centering
-\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_VAR_fs_pca.png}}
-\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_SVR_fs_pca.png}}\\
-\subfloat[Random Forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_Random_Forest_fs_pca.png}}
-\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_Neural_network_fs_pca.png}}\\
-\caption{ Forecasting results for HASC1001 with all feature generation strategies applied and PCA feature selection.}
-\end{figure}
-
-\nocite{*}
-\bibliographystyle{IEEEtran}%{unsrt}
-\bibliography{MultiscaleForecasting}
-
-
-\end{document} 
+%\begin{figure}
+%\centering
+%\subfloat[SSA]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/generation_HASC1001_fs_SSA.png}}
+%\subfloat[SSA]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_SSA.png}}\\
+%\subfloat[Cubic]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/generation_HASC1001_fs_Cubic.png}}
+%\subfloat[Cubic]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_Cubic.png}} \\
+%\subfloat[Conv]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/generation_HASC1001_fs_Conv.png}}
+%\subfloat[Conv]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_Conv.png}} \\
+%\subfloat[NW]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/generation_HASC1001_fs_NW.png}}
+%\subfloat[NW]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_NW.png}} \\
+%\subfloat[All]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/generation_HASC1001_fs_all.png}}
+%\subfloat[All]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_all.png}}
+%\caption{Forecasting results for various feature generation strategies, HASC1001.}\label{fg:feature_gen_frc}
+%\end{figure} 
