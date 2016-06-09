@@ -25,8 +25,21 @@ model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'transfor
     'trainError', [], 'testError', [], 'unopt_flag', true, 'forecasted_y', []);
 
 
+%Generating extra features:
+generator_names = {'SSA', 'Cubic', 'Conv', 'NW'}; %{'Identity'};
+generator_handles = {@SsaGenerator, @CubicGenerator, @ConvGenerator, @NwGenerator}; %{@IdentityGenerator};
+generators = struct('handle', generator_handles, 'name', generator_names, ...
+                                             'replace', false, 'transform', []);
+generators(4).replace = true;
 
-demoForecastAnalysis(ts, model(1));
+% Feature selection:
+pars = struct('maxComps', 50, 'expVar', 90, 'plot', @plot_pca_results);
+feature_selection_mdl = struct('handle', @DimReducePCA, 'params', pars);
+
+
+for i = 1:numel(model)
+demoForecastAnalysis(ts, model(i), generators, feature_selection_mdl);
+end
 demoCompareForeasts(tsStructArray);
 demoFeatureSelection(ts);
 %demoForecastHorizon(ts);
