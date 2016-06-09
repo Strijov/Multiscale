@@ -28,8 +28,6 @@ nSplits = size(idxTrain, 1);
 nTrain = size(idxTrain, 2);
 nTest = size(idxTest, 2);
 
-testRes = zeros(size(StructTS.Y, 2), numel(idxTest));
-trainRes = zeros(size(StructTS.Y, 2), numel(idxTrain));
 StructTS = GenerateFeatures(StructTS, generators);
     
 %--------------------------------------------------------------------------
@@ -44,35 +42,40 @@ for i = 1:nSplits
     %ts.Y = StructTS.Y(idxSplit, :);
     [~, ~, model] = computeForecastingErrors(ts, model, 0, idxTrain(i,:), idxTest(i,:));
     residuals = calcResidualsByTs(model.forecasted_y, ts.x, ts.deltaTp);
-    [testRes(:, (i-1)*nTest + 1:i*nTest), ...
-     trainRes(:, (i-1)*nTrain + 1:i*nTrain)] = split_forecast(residuals, ...
-                                idxTrain(i, :), idxTest(i, :), ts.deltaTr);
+    %[testRes(:, (i-1)*nTest + 1:i*nTest), ...
+    % trainRes(:, (i-1)*nTrain + 1:i*nTrain)] = split_forecast(residuals, ...
+    %                            idxTrain(i, :), idxTest(i, :), ts.deltaTr);
     
 end
+[testRes, trainRes] = split_forecast_by_ts(residuals, idxTrain, idxTest, ...
+                                           ts.deltaTr*size(Y, 2)/sum(ts.deltaTr));
 
 %--------------------------------------------------------------------------
 % Plot evolution of res mean and std by for each model 
-[stats_fname, stats_caption] = plot_residuals_stats(testRes', trainRes',...
+
+for i = 1:numel(testRes)
+[stats_fname, stats_caption] = plot_residuals_stats(testRes{i}', trainRes{i}',...
                                         StructTS, model, FOLDER, ...
                                         ['_fs_',regexprep(model.name, ' ', '_')]);
 
 
-testRes = testRes(:);
-trainRes = trainRes(:);
+testRes{i} = testRes{i}(:);
+trainRes{i} = trainRes{i}(:);
 
 % Fit residuals to normal distribution:
-testPD = fitdist(testRes, 'Normal');
-trainPD = fitdist(trainRes, 'Normal');
+testPD = fitdist(testRes{i}, 'Normal');
+trainPD = fitdist(trainRes{i}, 'Normal');
 
 disp('Residuals mean and standard deviation');
 table([testPD.mu, testPD.sigma; trainPD.mu, trainPD.sigma]);
 
 
 % Plot normal pdf and QQ-plots for train and test residuals 
-[fname, caption] = plot_residuals_npdf(testRes, trainRes, testPD, trainPD, ...
+[fname, caption] = plot_residuals_npdf(testRes{i}, trainRes{i}, testPD, trainPD, ...
                                           StructTS, model, FOLDER, ...
                                           ['_fs_',regexprep(model.name, ' ', '_')]);
 
+end
 figs = struct('names', cell(1), 'captions', cell(1));
 figs.names = [stats_fname, fname];
 figs.captions = [stats_caption, caption];
@@ -88,14 +91,35 @@ report_struct.res.figs = figs;
 
 end
 
-function [testFrc, trainFrc] = split_forecast(forecasts, idxTrain, idxTest, deltaTr)
-
-idxTrain = bsxfun(@plus, idxTrain, (0:deltaTr - 1)');
-idxTest = bsxfun(@plus, idxTest, (0:deltaTr - 1)');
-
-testFrc = forecasts(idxTest);
-trainFrc = forecasts(idxTrain);
+function [testFrc, trainFrc] = split_forecast_by_ts(forecasts, idxTrain, idxTest, ...
+                                               deltaTr)
+                                           
+testFrc = cell(1, numel(deltaTr)); 
+trainFrc = cell(1, numel(deltaTr));
+for i = 1:numel(deltaTr)
+    [testFrc{i}, trainFrc{i}] = split_forecast(forecasts{i}, idxTrain, idxTest, deltaTr(i));
+end
 
 end
 
+
+function [testFrc, trainFrc] = split_forecast(forecasts, idxTrain, idxTest, ...
+                                               deltaTr)
+                                           
+nTrain = size(idxTrain, 2);
+nTest = size(idxTest, 2);
+
+testFrc = zeros(deltaTr, numel(idxTest));
+trainFrc = zeros(deltaTr, numel(idxTrain));
+
+
+for i = 1:size(idxTrain, 1)
+    idxTrainMat = bsxfun(@plus, idxTrain(i, :), (0:deltaTr - 1)');
+    idxTestMat = bsxfun(@plus, idxTest(i, :), (0:deltaTr - 1)');
+
+    testFrc(:, (i-1)*nTest + 1:i*nTest) = forecasts(idxTestMat);
+    trainFrc(:, (i-1)*nTrain + 1:i*nTrain) = forecasts(idxTrainMat);
+end
+
+end
 
