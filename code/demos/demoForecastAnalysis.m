@@ -43,7 +43,7 @@ for i = 1:nSplits
     %ts.X = StructTS.X(idxSplit, :);
     %ts.Y = StructTS.Y(idxSplit, :);
     [~, ~, model] = computeForecastingErrors(ts, model, 0, idxTrain(i,:), idxTest(i,:));
-    residuals = ts.x(ts.deltaTp + 1:ts.deltaTp + numel(ts.Y)) - model.forecasted_y;
+    residuals = calcResidualsByTs(model.forecasted_y, ts.x, ts.deltaTp);
     [testRes(:, (i-1)*nTest + 1:i*nTest), ...
      trainRes(:, (i-1)*nTrain + 1:i*nTrain)] = split_forecast(residuals, ...
                                 idxTrain(i, :), idxTest(i, :), ts.deltaTr);

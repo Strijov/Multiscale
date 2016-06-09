@@ -1,13 +1,15 @@
-function [figname, caption] = plot_model_forecast(ts, model, time_frc_ratio, ls, folder, string)
+function [figname, caption] = plot_model_forecast(ts, model, nTs, time_frc_ratio, ls, folder, string)
 
-time =  1 + ts.deltaTp: ts.deltaTp + numel(ts.Y);
-min_time_frc = fix(max(time - ts.deltaTp)*(1 - time_frc_ratio));
-time_frc = time(min_time_frc:end - ts.deltaTp);
+deltaTp = ts.deltaTp(nTs);
+yBlocks = [0, cumsum(ts.deltaTr)]*size(Y, 2)/sum(ts.deltaTr);
+time =  1 + deltaTp: deltaTp + numel(ts.Y(:, yBlocks(nTs)+1:yBlocks(nTs+1)));
+min_time_frc = fix(max(time - deltaTp)*(1 - time_frc_ratio));
+time_frc = time(min_time_frc:end - deltaTp);
 
 
 
 h = figure;
-plot(time, ts.x(time), 'b-', 'linewidth', 1.2);
+plot(time, ts.x{nTs}(time), 'b-', 'linewidth', 1.2);
 hold on;
 %# vertical line
 plot(time_frc + ts.deltaTp, model.forecasted_y(time_frc), ls, 'linewidth', 1.2);
@@ -24,6 +26,7 @@ caption = strcat('Forecasting results for\t', ...,
                     regexprep(regexprep(ts.name, '_', '.'), '\\', '/'), ',\t', ...
                     model.name , '.\t');
 figname = fullfile(folder, ts.dataset, strcat('res_', ts.name, '_', ...
+                            regexprep(ts.legend{nTs}, ' ', '_'), '_',...
                             regexprep(model.name, ' ', '_'), string, '.eps'));
 saveas(h, figname, 'epsc');
 close(h);

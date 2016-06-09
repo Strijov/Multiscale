@@ -61,6 +61,8 @@ end
 % write the results to one stuct:
 s(1).deltaTr = [s().deltaTr];
 s(1).deltaTp = [s().deltaTp];
+s(1).x = {s().x};
+s(1).legend = {s().legend};
 s = s(1);
 s.X = X;
 s.Y = Y;

@@ -7,7 +7,6 @@ MAX_ERROR = 10^4;
 if nargin < 4
     max_error = MAX_ERROR;
 end
-TIME_FRC_RATIO = 0.25;
 if nargin < 5
    folder = 'fig'; 
 end
@@ -15,12 +14,27 @@ if nargin < 6
    string = ''; 
 end
 
+for i = 1:numel(model(1).forecasted_y)
+    [figname(2*(i-1) + 1:2*i), caption(2*(i-1) + 1:2*i), ...
+     figname_m(2*(i-1) + 1:2*i), caption_m(2*(i-1) + 1:2*i)] ...
+        = plot_forecasting_results_by_ts(ts, model, i, time_ticks_plot,... 
+                                         max_error,folder, string);
+end
+
+end
+
+function [figname, caption, figname_m, caption_m] = plot_forecasting_results_by_ts(ts, model, nTs, time_ticks_plot,... 
+                                                    max_error,...
+                                                    folder,...
+                                                    string)
+TIME_FRC_RATIO = 0.25;
+
 % plot frc by model
 ls = {'k--', 'k:', 'k-', 'k-.'};
 figname_m = cell(1, numel(model));
 caption_m = cell(1, numel(model));
 for i = 1:numel(model)
-   [figname_m{i}, caption_m{i}] = plot_model_forecast(ts, model(i), TIME_FRC_RATIO, ls{i}, folder, string);    
+   [figname_m{i}, caption_m{i}] = plot_model_forecast(ts, model(i), nTs, TIME_FRC_RATIO, ls{i}, folder, string);    
 end
 
 % plot all foreasts on one figure
@@ -53,7 +67,8 @@ hold off;
 caption = strcat('Forecasting results for\t', ...,
                     regexprep(regexprep(ts.name, '_', '.'), '\\', '/'), '.\t', ...
                     strjoin(model_names, ', '), max_errors_str);
-figname = fullfile(folder, ts.dataset, strcat('res_', ts.name, string, '.eps'));
+figname = fullfile(folder, ts.dataset, strcat('res_', ts.name, ...
+                            regexprep(ts.legend{nTs}, ' ', '_'), '_', string, '.eps'));
 saveas(h, figname, 'epsc');
 close(h);
 
