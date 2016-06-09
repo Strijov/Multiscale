@@ -3,7 +3,7 @@
 addpath(genpath(cd));
 
 % Dataset options: 'HascData', 'EnergyWeather', 'NNcompetition'
-DATASET = 'HascData';
+DATASET = 'EnergyWeather';
 
 % All .mat data is stored in data/ProcessedData/ directory;
 DATADIR = fullfile('data', 'ProcessedData');

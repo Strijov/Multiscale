@@ -29,6 +29,7 @@ nTrain = size(idxTrain, 2);
 nTest = size(idxTest, 2);
 
 StructTS = GenerateFeatures(StructTS, generators);
+residuals = cell(nSplits, numel(StructTS.x));
     
 %--------------------------------------------------------------------------
 % Calc frc residuals by split: 
@@ -41,14 +42,15 @@ for i = 1:nSplits
     %ts.X = StructTS.X(idxSplit, :);
     %ts.Y = StructTS.Y(idxSplit, :);
     [~, ~, model] = computeForecastingErrors(ts, model, 0, idxTrain(i,:), idxTest(i,:));
-    residuals = calcResidualsByTs(model.forecasted_y, ts.x, ts.deltaTp);
+    %residuals = [residuals, calcResidualsByTs(model.forecasted_y, ts.x, ts.deltaTp)];
+    residuals(i, :) = calcResidualsByTs(model.forecasted_y, ts.x, ts.deltaTp);
     %[testRes(:, (i-1)*nTest + 1:i*nTest), ...
     % trainRes(:, (i-1)*nTrain + 1:i*nTrain)] = split_forecast(residuals, ...
     %                            idxTrain(i, :), idxTest(i, :), ts.deltaTr);
     
 end
 [testRes, trainRes] = split_forecast_by_ts(residuals, idxTrain, idxTest, ...
-                                           ts.deltaTr*size(Y, 2)/sum(ts.deltaTr));
+                                           ts.deltaTr*size(StructTS.Y, 2)/sum(ts.deltaTr));
 
 %--------------------------------------------------------------------------
 % Plot evolution of res mean and std by for each model 
@@ -97,7 +99,7 @@ function [testFrc, trainFrc] = split_forecast_by_ts(forecasts, idxTrain, idxTest
 testFrc = cell(1, numel(deltaTr)); 
 trainFrc = cell(1, numel(deltaTr));
 for i = 1:numel(deltaTr)
-    [testFrc{i}, trainFrc{i}] = split_forecast(forecasts{i}, idxTrain, idxTest, deltaTr(i));
+    [testFrc{i}, trainFrc{i}] = split_forecast(cell2mat(forecasts(:, i)), idxTrain, idxTest, deltaTr(i));
 end
 
 end
