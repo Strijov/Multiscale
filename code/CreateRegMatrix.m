@@ -48,6 +48,7 @@ timeY = zeros(nRows, nTs); % for testing purposes, delete later
 
 % normalize time series before adding them to design matrix 
 for i = 1:nTs
+    s(i).deltaTr = s(i).deltaTr*nPredictions;
     [normalizedTs, norm_div(i), norm_subt(i)] = NormalizeTS(s(i));
     [Y(:, yBlocks(i) +  1:yBlocks(i+1)), ...
      X(:, xBlocks(i) + 1:xBlocks(i+1)), ...

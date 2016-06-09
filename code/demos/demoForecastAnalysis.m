@@ -21,7 +21,7 @@ report_struct.headers = {'Mean $\varepsilon$, test', 'Std $\varepsilon$, test',.
 
 
 %--------------------------------------------------------------------------
-StructTS = CreateRegMatrix(StructTS);
+StructTS = CreateRegMatrix(StructTS, 10);
 % Split design matrix rows into subsamples of size SUBSAMPLE_SIZE
 [idxTest, idxTrain] = MultipleSplit(size(StructTS.X, 1), SUBSAMPLE_SIZE, TRAIN_TEST_RATIO);
 nSplits = size(idxTrain, 1);
@@ -58,7 +58,8 @@ end
 for i = 1:numel(testRes)
 [stats_fname, stats_caption] = plot_residuals_stats(testRes{i}', trainRes{i}',...
                                         StructTS, model, FOLDER, ...
-                                        ['_fs_',regexprep(model.name, ' ', '_')]);
+                                        [regexprep(StructTS.legend{i}, ' ', '_'), ...
+                                        '_fs_',regexprep(model.name, ' ', '_')]);
 
 
 testRes{i} = testRes{i}(:);
@@ -75,7 +76,8 @@ table([testPD.mu, testPD.sigma; trainPD.mu, trainPD.sigma]);
 % Plot normal pdf and QQ-plots for train and test residuals 
 [fname, caption] = plot_residuals_npdf(testRes{i}, trainRes{i}, testPD, trainPD, ...
                                           StructTS, model, FOLDER, ...
-                                          ['_fs_',regexprep(model.name, ' ', '_')]);
+                                          [regexprep(StructTS.legend{i}, ' ', '_'), ...
+                                        '_fs_',regexprep(model.name, ' ', '_')]);
 
 end
 figs = struct('names', cell(1), 'captions', cell(1));
