@@ -5,7 +5,7 @@ forecasts = forecasts(:);
 y = y(:);
 %residuals = y - forecasts;
 
-smape = 2*mean(abs((y - forecasts)./(forecasts + y)));
+smape = 2*nanmean(abs((y - forecasts)./(forecasts + y)));
 
 
 end

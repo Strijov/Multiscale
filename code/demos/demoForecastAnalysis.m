@@ -11,16 +11,6 @@ end
 if ~exist(fullfile(FOLDER, StructTS(1).dataset), 'dir')
     mkdir(fullfile(FOLDER, StructTS(1).dataset));
 end
-
-% Init structure to generate report:
-report_struct = struct('handles', [], 'algos', [], 'headers', [],...
-                 'res',  []); 
-report_struct.handles = {@include_subfigs, @vertical_res_table};   
-report_struct.algos = model.name;
-report_struct.headers = {'Mean $\varepsilon$, test', 'Std $\varepsilon$, test',...
-                        'Mean $\varepsilon$, train', 'Std $\varepsilon$, train'};
-
-
 %--------------------------------------------------------------------------
 StructTS = CreateRegMatrix(StructTS, N_PREDICTIONS);
 % Split design matrix rows into subsamples of size SUBSAMPLE_SIZE
@@ -47,20 +37,12 @@ end
 
 %--------------------------------------------------------------------------
 % Plot evolution of res mean and std by for each model 
-[fname, caption] = plot_results(testRes, trainRes, StructTS, model, ...
+plot_results(testRes, trainRes, StructTS, model, ...
                                 ts.deltaTr*N_PREDICTIONS, FOLDER);
+                            
+                            
 
-figs = struct('names', cell(1), 'captions', cell(1));
-figs.names = [stats_fname, fname];
-figs.captions = [stats_caption, caption];
-report_struct.res = struct('data', ts.name, 'errors', [testPD.mu, testPD.sigma, ...
-                                                trainPD.mu, trainPD.sigma]);
-report_struct.res.figs = figs;
-                                      
 %--------------------------------------------------------------------------
-% save results and generate report:
-%save(['report_struct_fa_', StructTS.name ,'.mat'], 'report_struct');
-%generate_tex_report(report_struct, 'FrcAnalysis.tex');
 
 
 end
@@ -97,15 +79,15 @@ end
 
 end
 
-function [fname, caption] = plot_results(testRes, trainRes, StructTS, model, ...
+function plot_results(testRes, trainRes, StructTS, model, ...
                                            nPredictions, FOLDER)
 
 for i = 1:numel(testRes)
     if nPredictions(i) > 1
-    [stats_fname, stats_caption] = plot_residuals_stats(testRes{i}', trainRes{i}',...
-                                            StructTS, model, FOLDER, ...
-                                            [regexprep(StructTS.legend{i}, ' ', '_'), ...
-                                            '_fs_',regexprep(model.name, ' ', '_')]);
+    plot_residuals_stats(testRes{i}', trainRes{i}',...
+                         StructTS, model, FOLDER, ...
+                         [regexprep(StructTS.legend{i}, ' ', '_'), ...
+                         '_fs_',regexprep(model.name, ' ', '_')]);
 
 
     testRes{i} = testRes{i}(:);
@@ -117,16 +99,13 @@ for i = 1:numel(testRes)
 
 
     % Plot normal pdf and QQ-plots for train and test residuals 
-    [fname, caption] = plot_residuals_npdf(testRes{i}, trainRes{i}, testPD, trainPD, ...
-                                              StructTS, model, FOLDER, ...
-                                              [regexprep(StructTS.legend{i}, ' ', '_'), ...
-                                            '_fs_',regexprep(model.name, ' ', '_')]);
+    plot_residuals_npdf(testRes{i}, trainRes{i}, testPD, trainPD, ...
+                        StructTS, model, FOLDER, ...
+                        [regexprep(StructTS.legend{i}, ' ', '_'), ...
+                        '_fs_',regexprep(model.name, ' ', '_')]);
 
     end
 end
-
-fname = [stats_fname, fname];
-caption = [stats_caption, caption];
 
 end
 

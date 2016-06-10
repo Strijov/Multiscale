@@ -1,8 +1,5 @@
-function demoForecastHorizon(ts)
+function demoForecastHorizon(cellStructTs, model)
 
-% Models
-nameModel = {'VAR', 'SVR', 'Random Forest', 'Neural network'};   % Set of models. 
-handleModel = {@VarForecast, @SVRMethod, @TreeBaggerForecast, @NnForecast};
 
 %Generating extra features:
 generator_names = {'Identity'};
@@ -17,17 +14,17 @@ feature_selection_mdl = struct('handle', @IdentityGenerator, 'params',  pars);
 % A range of forcast horizon values:
 MAX_FRC_POINTS = 10;
 MIN_ROWS = 5;
-max_frc = min(MAX_FRC_POINTS, floor((size(ts.x, 1) - ts.deltaTp)/...
-                                            ts.deltaTr/MIN_ROWS));
-frc_horizons = [1:max_frc];
+max_frc = min(MAX_FRC_POINTS, floor((size(cellStructTs(1).x, 1) - cellStructTs(1).deltaTp)/...
+                                            cellStructTs(1).deltaTr/MIN_ROWS));
+frc_horizons = 1:max_frc;
 
 % Init structure to generate report:
 report_struct = struct('handles', [], 'algos', [], 'headers', [],...
                  'res',  []); 
-report_struct.handles = {@include_subfigs, @vertical_res_table};   
-report_struct.algos = nameModel;
-report_struct.headers = {'MAPE test', 'MAPE train', 'AIC'};
-report_struct.res = cell(1, length(frc_horizons)); 
+report_struct.handles = {@vertical_res_table};   
+report_struct.algos = {cellStructTs().legend};
+report_struct.headers = {'MAPE test', 'MAPE train', 'Mean Res', 'Std Res'};
+report_struct.res = cell(1);%, length(frc_horizons)); 
 
 
 % If necessary, create dir where the figures will be stored
@@ -35,22 +32,28 @@ FOLDER = fullfile('fig/frc_horizon/');
 if ~exist(FOLDER, 'dir')
     mkdir(FOLDER);
 end
-if ~exist(fullfile(FOLDER, ts(1).dataset), 'dir')
-    mkdir(fullfile(FOLDER, ts(1).dataset));
+if ~exist(fullfile(FOLDER, cellStructTs(1).dataset), 'dir')
+    mkdir(fullfile(FOLDER, cellStructTs(1).dataset));
 end
+FOLDER = fullfile(FOLDER, cellStructTs(1).dataset);
 
 TRAIN_TEST_RATIO = 0.75;
 
-MAPE_train = zeros(numel(nameModel), length(frc_horizons));
-MAPE_test = zeros(numel(nameModel), length(frc_horizons));
-AIC = zeros(numel(nameModel), length(frc_horizons));
+nTimeSeries = numel(cellStructTs);
+nHorizons = length(frc_horizons);
+MAPE_train = zeros(nHorizons, nTimeSeries);
+MAPE_test = zeros(nHorizons, nTimeSeries);
+testMeanRes = zeros(nHorizons, nTimeSeries);
+trainMeanRes = zeros(nHorizons, nTimeSeries); 
+testStdRes = zeros(nHorizons, nTimeSeries);
+trainStdRes = zeros(nHorizons, nTimeSeries);
 
 %--------------------------------------------------------------------------
 % Here comes the main part: calc errors and plot forecasts by horizon
 % length
-for i = 1:length(frc_horizons)
+for i = 1:nHorizons
     % Add regression matrix to the main structure:
-    ts = CreateRegMatrix(ts, frc_horizons(i));
+    ts = CreateRegMatrix(cellStructTs, frc_horizons(i));
     
     [idxTrain, idxTest, idxVal] = TrainTestSplit(size(ts.X, 1), 1 - TRAIN_TEST_RATIO);
     idxTest = [idxVal, idxTest];
@@ -63,37 +66,93 @@ for i = 1:length(frc_horizons)
     % Select best features:
     ts = FeatureSelection(ts, feature_selection_mdl, idxTrain, idxTest);
 
-    % Init models:
-    model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'transform', [],...
-        'trainError', [], 'testError', [], 'unopt_flag', true, 'forecasted_y', []);
-
+    % (Re-)init model:
+    model.unopt_flag = true;
+    model.transform = [];
     % Train models, obtain forecasts and calc errors:
-    [MAPE_test(:,i), MAPE_train(:,i), AIC(:, i), model] = calcErrorsByModel(ts, model,...
-                                                          idxTrain, idxTest);
-    disp(['Results for horizon length = ', num2str(frc_horizons(i))])
-    table(MAPE_test(:,i), MAPE_train(:,i), AIC(:, i), 'RowNames', nameModel)
+    [testRes, trainRes , model] = ...
+              computeForecastingResiduals(ts, model, 0, idxTrain, idxTest);
+    MAPE_train(i, :) = model.trainError;
+    MAPE_test(i, :) = model.testError;                   
+    testMeanRes(i,  :) = cellfun(@(x) nanmean(x(:)), testRes); 
+    trainMeanRes(i, :) = cellfun(@(x) nanmean(x(:)), trainRes); 
+    testStdRes(i,  :) = cellfun(@(x) nanstd(x(:)), testRes); 
+    trainStdRes(i, :) = cellfun(@(x) nanstd(x(:)), trainRes);
 
     %Plot results:
-    [fname, caption, fname_m, caption_m] = plot_forecasting_results(ts, model, 1:ts.deltaTr, ...
-                            10, FOLDER, ['_hor_', num2str(frc_horizons(i))]);
-    % Put results into report_struct
-    figs = struct('names', cell(1), 'captions', cell(1));
-    figs(1).names = fname;
-    figs(1).captions = caption;
-    figs(1).names = fname_m;
-    figs(1).captions = caption_m;
-    report_struct.res{i} = struct('data', 'All', 'errors', [MAPE_test(:,i),...
-                                                MAPE_train(:,i), AIC(:, i)]);
-    report_struct.res{i}.figs = figs;    
+    %[fname, caption, fname_m, caption_m] = plot_forecasting_results(ts, model, 1:ts.deltaTr, ...
+    %                        10, FOLDER, ['_hor_', num2str(frc_horizons(i))]);
+    
+      
 end
-report_struct.res = report_struct.res(1:max_frc);
+% Put results into report_struct
+report_struct.res{i} = struct('data', 'All', 'errors', [mean(MAPE_test);...
+                           mean(MAPE_train); mean(testMeanRes); mean(testStdRes)]');
+
+save(['report_struct_horizon_', regexprep(model.name, ' ', '_') ,'.mat'], 'report_struct');
+plot_mean_std(MAPE_train, MAPE_test, testMeanRes, trainMeanRes, ...
+       testStdRes, trainStdRes, ts.legend, FOLDER, [ts.name,'_', regexprep(model.name, ' ', '_')]); 
 
 %--------------------------------------------------------------------------
 % save results and generate report:
-save('report_struct_hor.mat', 'report_struct');
-generate_tex_report(report_struct, 'FrcHorizon.tex');
+%generate_tex_report(report_struct, ['FrcHorizon_', regexprep(model.name, ' ', '_') ,'.tex']);
 
 
 
 
 end
+
+
+function plot_mean_std(MAPE_train, MAPE_test, testMeanRes, trainMeanRes, ...
+       testStdRes, trainStdRes, legends, folder, name)
+   
+for i = 1:numel(legends)
+fig = figure;
+%title(legend{i})
+errorbar(1:size(trainMeanRes, 1), trainMeanRes(:, i), trainStdRes(:, i));
+hold on;
+errorbar(1:size(testMeanRes, 1), testMeanRes(:, i), testStdRes(:, i));
+legend({'Train', 'Test'}, 'Location', 'NorthWest');
+xlabel('Horizon length', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
+ylabel('Residuals mean', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
+set(gca, 'FontSize', 16, 'FontName', 'Times')
+axis tight;
+hold off;
+figname = fullfile(folder, strcat('mean_res_', name, '_', legends{i}, '.eps'));
+saveas(fig, figname, 'epsc');
+close(fig) 
+
+fig = figure;
+%title(legend{i})
+plot(MAPE_train(:, i));
+hold on;
+plot(MAPE_test(:, i));
+legend({'Train', 'Test'}, 'Location', 'NorthWest');
+xlabel('Horizon length', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
+ylabel('MAPE', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
+set(gca, 'FontSize', 16, 'FontName', 'Times')
+axis tight;
+hold off;
+figname = fullfile(folder, strcat('MAPE_', name, '_', legends{i}, '.eps'));
+saveas(fig, figname, 'epsc');
+close(fig) 
+
+
+end
+
+fig = figure;
+h = plot(MAPE_train, 'linewidth', 2);
+hold on;
+plot(MAPE_test, '--', 'linewidth', 2);
+legend(h, legends, 'Location', 'NorthWest');
+xlabel('Horizon length', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
+ylabel('MAPE', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
+set(gca, 'FontSize', 16, 'FontName', 'Times')
+axis tight;
+hold off;
+figname = fullfile(folder, strcat('MAPE_', name, '_all_ts.eps'));
+saveas(fig, figname, 'epsc');
+close(fig)
+   
+end
+

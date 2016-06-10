@@ -2,6 +2,7 @@ function [figname, caption] = plot_ts(ts, folder, string)
 
 MAX_TIME = 2000;
 MAX_PERIODS = 20;
+ts.x = ts.x{1}; % plot only one time series
 max_time = min(MAX_TIME, size(ts.x, 1));
 
 max_periods = min(MAX_PERIODS, size(ts.Y, 1));

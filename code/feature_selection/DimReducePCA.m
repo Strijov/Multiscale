@@ -13,13 +13,9 @@ else
     pars = mdl.params;
 end
 
-if size(X, 2) > size(X, 1) || det(cov(X)) == 0
-    algo = 'svd';
-else
-    algo = 'eig';
-end
 
-[wcoeff,~,variance,~,var_ratio] = pca(X, 'algorithm', algo);
+
+[wcoeff,~,variance,~,var_ratio] = pca(X, 'algorithm', 'svd');
 nComps = choose_n_comps(var_ratio, pars.expVar);
 nComps = max([nComps, pars.minComps]);
 nComps = min([nComps, pars.maxComps, size(wcoeff, 2)]);
