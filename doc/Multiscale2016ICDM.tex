@@ -353,27 +353,39 @@ Feature set & Models &MAPE test & MAPE train & AIC\\
 \begin{figure}
 \centering
 \subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001VAR.png}}
-\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001SVR.png}}\\
+\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001_fs_VAR.png}} \\
+\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001SVR.png}}
+\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001_fs_SVR.png}}\\
 \subfloat[Random forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001Random_Forest.png}}
-\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001Neural_network.png}}\\
-\caption{Mean residual by number of forecasted point.}
+\subfloat[Random forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001_fs_Random_Forest.png}} \\
+\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001Neural_network.png}}
+\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001_fs_Neural_network.png}}\\
+\caption{Mean residual by number of forecasted point for historical data only and all generation strategies with PCA.}
 \end{figure}
 
 \begin{figure}
 \centering
 \subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001VAR.png}}
-\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001SVR.png}}\\
+\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001VAR.png}}\\
+\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001SVR.png}}
+\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001_fs_SVR.png}}\\
 \subfloat[Random forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001Random_Forest.png}}
-\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001Neural_network.png}}\\
+\subfloat[Random forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001_fs_Random_Forest.png}} \\
+\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001Neural_network.png}}
+\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001_fs_Neural_network.png}}
 \caption{Normal probability density functions fitted to residuals of each model.}
 \end{figure}
 
 \begin{figure}
 \centering
 \subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/qq_HASC1001VAR.png}}
+\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/qq_HASC1001_fs_VAR.png}}\\
 \subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/frc_analysis/HascData/qq_HASC1001SVR.png}}\\
+\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/frc_analysis/HascData/qq_HASC1001_fs_SVR.png}}
 \subfloat[Random forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/qq_HASC1001Random_Forest.png}}
+\subfloat[Random forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/qq_HASC1001_fs_Random_Forest.png}}
 \subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/qq_HASC1001Neural_network.png}}\\
+\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/qq_HASC1001_fs_Neural_network.png}}
 \caption{Quantile-quantile plots for each model.}
 \end{figure}
 
