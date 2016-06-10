@@ -15,8 +15,8 @@ if nargin < 6
 end
 
 for i = 1:numel(model(1).forecasted_y)
-    [figname(2*(i-1) + 1:2*i), caption(2*(i-1) + 1:2*i), ...
-     figname_m(2*(i-1) + 1:2*i), caption_m(2*(i-1) + 1:2*i)] ...
+    [figname, caption, ...
+     figname_m, caption_m] ...
         = plot_forecasting_results_by_ts(ts, model, i, n_pred,... 
                                          max_error,folder, string);
 end
@@ -34,12 +34,13 @@ ls = {'k--', 'k:', 'k-', 'k-.'};
 figname_m = cell(1, numel(model));
 caption_m = cell(1, numel(model));
 for i = 1:numel(model)
-   [figname_m{i}, caption_m{i}] = plot_model_forecast(ts, model(i), nTs, TIME_FRC_RATIO, ls{i}, folder, string);    
+   [figname_m, caption_m] = plot_model_forecast(ts, model(i), nTs, TIME_FRC_RATIO, ls{i}, folder, string);    
 end
 
 % plot all foreasts on one figure
 model_names =  {model().name};
-idx_models = [model().testError] < max_error;
+errors = cell2mat({model().testError}');
+idx_models = errors(:, nTs) < max_error;
 max_errors_str = '';
 if ~all(idx_models)
     max_errors_str = [max_errors_str, '\tError exceeds ', num2str(max_error), ' for the following models: ', ...
@@ -52,7 +53,7 @@ model = model(idx_models);
 model_names = model_names(idx_models);
 
 h = figure;
-plot(ts.x(time_ticks_plot), 'LineWidth', 2);
+plot(ts.x{nTs}(time_ticks_plot), 'LineWidth', 2);
 hold on
 grid on
 for i = 1:numel(model)

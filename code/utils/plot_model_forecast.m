@@ -12,7 +12,7 @@ h = figure;
 plot(time, ts.x{nTs}(time), 'b-', 'linewidth', 1.2);
 hold on;
 %# vertical line
-plot(time_frc + deltaTp, model.forecasted_y(time_frc), ls, 'linewidth', 1.2);
+plot(time_frc + deltaTp, model.forecasted_y{nTs}(time_frc), ls, 'linewidth', 1.2);
 ylim = get(gca,'ylim');
 line([min_time_frc, min_time_frc], ylim, 'LineStyle', '-', 'Color', 'k');
 

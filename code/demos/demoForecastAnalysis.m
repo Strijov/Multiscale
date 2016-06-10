@@ -27,13 +27,11 @@ for i = 1:nSplits
     [ts, feature_selection_mdl] = FeatureSelection(ts, feature_selection_mdl, ...
                                              idxTrain(i, :), idxTest(i, :));
 
-    [~, ~, model] = computeForecastingErrors(ts, model, 0, idxTrain(i,:), idxTest(i,:));
-    residuals(i, :) = calcResidualsByTs(model.forecasted_y, ts.x, ts.deltaTp);
+    [testRes, trainRes, model] = computeForecastingResiduals(ts, model, 0, idxTrain(i,:), idxTest(i,:));
     
     
 end
-[testRes, trainRes] = split_forecast_by_ts(residuals, idxTrain, idxTest, ...
-                                           ts.deltaTr*N_PREDICTIONS);
+
 
 %--------------------------------------------------------------------------
 % Plot evolution of res mean and std by for each model 
