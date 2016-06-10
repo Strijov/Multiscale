@@ -1,0 +1,225 @@
+\documentclass[conference]{IEEEtran}
+%\usepackage{a4wide}
+\usepackage{NotationStyle}
+\usepackage[ruled, vlined]{algorithm2e}
+\usepackage{multicol, multirow}
+%\usepackage[noend]{algorithmic}
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,mathrsfs,mathtext}
+\usepackage{subfig}
+\usepackage{graphics,graphicx,epsfig}
+\usepackage{epstopdf}
+\usepackage{fancybox,fancyhdr}
+\usepackage{enumerate}
+\usepackage{array}
+\usepackage{color, soul}
+%\usepackage{longtable} % longtable doesn't work with two columns
+\usepackage{supertabular}
+\usepackage[normalem]{ulem}
+\usepackage{arydshln}
+
+
+\setlength\dashlinedash{0.2pt}
+\setlength\dashlinegap{4.5pt}
+
+
+\newcommand{\argmax}{\mathop{\rm arg\,max}\limits}
+\graphicspath{ {../code/fig/} {../code/}}
+
+\renewcommand{\baselinestretch}{1.3}
+\begin{document}
+\title{Forecast analysis report}
+
+
+Here we describe experiments with simultaneous forecasts of multiple time series. \hl{So far ``simultaneous forecasts'' does not apply to SVR and RF, since matlab implementation of these algorithms that is currently used only produces unvariate forecasts.}
+
+The time series, used for illustration of this section, were chosen from the EnergyWeather dataset. The series contain hourly energy records, and six daily weather time series (maximum temperature, minimal temperature, precipitation,  wind velocity, relative humidity, solar intensity). 
+
+Figure~\ref{fg:frc_an_energy} demonstrates residuals of the forecasts of energy time series, obtained through the proposed method with VAR, ANN, SVR and RF algorithms.  
+
+Figures~\ref{fg:frc_Solar_VAR}--\ref{fg:frc_Solar_RF} illustrate the results of applying VAR to time series forecast within the proposed framework (design matrix $\rightarrow$ feature generation $\rightarrow$ PCA $\rightarrow$ MVR). Subfigures (a) demonstrate the evolution of mean residuals by the number of forecasted point $i = 1, \dots, \dtr$. Subfigures (b) display normal probability density functions, fitted to the residuals of each time series and subfigures (c) display the quantile-quantile plots for the fitted distributions. 
+
+As can be seen from the figures, for most time series mean residuals demonstrate trend-like behaviour and are clearly unstationary and biased.
+\begin{figure}
+\centering
+\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01target_fs_VAR.png}}
+\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01target_fs_Neural_Network.png}} \\
+\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01target_fs_SVR.png}}
+\subfloat[RF]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01target_fs_Random_Forest.png}}
+\caption{Residuals of energy time series from EnergyWeather dataset.}\label{fg:frc_an_energy}
+\end{figure}
+%___________________________________________________________________________________
+\begin{figure}[!h]
+\centering
+\subfloat[Max t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Max_Temperature_fs_VAR.png}}
+\subfloat[Max t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Max_Temperature_fs_VAR.png}}
+\subfloat[Max t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Max_Temperature_fs_VAR.png}} \\
+%\caption{Max temperature time series from EnergyWeather dataset.}\label{fg:frc_Max_Temperature}
+%\end{figure}
+%\begin{figure}
+%\centering
+\subfloat[Min t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Min_Temperature_fs_VAR.png}}
+\subfloat[Min t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Min_Temperature_fs_VAR.png}}
+\subfloat[Min t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Min_Temperature_fs_VAR.png}}\\
+%\caption{Min temperature time series from EnergyWeather dataset.}\label{fg:frc_Min_Temperature}
+%\end{figure}
+%\begin{figure}
+%\centering
+\subfloat[Wind]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Wind_fs_VAR.png}}
+\subfloat[Wind]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Wind_fs_VAR.png}}
+\subfloat[Wind]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Wind_fs_VAR.png}}\\
+%\caption{Wind time series from EnergyWeather dataset.}\label{fg:frc_Wind}
+%\end{figure}
+%\begin{figure}
+%\centering
+\subfloat[Precipitation]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Precipitation_fs_VAR.png}}
+\subfloat[Precipitation]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Precipitation_fs_VAR.png}}
+\subfloat[Precipitation]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Precipitation_fs_VAR.png}}\\
+%\caption{Precipitation time series from EnergyWeather dataset.}\label{fg:frc_Precipitation}
+%\end{figure}
+%\begin{figure}
+%\centering
+\subfloat[Humidity]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Relative_Humidity_fs_VAR.png}}
+\subfloat[Humidity]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Relative_Humidity_fs_VAR.png}}
+\subfloat[Humidity]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Relative_Humidity_fs_VAR.png}} \\
+%\caption{Relative humidity time series from EnergyWeather dataset.}\label{fg:frc_Relative_Humidity}
+%\end{figure}
+%\begin{figure}
+\centering
+\subfloat[Solar]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Solar_fs_VAR.png}}
+\subfloat[Solar]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Solar_fs_VAR.png}}
+\subfloat[Solar]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Solar_fs_VAR.png}}
+\caption{Residuals analysis the weather time series from EnergyWeather dataset, for the VAR multiscale forecast.}\label{fg:frc_Solar_VAR}
+\end{figure}
+%___________________________________________________________________________________
+\begin{figure}[!h]
+\centering
+\subfloat[Max t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Max_Temperature_fs_Neural_Network.png}}
+\subfloat[Max t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Max_Temperature_fs_Neural_Network.png}}
+\subfloat[Max t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Max_Temperature_fs_Neural_Network.png}} \\
+%\caption{Max temperature time series from EnergyWeather dataset.}\label{fg:frc_Max_Temperature}
+%\end{figure}
+%\begin{figure}
+%\centering
+\subfloat[Min t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Min_Temperature_fs_Neural_Network.png}}
+\subfloat[Min t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Min_Temperature_fs_Neural_Network.png}}
+\subfloat[Min t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Min_Temperature_fs_Neural_Network.png}}\\
+%\caption{Min temperature time series from EnergyWeather dataset.}\label{fg:frc_Min_Temperature}
+%\end{figure}
+%\begin{figure}
+%\centering
+\subfloat[Wind]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Wind_fs_Neural_Network.png}}
+\subfloat[Wind]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Wind_fs_Neural_Network.png}}
+\subfloat[Wind]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Wind_fs_Neural_Network.png}}\\
+%\caption{Wind time series from EnergyWeather dataset.}\label{fg:frc_Wind}
+%\end{figure}
+%\begin{figure}
+%\centering
+\subfloat[Precipitation]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Precipitation_fs_Neural_Network.png}}
+\subfloat[Precipitation]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Precipitation_fs_Neural_Network.png}}
+\subfloat[Precipitation]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Precipitation_fs_Neural_Network.png}}\\
+%\caption{Precipitation time series from EnergyWeather dataset.}\label{fg:frc_Precipitation}
+%\end{figure}
+%\begin{figure}
+%\centering
+\subfloat[Humidity]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Relative_Humidity_fs_Neural_Network.png}}
+\subfloat[Humidity]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Relative_Humidity_fs_Neural_Network.png}}
+\subfloat[Humidity]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Relative_Humidity_fs_Neural_Network.png}} \\
+%\caption{Relative humidity time series from EnergyWeather dataset.}\label{fg:frc_Relative_Humidity}
+%\end{figure}
+%\begin{figure}
+\centering
+\subfloat[Solar]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Solar_fs_Neural_Network.png}}
+\subfloat[Solar]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Solar_fs_Neural_Network.png}}
+\subfloat[Solar]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Solar_fs_Neural_Network.png}}
+\caption{Residuals analysis the weather time series from EnergyWeather dataset, for the ANN multiscale forecast.}\label{fg:frc_Solar_ANN}
+\end{figure}
+%___________________________________________________________________________________
+\begin{figure}[!h]
+\centering
+\subfloat[Max t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Max_Temperature_fs_SVR.png}}
+\subfloat[Max t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Max_Temperature_fs_SVR.png}}
+\subfloat[Max t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Max_Temperature_fs_SVR.png}} \\
+%\caption{Max temperature time series from EnergyWeather dataset.}\label{fg:frc_Max_Temperature}
+%\end{figure}
+%
+%\begin{figure}
+%\centering
+\subfloat[Min t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Min_Temperature_fs_SVR.png}}
+\subfloat[Min t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Min_Temperature_fs_SVR.png}}
+\subfloat[Min t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Min_Temperature_fs_SVR.png}}\\
+%\caption{Min temperature time series from EnergyWeather dataset.}\label{fg:frc_Min_Temperature}
+%\end{figure}
+%\begin{figure}
+%\centering
+\subfloat[Wind]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Wind_fs_SVR.png}}
+\subfloat[Wind]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Wind_fs_SVR.png}}
+\subfloat[Wind]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Wind_fs_SVR.png}}\\
+%\caption{Wind time series from EnergyWeather dataset.}\label{fg:frc_Wind}
+%\end{figure}
+%\begin{figure}
+%\centering
+\subfloat[Precipitation]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Precipitation_fs_SVR.png}}
+\subfloat[Precipitation]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Precipitation_fs_SVR.png}}
+\subfloat[Precipitation]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Precipitation_fs_SVR.png}}\\
+%\caption{Precipitation time series from EnergyWeather dataset.}\label{fg:frc_Precipitation}
+%\end{figure}
+%\begin{figure}
+%\centering
+\subfloat[Humidity]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Relative_Humidity_fs_SVR.png}}
+\subfloat[Humidity]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Relative_Humidity_fs_SVR.png}}
+\subfloat[Humidity]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Relative_Humidity_fs_SVR.png}} \\
+%\caption{Relative humidity time series from EnergyWeather dataset.}\label{fg:frc_Relative_Humidity}
+%\end{figure}
+%\begin{figure}
+\centering
+\subfloat[Solar]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Solar_fs_SVR.png}}
+\subfloat[Solar]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Solar_fs_SVR.png}}
+\subfloat[Solar]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Solar_fs_SVR.png}}
+\caption{Residuals analysis the weather time series from EnergyWeather dataset, for the SVR \hl{multiscale} forecast.}\label{fg:frc_Solar_SVR}
+\end{figure}
+%___________________________________________________________________________________
+\begin{figure}[!h]
+\centering
+\subfloat[Max t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Max_Temperature_fs_Random_Forest.png}}
+\subfloat[Max t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Max_Temperature_fs_Random_Forest.png}}
+\subfloat[Max t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Max_Temperature_fs_Random_Forest.png}} \\
+%\caption{Max temperature time series from EnergyWeather dataset.}\label{fg:frc_Max_Temperature}
+%\end{figure}
+%\begin{figure}
+%\centering
+\subfloat[Min t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Min_Temperature_fs_Random_Forest.png}}
+\subfloat[Min t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Min_Temperature_fs_Random_Forest.png}}
+\subfloat[Min t]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Min_Temperature_fs_Random_Forest.png}}\\
+%\caption{Min temperature time series from EnergyWeather dataset.}\label{fg:frc_Min_Temperature}
+%\end{figure}
+%\begin{figure}
+%\centering
+\subfloat[Wind]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Wind_fs_Random_Forest.png}}
+\subfloat[Wind]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Wind_fs_Random_Forest.png}}
+\subfloat[Wind]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Wind_fs_Random_Forest.png}}\\
+%\caption{Wind time series from EnergyWeather dataset.}\label{fg:frc_Wind}
+%\end{figure}
+%\begin{figure}
+%\centering
+\subfloat[Precipitation]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Precipitation_fs_Random_Forest.png}}
+\subfloat[Precipitation]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Precipitation_fs_Random_Forest.png}}
+\subfloat[Precipitation]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Precipitation_fs_Random_Forest.png}}\\
+%\caption{Precipitation time series from EnergyWeather dataset.}\label{fg:frc_Precipitation}
+%\end{figure}
+%\begin{figure}
+%\centering
+\subfloat[Humidity]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Relative_Humidity_fs_Random_Forest.png}}
+\subfloat[Humidity]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Relative_Humidity_fs_Random_Forest.png}}
+\subfloat[Humidity]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Relative_Humidity_fs_Random_Forest.png}} \\
+%\caption{Relative humidity time series from EnergyWeather dataset.}\label{fg:frc_Relative_Humidity}
+%\end{figure}
+%\begin{figure}
+\centering
+\subfloat[Solar]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/stats_missing_value_test_0_01Solar_fs_Random_Forest.png}}
+\subfloat[Solar]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/npdf_missing_value_test_0_01Solar_fs_Random_Forest.png}}
+\subfloat[Solar]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.18\textwidth]{fig/frc_analysis/EnergyWeather/qq_missing_value_test_0_01Solar_fs_Random_Forest.png}}
+\caption{Residuals analysis the weather time series from EnergyWeather dataset, for the Random forest \hl{multiscale} forecast.}\label{fg:frc_Solar_RF}
+\end{figure}
+
+\end{document} 
