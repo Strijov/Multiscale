@@ -1,34 +1,38 @@
-function [MAPE_test, MAPE_train, AIC, model] = calcErrorsByModel(StructTS, model, idxTrain, idxTest)
+function [testMeanRes, trainMeanRes, testStdRes, trainStdRes, model] = ...
+                            calcErrorsByModel(ts, model, idxTrain, idxTest)
 
 % This funtions returns forecasting errors on the test and train sets for
 % each models and the models with updated fields.
 
 % Input:
-%   StructTS                      structure of time-series
+%   ts                            structure of time-series
 %   model         [1 x nModels]   list of models (each is a struct)
 %   idxTrain      [1 x M1]        indices of the train set
 %   idxTest       [1 x M2]        indices of the test set
 % Output:
-%   MAPE_test     float           MAPE on test set
-%   MAPE_train    float           MAPE on train set
-%   AIC           float           AIC on train(test?) set
+%   testMeanRes   float           mean residuals on test set
+%   trainMeanRes  float           mean residuals on train set
+%   testStdRes    float           std residuals on test set
+%   trainStdRes   float           std residuals on train set
 %   model         [1 x nModels]   list of tuned models (if model has
-%       parametest to be tuned
+%                                 parameters to be tuned)
 nModels = numel(model);
+testMeanRes = zeros(nModels, numel(ts.x));
+trainMeanRes = zeros(nModels, numel(ts.x)); 
+testStdRes = zeros(nModels, numel(ts.x));
+trainStdRes = zeros(nModels, numel(ts.x)); 
 
-MAPE_test = zeros(nModels,1);
-MAPE_train = zeros(nModels,1); 
-AIC = zeros(nModels,1);
 
 for i = 1:nModels
     disp(['Fitting model: ', model(i).name])
-    [MAPE_test(i), MAPE_train(i), model(i)] = computeForecastingErrors(...
-                                            StructTS, model(i), 0, ...
+    [testRes, trainRes, model(i)] = computeForecastingResiduals(...
+                                            ts, model(i), 0, ...
                                             idxTrain, idxTest);
-    AIC(i) = 2*StructTS.deltaTp + size(StructTS.X, 1) * ...
-                        log(nan_norm(StructTS.x(StructTS.deltaTp + 1: ...
-                        StructTS.deltaTp + numel(StructTS.Y)) - ...
-                        model(i).forecasted_y));
+    
+     testMeanRes(i,  :) = cellfun(@(x) nanmean(x(:)), testRes); 
+     trainMeanRes(i, :) = cellfun(@(x) nanmean(x(:)), trainRes); 
+     testStdRes(i,  :) = cellfun(@(x) nanstd(x(:)), testRes); 
+     trainStdRes(i, :) = cellfun(@(x) nanstd(x(:)), trainRes); 
 end
 
 
