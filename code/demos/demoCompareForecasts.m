@@ -81,8 +81,6 @@ figs(4).captions = caption_by_models;
 report_struct.res{nDataSet} = struct('data', StructTS.name, 'errors', [testMAPE', trainMAPE']);
 report_struct.res{nDataSet}.figs = figs;
 
-table(testMAPE', trainMAPE', 'RowNames', nameModel)
-
 end
 save('MAPE_EW.mat', 'testMAPE', 'trainMAPE');
 save('report_struct_EW.mat', 'report_struct');

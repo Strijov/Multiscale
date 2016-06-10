@@ -1,4 +1,6 @@
 function demoFeatureSelection(StructTS)
+
+N_PREDICTIONS = 5;
 % Models
 nameModel = {'VAR', 'SVR', 'Random Forest', 'Neural network'};   % Set of models. 
 handleModel = {@VarForecast, @SVRMethod, @TreeBaggerForecast, @NnForecast};
@@ -21,7 +23,7 @@ report_struct = struct('handles', [], 'algos', [], 'headers', [],...
                  'res',  []); 
 report_struct.handles = {@include_subfigs, @vertical_res_table};   
 report_struct.algos = nameModel;
-report_struct.headers = {'MAPE test', 'MAPE train', 'AIC'};
+report_struct.headers = {'MAPE test', 'MAPE train'};
 report_struct.res = cell(1, nGenerators + 3); % + no features, all features and PCA
 figs = struct('names', cell(1, 2), 'captions', cell(1, 2));
 
@@ -53,16 +55,19 @@ figs(1).captions = caption;
 model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'transform', [],...
     'trainError', [], 'testError', [], 'unopt_flag', true, 'forecasted_y', []);
 
-[MAPE_test, MAPE_train, AIC, model] = calcErrorsByModel(StructTS, model, idxTrain, idxTest);
+[~,~,~,~, model] = calcErrorsByModel(StructTS, model, idxTrain, idxTest);
+testMAPE = mean(reshape([model().testError], [], numel(model)), 1);
+trainMAPE = mean(reshape([model().trainError], [], numel(model)), 1);
+
 disp('Results with original features:')
-table(MAPE_test, MAPE_train, AIC, 'RowNames', nameModel)
+table(testMAPE', trainMAPE', 'RowNames', nameModel)
 
 % plot frc results:
-[fname, caption, ~, ~] = plot_forecasting_results(StructTS, model, 1:StructTS.deltaTr, 1e3, ...
+[fname, caption, ~, ~] = plot_forecasting_results(StructTS, model, N_PREDICTIONS, 10, ...
                                                    FOLDER, '');
 figs(2).names = fname;
 figs(2).captions = caption;
-report_struct.res{1} = struct('data', 'History', 'errors', [MAPE_test, MAPE_train, AIC]);
+% report_struct.res{1} = struct('data', 'History', 'errors', [testMAPE', trainMAPE']);
 report_struct.res{1}.figs = figs;
                                           
 %}
@@ -80,17 +85,18 @@ for n_gen = 1:nGenerators
     
     
     
-    [MAPE_test, MAPE_train, AIC, model] = calcErrorsByModel(newStructTS, model, ...
-                                                            idxTrain, idxTest);
+    [~,~,~,~, model] = calcErrorsByModel(newStructTS, model, idxTrain, idxTest);
+    testMAPE = mean(reshape([model().testError], [], numel(model)), 1);
+    trainMAPE = mean(reshape([model().trainError], [], numel(model)), 1);
     disp(['Results with ', generator_names{n_gen}])
-    table(MAPE_test, MAPE_train, AIC, 'RowNames', nameModel)  
+    table(testMAPE', trainMAPE', 'RowNames', nameModel)  
     
-    [fname, caption, ~, ~] = plot_forecasting_results(newStructTS, model, 1:newStructTS.deltaTr, 1e3,...
+    [fname, caption, ~, ~] = plot_forecasting_results(newStructTS, model, N_PREDICTIONS, 10,...
                                                        FOLDER, ['_fs_',generator_names{n_gen}]);
     figs = struct('names', cell(1), 'captions', cell(1));
     figs(1).names = {gen_fname, fname};
     figs(1).captions = {gen_caption, caption};
-    report_struct.res{1 + n_gen} = struct('data', generator_names{n_gen}, 'errors', [MAPE_test, MAPE_train, AIC]);
+    report_struct.res{1 + n_gen} = struct('data', generator_names{n_gen}, 'errors', [testMAPE', trainMAPE']);
     report_struct.res{1 + n_gen}.figs = figs;                               
     %}
 end
@@ -104,17 +110,19 @@ StructTS = GenerateFeatures(StructTS, generators, idxTrain, idxTest);
 [gen_fname, gen_caption] = plot_generated_feature_matrix(StructTS, ...
                             generator_names, ...
                             FOLDER, '_fs_all');
-[MAPE_test, MAPE_train, AIC, model] = calcErrorsByModel(StructTS, model, ...
-                                                        idxTrain, idxTest);
-disp('Results with all generators:')
-table(MAPE_test, MAPE_train, AIC, 'RowNames', nameModel)
+[~,~,~,~, model] = calcErrorsByModel(StructTS, model, idxTrain, idxTest);
+testMAPE = mean(reshape([model().testError], [], numel(model)), 1);
+trainMAPE = mean(reshape([model().trainError], [], numel(model)), 1);
 
-[fname, caption, ~, ~] = plot_forecasting_results(StructTS, model, 1:StructTS.deltaTr, ...
-                                                   1e3, FOLDER, '_fs_all');
+disp('Results with all generators:')
+table(testMAPE', trainMAPE', 'RowNames', nameModel)
+
+[fname, caption, ~, ~] = plot_forecasting_results(StructTS, model, N_PREDICTIONS, ...
+                                                   10, FOLDER, '_fs_all');
 figs = struct('names', cell(1), 'captions', cell(1));
 figs(1).names = {gen_fname, fname};
 figs(1).captions = {gen_caption, caption};
-report_struct.res{2 + nGenerators} = struct('data', 'All', 'errors', [MAPE_test, MAPE_train, AIC]);
+report_struct.res{2 + nGenerators} = struct('data', 'All', 'errors', [testMAPE', trainMAPE']);
 report_struct.res{2 + nGenerators}.figs = figs;
 
 
@@ -133,16 +141,19 @@ model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'transfor
 figs = struct('names', cell(1, 2), 'captions', cell(1, 2));
 figs(1).names = fs_fname;
 figs(1).captions = fs_caption;                                                        
-[MAPE_test, MAPE_train, AIC, model] = calcErrorsByModel(StructTS, model, ...
-                                                        idxTrain, idxTest);
+[~,~,~,~, model] = calcErrorsByModel(StructTS, model, idxTrain, idxTest);
+testMAPE = mean(reshape([model().testError], [], numel(model)), 1);
+trainMAPE = mean(reshape([model().trainError], [], numel(model)), 1);
+
 disp('Results with PCA applied to all generators:')
-table(MAPE_test, MAPE_train, AIC, 'RowNames', nameModel)
+table(testMAPE', trainMAPE', 'RowNames', nameModel)
 % plot frc results:
-[~, ~, fname, caption] = plot_forecasting_results(StructTS, model, 1:StructTS.deltaTr, 1e3, ...
+[~, ~, fname, caption] = plot_forecasting_results(StructTS, model, N_PREDICTIONS, 10, ...
                                                         FOLDER, '_fs_pca');
 figs(2).names = fname;
 figs(2).captions = caption;
-report_struct.res{3 + nGenerators} = struct('data', 'PCA', 'errors', [MAPE_test, MAPE_train, AIC]);
+report_struct.res{3 + nGenerators} = struct('data', 'PCA', 'errors', ...
+                                            [testMAPE', trainMAPE']);
 report_struct.res{3 + nGenerators}.figs = figs;
 
 

@@ -36,8 +36,9 @@ generators(4).replace = true; % NW applies smoothing to the original data
 pars = struct('maxComps', 50, 'expVar', 90, 'plot', @plot_pca_results);
 feature_selection_mdl = struct('handle', @DimReducePCA, 'params', pars);
 
-demoCompareForecasts(tsStructArray, model, generators, feature_selection_mdl);
 
+%demoCompareForecasts(tsStructArray, model, generators, feature_selection_mdl);
+demoFeatureSelection(ts);
 
 for i = 1:numel(model)
 demoForecastHorizon(ts, model(i));
@@ -47,5 +48,5 @@ for i = 1:numel(model)
 demoForecastAnalysis(ts, model(i), generators, feature_selection_mdl);
 end
 
-demoFeatureSelection(ts);
+
 %
