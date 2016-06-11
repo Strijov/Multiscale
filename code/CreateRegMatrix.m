@@ -49,7 +49,11 @@ timeY = zeros(nRows, nTs); % for testing purposes, delete later
 % normalize time series before adding them to design matrix 
 for i = 1:nTs
     s(i).deltaTr = s(i).deltaTr*nPredictions;
-    [normalizedTs, norm_div(i), norm_subt(i)] = NormalizeTS(s(i));
+    [normalizedTs, norm_div(i), norm_subt(i), err] = NormalizeTS(s(i));
+    if err
+    disp(['CreateRegMatrix: normalizeTS failed, since ' , s(i).name, s(i).legend...
+                        ' ts contains only nans']) 
+    end
     [Y(:, yBlocks(i) +  1:yBlocks(i+1)), ...
      X(:, xBlocks(i) + 1:xBlocks(i+1)), ...
      timeY(:, i)] = create_matrix_from_target(s(i), normalizedTs);
@@ -112,6 +116,28 @@ for i = 1:numel(timeY)
    idx_rows = find(time < timeY(i));
    idx_rows = idx_rows(s.deltaTp:-1:1);  
    X(i, :) = ts(idx_rows);
+end
+
+end
+
+
+function [ts, div, subt, err] = NormalizeTS(s)
+err = false;
+x = s.x;
+if numel(unique(x)) == 1
+    ts = ones(size(s));
+    div = 1;
+    subt = 0;
+    return
+end
+subt = min(x);
+tmp = x - subt;
+div = max(tmp);
+ts = tmp/div;
+
+ts = ReplaceNans(ts); % Fills Nans with median; FIXIT do something more sensible
+if any(isnan(ts))
+    err = true;
 end
 
 end
