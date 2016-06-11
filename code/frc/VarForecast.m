@@ -15,8 +15,9 @@ function [test_forecast, train_forecast, model] = VarForecast(validationX, model
 % model - ipdated model structure
 
 if model.unopt_flag
-    model.params = inv(trainX'*trainX)*trainX'*trainY;
-    model.unopt_flag = false; % AM 
+    regCoeff = looRegValue(trainX, trainY);
+    model.params = (trainX'*trainX + regCoeff*eye(size(trainX, 2)))\trainX'*trainY;
+    model.unopt_flag = false;
 end
 
 W = model.params;
@@ -24,5 +25,46 @@ test_forecast = validationX*W;
 train_forecast = trainX*W;
 
 model.transform = @(x) x*W;
+
+end
+
+function regCoeff = looRegValue(X, Y)
+MAX_LOO = 100;
+N_TRIALS = 20;
+
+nSamples = size(X, 1);
+lstRegCoeff = [linspace(0.5, 1, N_TRIALS/2), linspace(2, 10, N_TRIALS/2)];
+nLooSamples = min(nSamples, MAX_LOO);
+idxLoo = randperm(nSamples, nLooSamples);
+errors = zeros(nSamples, N_TRIALS);
+for i = idxLoo
+    trainX = X(~ismember(1:nSamples, i), :);
+    trainY = Y(~ismember(1:nSamples, i), :);
+    covXX = trainX'*trainX;
+    covXY = trainX'*trainY;
+    errors(i, :) = regErrors(covXX, covXY, X(i, :), Y(i, :), lstRegCoeff);   
+end
+
+[~, idxOpt] = min(std(errors));
+regCoeff = lstRegCoeff(idxOpt);
+
+fig = figure;
+errorbar(lstRegCoeff, mean(errors), lstRegCoeff, std(errors));
+xlabel('l2-regularization coefficient', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
+ylabel('Squared loo error', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
+set(gca, 'FontSize', 16, 'FontName', 'Times')
+axis tight;
+saveas(fig, 'var_reg_coeffs', 'epsc');
+close(fig)
+
+end
+
+function err = regErrors(covXX, covXY, X, Y, lstRegCoeff)
+
+err = zeros(1, numel(lstRegCoeff));
+for i = 1:numel(lstRegCoeff)
+    W = (covXX + lstRegCoeff(i)*eye(size(covXX)))\covXY;   
+    err(i) = norm(Y - X*W);
+end
 
 end
