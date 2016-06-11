@@ -48,7 +48,7 @@ figs(1).captions = caption;
 
 % Generate additional features:
 StructTS = GenerateFeatures(StructTS, generators, idxTrain, idxTest);
-disp(['Generation finished. Total number of features: ', num2str(StructTS.deltaTp)]);
+disp(['Generation finished. Total number of features: ', num2str(size(StructTS.X, 2))]);
 [gen_fname, gen_caption] = plot_generated_feature_matrix(StructTS, ...
                                                          generator_names);
 

@@ -1,23 +1,21 @@
-function [add_features, mdl] = CubicGenerator(X, mdl)
+function [add_features, mdl] = CubicGenerator(X, mdl, ~)
 % Generates new features based on the coefficients of the polynomial (cubic) 
 % model fitted to the current feature matrix.
 %
 % Input:
-% workStructTS	see createRegMatrix.m for explanation
-% 	workStructTS.matrix = [X Y]  contains the feature matrix X[m x deltaTp] 
-%    horiontally concatenated with the target matrix Y[m x deltaTr]
+% X       contains the feature matrix X[m x n], where matrices X_i for 
+%    various time series ([m x n_i]) are horiontally concatenated
+% mdl     feature selection model. Structure with fileds: handle, params,
+%         transform, replace. See GenerateFeatures.m
+% deltaTp vector [n_1, ..., n_N] of X_i second dimensions, where N is the number of time series composing
+%         the design matrix, n_i shoud sum up to n
 %
 % Output:
 % [m x 4] matrix of the new features to add
 
 n = 3;
 add_features = transform(X, n);
-if ~mdl.replace
-    add_features = [X, add_features];
-    mdl.transform = @(X) [X, transform(X, n)];
-else
-    mdl.transform = @(X) transform(X, n);
-end
+mdl.transform = @(X) transform(X, n);
  
 
 end

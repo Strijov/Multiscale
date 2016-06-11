@@ -34,10 +34,8 @@ X = [];
 
 % generate new features separately for all submatrices of different time
 % series:
-for i = 1:numel(ts.deltaTp)
-   [Xnew, generators] = genSubMatrix(generators, Xold(:, xBlocks(i) + 1:xBlocks(i+1)), idxTrain, idxTest); 
-   X = [X, Xnew];
-end
+[Xnew, generators] = genSubMatrix(generators, Xold, idxTrain, idxTest); 
+X = [X, Xnew];
 
 if ~any([generators().replace])
    Xnew = [Xold, X]; 
