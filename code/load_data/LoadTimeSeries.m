@@ -1,4 +1,4 @@
-function ts = LoadTimeSeries(datasets)
+function ts = LoadTimeSeries(datasets, namePattern)
 % Data loader
 %
 % Input: datasets - cell array, contains names of the folders inside data/
@@ -34,10 +34,14 @@ filenames = dir(fullfile('data','ProcessedData', '*.mat'));
 ts = {};
 for i = 1:numel(filenames)
    load(filenames(i).name);   
-   if ismember(ts_struct(1).dataset, datasets)
-    ts{end+1} = ts_struct;
+   if ismember(ts_struct(1).dataset, datasets) &&...
+                    ~isempty(regexpi(ts_struct(1).name, namePattern))
+        ts{end+1} = ts_struct;
    end
 end
 
 end
+
+
+
 

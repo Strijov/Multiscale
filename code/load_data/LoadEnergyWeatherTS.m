@@ -71,7 +71,7 @@ if strcmp(extension, '.csv')
     [train_ts, time_train] = ProcessCSVOutput(train);
     weather_data = csvread(weather, 1, 1);
     if size(weather_data, 2) > 6
-        weather_data(:, 7:end) = [];
+        weather_data(:, 1:3) = [];
     end
 else
     test_ts = ProcessXLSOutput(test);
