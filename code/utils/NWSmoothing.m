@@ -70,7 +70,7 @@ end
     
   
 
-function [score, smoothed]=calculation(ydata,h)
+function [score, smoothed]=calculation(ydata,h, denominators)
     % Configuration.
     stdd=1;
     
@@ -84,11 +84,9 @@ function [score, smoothed]=calculation(ydata,h)
 
     % Another look-up table (reuse the denominator in cross-validation).
     denominators = zeros(len,1);
-    for toSmooth = 1:ceil(len/2)    % exploit the symetry & calculate half
-        denominators(toSmooth) = sum(pdfAt(abs(xdata(toSmooth)-xdata)+1));
-    end
+    denominators(1:ceil(len/2)) = sum(pdfAt(abs(bsxfun(@minus, (1:ceil(len/2))', 1:len))+1), 2);
     denominators(len:-1:ceil(len/2)+1) = denominators(1:floor(len/2));
-    
+
     % Calculation.
     for toSmooth = 1:len
         gammas = pdfAt(abs(xdata(toSmooth)-xdata)+1)/denominators(toSmooth);

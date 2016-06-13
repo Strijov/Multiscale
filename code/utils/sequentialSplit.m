@@ -3,7 +3,7 @@ function idxSplits = sequentialSplit(nRowsTotal, nRowsSplit)
 % nRowsTotal into subsamples of size nRowsSplit
 
 % Define the number of subsamples:
-nSplits = nRowsTotal - nRowsSplit; 
+nSplits = nRowsTotal - nRowsSplit + 1; 
 
 % Create matrix idxSplits, where each row is a list of subsmple indices:  
 idxSplits = bsxfun(@plus, 1:nRowsSplit, (0:nSplits-1)');

@@ -4,6 +4,7 @@ addpath(genpath(cd));
 
 % Dataset options: 'HascData', 'EnergyWeather', 'NNcompetition'
 DATASET = 'EnergyWeather';
+NAME_PATTERN = 'orig*'; % set to \w* to get all names
 
 % All .mat data is stored in data/ProcessedData/ directory;
 DATADIR = fullfile('data', 'ProcessedData');
@@ -15,7 +16,7 @@ if ~exist(DATADIR, 'dir') || isempty(dir(fullfile(DATADIR, '*.mat')))
 end
 
 % LoadTimeSeries returns a cell array of ts structure arrays
-tsStructArray  = LoadTimeSeries(DATASET);
+tsStructArray  = LoadTimeSeries(DATASET, NAME_PATTERN);
 ts = tsStructArray{1}; % FIXIT 
 
 % Models
@@ -37,16 +38,19 @@ pars = struct('maxComps', 50, 'expVar', 90, 'plot', @plot_pca_results);
 feature_selection_mdl = struct('handle', @DimReducePCA, 'params', pars);
 
 
-%demoCompareForecasts(tsStructArray, model, generators, feature_selection_mdl);
+
+for i = 1:numel(model)
+demoForecastAnalysis(tsStructArray, model(i), generators, feature_selection_mdl);
+end
+
+
+demoCompareForecasts(tsStructArray, model, generators, feature_selection_mdl);
 demoFeatureSelection(ts);
 
 for i = 1:numel(model)
 demoForecastHorizon(ts, model(i));
 end
 
-for i = 1:numel(model)
-demoForecastAnalysis(ts, model(i), generators, feature_selection_mdl);
-end
 
 
 %

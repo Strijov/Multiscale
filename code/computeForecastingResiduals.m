@@ -1,6 +1,5 @@
 function [testRes, trainRes, model] = computeForecastingResiduals(ts, ...
                                                 model, ...
-                                                alpha_coeff,...
                                                 idxTrain,...
                                                 idxTest)
 
@@ -17,14 +16,18 @@ function [testRes, trainRes, model] = computeForecastingResiduals(ts, ...
 %       model.testErrors, model.trainErrors: forecasting errors (symMAPE)
 %       model.forecasted_y: [(T- (n - ts.deltaTr) x 1)] forcasted values of the
 %       original time series ts.x [T x 1]
-% alpha_coeff - test to train ratio in train-test-validation split. Takes values in 
-%       range [0, 1]. "0" coressponds to no test set, only validetion FIXIT
 % idxTrain - indices of train objects from design matrix
 % idxTest   - test (validation) indices of test objects. FIXIT Validation set is used as test
 %        set...
 
-if nargin < 4
-    [idxTrain, ~, idxTest] = TrainTestSplit(size(ts.X, 1), alpha_coeff);
+
+if nargin == 2
+    idxTrain = 1:size(ts.X, 1);
+    idxTest = [];
+end
+if nargin == 3
+    trainTestValRatio = idxTrain;
+    [idxTrain, idxTest, ~] = TrainTestSplit(size(ts.X, 1), trainTestValRatio);
 end
 
 [forecastY, matTrainForecastY, model] = feval(model.handle, ts.X(idxTest, :), model, ...
