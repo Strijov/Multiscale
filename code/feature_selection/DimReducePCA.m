@@ -8,7 +8,7 @@ if nargin < 2
     pars.expVar = EXPLAINED_VAR;
     pars.maxComps = MAX_COMPS;
     pars.minComps = 1;
-    pars.plot = false;
+    pars.plot = false;  
 else
     pars = mdl.params;
 end
@@ -16,9 +16,15 @@ end
 
 
 [wcoeff,~,variance,~,var_ratio] = pca(X, 'algorithm', 'svd');
-nComps = choose_n_comps(var_ratio, pars.expVar);
-nComps = max([nComps, pars.minComps]);
-nComps = min([nComps, pars.maxComps, size(wcoeff, 2)]);
+if isfield(pars, 'nComps')
+    nComps = pars.nComps;
+    nComps = min([nComps, pars.maxComps, size(wcoeff, 2)]);
+else
+    nComps = choose_n_comps(var_ratio, pars.expVar);
+    nComps = max([nComps, pars.minComps]);
+    nComps = min([nComps, pars.maxComps, size(wcoeff, 2)]);
+    mdl.params.nComps = nComps;
+end
 
 newX = X*wcoeff(:, 1:nComps);
 mdl.transform = @(x) x*wcoeff(:, 1:nComps);
