@@ -91,7 +91,7 @@ function model = svr_random_search(X, Y, model, nTrials)
 
 cRange = [1, 6]; % min and max values (power of 10)
 lamRange = [-6, -2]; % min and max values (power of 10)
-epsRange = [0.25, 1];  % min and max values
+epsRange = [0.01, 0.5];  % min and max values
 
 cLst = rand(1, nTrials)*cRange(2) + cRange(1);
 cLst = 10.^cLst;
@@ -115,6 +115,7 @@ model.params.C = cLst(optIdx);
 model.params.lambda = lamLst(optIdx); 
 model.params.epsilon = epsLst(optIdx);  
 
+
 plotRSresuls([log10(cLst'), log10(lamLst'), epsLst'], error', ...
                                 {'$C$', '$\lambda$', '$\varepsilon$'});
 
@@ -122,6 +123,8 @@ end
 
 function plotRSresuls(X, Z, names)
 
+[~, i] = min(Z);
+disp([Z(i), X(i, :)])
 % X = C, lambda, epsilon; z = err
 rgb = [ ...
     94    79   162
@@ -136,17 +139,20 @@ rgb = [ ...
    213    62    79
    158     1    66  ] / 255;
 
-b = repmat(linspace(0,1,200),20,1);
+%b = repmat(linspace(0,1,200),20,1);
 %imshow(b,[],'InitialMagnification','fit')
 
 
-figure;
+fig = figure;
 colormap(rgb);
 scatter3(X(:, 1),X(:, 2), X(:, 3), 400, Z-min(Z), '.');
 xlabel('$C$');
 ylabel('$\lambda$');
 zlabel('$\varepsilon$');
 colorbar;
+saveas(fig, 'svr_rand_search', 'fig');
+close(fig);
+
 
 idxPairs = combntns(1:size(X, 2), 2);
 for idx = idxPairs'
@@ -159,12 +165,16 @@ end
 function plotInterpolated(X, Y, Z, names)
 F = scatteredInterpolant([X, Y], Z);
 
-figure;
+fig = figure;
 [Xq,Yq] = meshgrid(linspace(min(X), max(X), 100), linspace(min(Y), max(Y), 100));
 Zq = F(Xq,Yq);
 surf(Xq,Yq,Zq);
 xlabel(names{1},'fontweight','b'), ylabel(names{2},'fontweight','b');
 zlabel('MSRE','fontweight','b');
+saveas(fig, ['svr_rand_search_',regexprep(names{1}, '$', ''), '_',...
+                                regexprep(names{2}, '$', '')], 'fig');
+close(fig);
+
 
 
 end

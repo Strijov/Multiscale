@@ -1,4 +1,4 @@
-function demoForecastAnalysis(tsStructArray, model, generators, feature_selection_mdl)
+function [testMAPE, trainMAPE] = demoForecastAnalysis(tsStructArray, model, generators, feature_selection_mdl)
 
 TRAIN_TEST_VAL_RATIO = [0.5, 0.4, 0.1];
 SUBSAMPLE_SIZE = 50;
@@ -29,19 +29,24 @@ tsPT = GenerateFeatures(ts, generators, idxPreTrain, [idxTrain, idxTest]);
 [idxTrain, ~, idxTest] = MultipleSplit(size(ts.X, 1) - numel(idxPreTrain), ...
                             SUBSAMPLE_SIZE, TRAIN_TEST_VAL_RATIO);
 nSplits = size(idxTrain, 1);
-    
+trainMAPE = zeros(nSplits, 1);    
+testMAPE = zeros(nSplits, 1);    
 %--------------------------------------------------------------------------
 % Calc frc residuals by split: 
 for i = 1:nSplits
-    %[ts, feature_selection_mdl] = FeatureSelection(ts, feature_selection_mdl, ...
-    %                                         idxTrain(i, :), idxTest(i, :));
+    [ts, feature_selection_mdl] = FeatureSelection(ts, feature_selection_mdl, ...
+                                             idxTrain(i, :), idxTest(i, :));
 
     [testRes, trainRes, model] = computeForecastingResiduals(ts, model, idxTrain(i,:), idxTest(i,:));
     
-    
+    trainMAPE(i) = mean(model.trainError);
+    testMAPE(i) = mean(model.testError);
 end
 
-
+trainMAPE = mean(trainMAPE);
+testMAPE = mean(testMAPE);
+disp(model.name)
+disp([trainMAPE, testMAPE])
 %--------------------------------------------------------------------------
 % Plot evolution of res mean and std by for each model 
 plot_results(testRes, trainRes, ts, model, ...
@@ -115,4 +120,6 @@ for i = 1:numel(testRes)
 end
 
 end
+
+
 
