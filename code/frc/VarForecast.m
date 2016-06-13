@@ -16,15 +16,16 @@ function [test_forecast, train_forecast, model] = VarForecast(validationX, model
 
 if model.unopt_flag
     regCoeff = looRegValue(trainX, trainY);
-    model.params = (trainX'*trainX + regCoeff*eye(size(trainX, 2)))\trainX'*trainY;
+    model.params = regCoeff;
     model.unopt_flag = false;
 end
 
-W = model.params;
+regCoeff = model.params;
+W = (trainX'*trainX + regCoeff*eye(size(trainX, 2)))\trainX'*trainY;
+model.transform = @(x) x*W;
 test_forecast = validationX*W;
 train_forecast = trainX*W;
 
-model.transform = @(x) x*W;
 
 end
 
