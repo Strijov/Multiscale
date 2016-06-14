@@ -15,9 +15,9 @@ function [test_forecast, train_forecast, model] = TreeBaggerForecast(validationX
 % train_forecast  [mtrain x ny] forecasted values of train y (regression of x)
 % model - ipdated model structure
 
-N_PREDICTORS = 20;
-N_TREES = 50;
-N_RAND_SEARCH_TRIALS = 100;
+%N_PREDICTORS = 20;
+%N_TREES = 50;
+N_RAND_SEARCH_TRIALS = 50;
 
 if model.unopt_flag
     model = tb_random_search(trainX, trainY, model, N_RAND_SEARCH_TRIALS);    
@@ -82,24 +82,7 @@ model.params.nTrees = lstTr(optIdx);
 model.params.nVars = lstVars(optIdx); 
 
 
-plotInterpolated(lstTr', lstVars', error', ...
-                                {'nTrees', 'nVars'});
+%plotRandSearchResuls([lstTr', lstVars'], error', {'nTrees', 'nVars'}, 'tf_rand_search');
 
 end
 
-function plotInterpolated(X, Y, Z, names)
-F = scatteredInterpolant([X, Y], Z);
-
-fig = figure;
-[Xq,Yq] = meshgrid(linspace(min(X), max(X), 100), linspace(min(Y), max(Y), 100));
-Zq = F(Xq,Yq);
-surf(Xq,Yq,Zq);
-xlabel(names{1},'fontweight','b'), ylabel(names{2},'fontweight','b');
-zlabel('MSRE','fontweight','b');
-saveas(fig, ['tb_rand_search_',regexprep(names{1}, '$', ''), '_',...
-                                regexprep(names{2}, '$', '')], 'fig');
-close(fig);
-
-
-
-end
