@@ -50,6 +50,11 @@ timeY = zeros(nRows, nTs); % for testing purposes, delete later
 for i = 1:nTs
     s(i).deltaTr = s(i).deltaTr*nPredictions;
     [normalizedTs, norm_div(i), norm_subt(i), err] = NormalizeTS(s(i));
+    % FIXIT For now, replace original ts with normalized ts, set normalizing 
+    % constants to 1 and 0 
+    s(i).x = normalizedTs;
+    norm_div(i) = 1;
+    norm_subt(i) = 0;
     if err
     disp(['CreateRegMatrix: normalizeTS failed, since ' , s(i).name, s(i).legend...
                         ' ts contains only nans']) 
