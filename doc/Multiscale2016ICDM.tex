@@ -89,20 +89,19 @@ Additionally, there are multiple suggestions on how to combine these forecasting
 
 
 \section{Problem statement}
-Consider a large set of time series~$\fD=\{\bs^{(m)}| \; m = 0\dots, {M}\}$, where each real-valued time series~$\bs$
+Consider a large set of time series~$\fD=\{\bs^{(m)}| \; m = 1,\dots, {M}\}$, where each real-valued time series~$\bs$
 \[ \bs = [s_1, \dots, s_i, \dots, s_{T}], ~~ s_i = s(t_i),\quad 0 \leq t_i \leq t_{\max}\]
-is a sequence of observations $s_i = s(t_i)$ of some real-valued signal $s(t)$\footnote{The signal s(t) and the resultant time series $\bs$ are potentially multivariate. We use the same notation for multivariate and univariate time series. }.
+is a sequence of observations $s_i = s(t_i)$ of some real-valued signal $s(t)$\footnote{\hl{The signal s(t) and the resultant time series $\bs$ are potentially multivariate. We use the same notation for multivariate and univariate time series.} }.
 Each time series $\bs^{(m)}$ has its own sampling rate $1/\tau^{(m)}$:
 \[t_i^{(m)} = {i}\cdot\tau^{(m)}.\]
 
- The task is to obtain forecasts $\hat{s}^{(0)}(t_i)$ for  $\dtr <  t_i \leq T_{\max} + \dtr$, given the set  $\fD$. (Fig.~\ref{fg:online_frc}), which minimise mean absolute percentage errors~\ref{fg:retrospective}
-% \begin{equation}\label{eq:forecasting_problem}
-% \end{equation}
- \[ MAPE(\bs, \hat{\bs}) = \frac{1}{r}\sum_{i = 1}^{r} \frac{|s_i - \hat{s}_i|}{|s_i|}. \]
+ The task is to obtain forecasts $\hat{s}(t_i)$ of $\bs \in \fD$ for  $\dtr <  t_i \leq T_{\max} + \dtr$, given the set  $\fD$. (Fig.~\ref{fg:online_frc}, \ref{fg:retrospective}), which minimise mean absolute percentage errors
+ \begin{equation}\label{eq:MAPE}
+ MAPE(\bs, \hat{\bs}) = \frac{1}{r}\sum_{i = 1}^{r} \frac{|s_i - \hat{s}_i|}{|s_i|}. \end{equation}
 Here MAPE is evaluated for the retrospective forecasts~\ref{fg:retrospective}, where the most recent historical samples $\bx_0^{*}$ are concealed and forecasted as if they were unknown. Then the quality of the model $\fx$ is evaluated according to its performance on these concealed samples.
 
 
- We consider the forecasting problem as the multivariate regression problem, where target variables are the vectors of lagged values $s^{(0)}(t_i)$ of the target time series $\bs^{(0)}$. form an object set at a set Let $\bx^{*}$ denote rows of the design matrix for the regression problem. Each vector~$\bx^{*} = [\by| \bx]$ collects all the time series over the time period~$\dtp$ (Fig.~\ref{fg:draw}), which stands for the local \emph{prehistory}. The vector $\bx^{*}$ includes samples from previous history of time series from $\fD$ as well as any derivatives $\vf$, which are called generated features.
+ We consider the forecasting problem as the multivariate regression problem, where target variables are the vectors of lagged values $s(t_i)$ of all the time series $\bs \in \fD$. Let $\bx^{*}$ denote rows of the design matrix for the regression problem. Each vector~$\bx^{*} = [\by| \bx]$ collects all the time series over the time period~$\dtp$ (Fig.~\ref{fg:draw}), which stands for the local \emph{prehistory}. The vector $\bx^{*}$ includes samples from previous history of time series from $\fD$ as well as any derivatives $\vf$, which are called generated features.
 
 
 
@@ -143,16 +142,17 @@ Following~\eqref{eq:segment} and~\eqref{eq:strategy2}, extract segments $[\bx^{(
  \hline
  \underset{1{\times}n}{\x} & \underset{1{\times}r}{{\by}}  \\
 \end{array}
-\right] = \left[
-\begin{array}{llll|l}
-\bx_1^{(0)} & \bx_1^{(1)}  & \dots & \bx_1^{(M)} & \by_1^{(0)}   \\
-\vdots & \vdots & \ddots & \vdots & \vdots   \\
-\bx_q^{(0)} &  \bx_q^{(1)} & \dots & \bx_q^{(M)} & \by_q^{(0)}   \\
+\right] = \end{equation}
+\[ \left[
+\begin{array}{lll|lll}
+\bx_1^{(1)}  & \dots & \bx_1^{(M)} & \by_1^{(1)} &  \dots & \by_1^{(M)}   \\
+\vdots & \vdots & \ddots & \vdots & \vdots & \ddots  \\
+\bx_q^{(1)} & \dots & \bx_q^{(M)} & \by_q^{(1)}  & \dots & \by_q^{(M)}   \\
 
 \hline
-\bx^{(0)} &  \bx^{(1)} & \dots & \bx^{(M)} &  {\by}^{(0)}   \\
+\bx^{(1)} & \dots & \bx^{(M)} & \by^{(1)} &  \dots & {\by}^{(M)}   \\
 \end{array}
-\right]. \end{equation}
+\right]. \]
 
 Denote a row from the pair~$\bY,\bX$ as $\by,\bx$ and call these vectors the target and the features.
 
@@ -163,12 +163,17 @@ Denote a row from the pair~$\bY,\bX$ as $\by,\bx$ and call these vectors the tar
 
 Now we are able the regression problem as follows:
 \begin{equation}\label{eq:regression_problem}
-\hat{\y} = f(\x, \hat{\w}), \text{~where~}
+\hat{\y} = f(\x, \hat{\w}), \hat{\w} = \argmin_{\hat{\w}}S\bigl(\bw|\fx(\bw,\bx),\by\bigr). %\text{~where~}
 \end{equation}
-\[ \hat{\w} = \argmin_{\hat{\w}}\frac{r}{q}\sum_{i=1}^{q} MAPE(\y_i, f(\x_i, \w)).\]
+Here the error function is given by $MAPE$~\eqref{eq:MAPE} for each segment $[\x_i \by_i]$, averaged over all segments $i = 1, \dots, q$ in the test set:
+\[ S\bigl(\bw|\fx(\bw,\bx),\by\bigr) = \frac{r}{q}\sum_{i=1}^{q} MAPE(\y_i, f(\x_i, \w)).\]
+%Due to the various origins of the time series and their transformations the residual vector should be normalized:
+%\[\veps = \frac{\hat\by-\by}{|\by| \cdot \|\by\|_2^1}.
+%\]
+%Here $|\by|$ is the number of elements in $\by$.
 
 \section{Feature generation}
-The feature set $\mathcal{J} = \mathop{\cup}\limits_k \mathcal{A}_k$ includes
+Denote the generated feature vector as~$\vf$. This vector consists of concatenated row-vectors~$\vf=[\vf^{(1)},\dots,\vf^{(M)}]$, which corresponds to time series local histories ~$\bs=[\bs^{(1)},\dots,\bs^{(M)}]$, modified with set of transformations~$G$. The elements~$g:\bs\to\vf$ of this set are listed below. The augmented feature set $\vf$ includes
 \begin{enumerate}[1)]
 \item the local history of all time series themselves,
 \item transformations (non-parametric and parametric) of local history,
@@ -177,28 +182,25 @@ The feature set $\mathcal{J} = \mathop{\cup}\limits_k \mathcal{A}_k$ includes
 \end{enumerate}
 
 
-Denote the generated feature vector as~$\vf$. This vector consists of concatenated row-vectors~$\vf=[\vf^{(1)},\dots,\vf^{(M)}]$, which corresponds to time series local histories ~$\bs=[\bs^{(1)},\dots,\bs^{(M)}]$, modified with set of transformations~$\mathfrak{G}$. The elements~$g:\bs\to\vf$ of this set are listed below.
 
 \subsection{Transformations of local history}
-The tables~\ref{tb:musttries},~\ref{tb:elementaries},~\ref{tb:monotones},~\ref{tb:multivariates},~\ref{tb:datastats} list the~time series transformation functions. There are non-parametric and parametric procedures to generate features. For the parametric functions~$g=g(\bb,s)$ the default values of the parameters~$\bb$ are assigned empirically.
+We use non-parametric and parametric functions to generate features. The purpose of this block of features is to introduce nonlinearities into the feature space of regression problem~\eqref{eq:regression_problem}.
 
-The parametric procedure request two optimization problem statements of the model parameters~$\bw$ and the primitive function parameters~$\bb$. The first one fixes the vector~$\hat\bb$, collected over all the primitive functions~$\{g\}$, which generate features~$\vf$:
+The parametric procedure involves two optimization problems. The first one fixes the vector~$\hat\bb$, collected over all the primitive functions~$g=g(\bb,s) \in G$, which generate features~$\vf$:
 \[
-\hat\bw = \arg\min S\bigl(\bw|\fx(\bw,\bx),\by\bigr),\quad
+\hat\bw = \arg\min_{\bw} S\bigl(\bw|\fx(\bw,\vf),\by\bigr),\quad
 \text{where}
-\quad [\by,\bx] = \vf(\hat\bb,\bs).
+\quad \vf = g(\hat\bb,\bs).
 \]
-The second one optimizes the transformation parameters~$\hat\bb$ given obtained model parameters~$\bw$
+The second one optimizes the transformation parameters~$\hat\bb$ given the obtained model parameters~$\bw$
 \[
-\hat\bb = \arg\min S\bigl(\bb|\fx(\hat\bw,\bx),\by\bigr).
+\hat\bb = \arg\min_{\bb} S\bigl(\bb|\fx(\hat\bw,\vf),\by\bigr).
 \]
-This procedure repeats two problems until vectors~$\hat\bw,\hat\bb$ converge. \hl{The initial values of vector~$\bb$ (are shown in table}~\ref{tb:primitives}). Due to the various origins of the time series and their transformations the residual vector should be normalized:
-\[\veps = \frac{\hat\by-\by}{|\by| \cdot \|\by\|_2^1}.
-\]
-\hl{It (transformation? normalization)} does not change the number elements in the vectors,~$|\vf|=|\bs|$.
+This parametric feature generation procedure repeats these problems until vectors~$\hat\bw,\hat\bb$ converge. The initial values of the parameters~$\bb$ are assigned empirically. 
 
 \subsection{Convolutions, statistics and parameters of local history}
-The listed feature generation functions convolves time series, so they reduce the dimensionality $|\vf=\bg(\bs)|<|\bs|$.
+These block of feature generation functions includes convolutions, time averaging and differencing, and basic statistics of each time series, such as mean and standard deviation, minimum and maximum of the input $\bx$. The features from these part can be seen as applying Haar's wavelet transform to each segment~\cite{Jiang2011}. Motivation for this comes from assuming the multi-scale nature of the time series: complex signals may be governed by essentially different processes at various time scales. Averaging of the time series allows to obtain more coarse-scaled time series, while differencing the time series provides a more detailed, fine-scaled version of the time series.
+
 
 \subsection{Parameters of local history forecast}
 For the time series~$\bs$ construct the Hankel matrix with a~period~$k$ and shift~$p$, so~that for~$\bs = [s_1,\dots,s_T]$ the matrix
@@ -229,8 +231,13 @@ This $k$-means of another clustering procedure may use internal parameters, so t
 
 
 \section{Feature selection}
-TODO
-
+Since the augmented feature description $\vf$ is likely to be redundant, we reduce its dimensionality, applying principal component analysis (PCA) as a feature selection procedure.
+PCA allows to select linear directions in the input space such that projections of the input data onto these directions preserve most of the variance present in the input data. This is achieved trough applying singular value decomposition to the covariance matrix $X X^T$ of the input data $X$
+ \[C = \frac{1}{n}X X^T = \frac{1}{n} U\Lambda^2 U^T, \text{ где } \Lambda = \text{diag}(\lambda_1, \dots, \lambda_n).\]
+ Columns of $U$ define orthogonal projections of $X$. Squares $\lambda^2_i$ of singular values on the main diagonal of $\Lambda$ equal to the variance of the corresponding projections. Suppose that singular values $\lambda_i$ are ordered by decrease. Then the feature matrix $\tilde{X}$ of reduced dimensionality $k$ is given by
+\begin{equation}\label{eq:PCA}
+\tilde{X} = \tilde{U} X,\end{equation}
+where $\lambda_i$ is the matrix of the first $k$ columns of $\lambda_i$.
 
 
 \section{Computational experiment}
@@ -238,8 +245,22 @@ The goal of the experiment is to study the performance of multivariate regressio
 time series forecasting.
 
 This section presents the results of computational comparison of the forecasting models presented above. To test each model, we used several datasets, described below.
-
-\paragraph{Datasets}
+\subsection{Models}
+The models that we use are: 
+\begin{enumerate}[a)]
+\item multivariate linear regression (MVR) with $l_2$-regularization 
+%\[f(\bx, \bW) = \bx\bW , ~~ \hat{\bW} = \argmin_{\bW} S(\bW) + \lambda||\bW||_2^2, \]
+\item support vector regression (SVR), 
+%where the regression function also has the linear form $f(\bX, \{\bW, \bb\}) = \bx\bW + \bb$, but the optimization problem is more complex:
+%    \[ \hat{\bW} = \argmin_{\bW,\;\vx,\;\vx^{*}} \frac{1}{2}||\bW||_2^2 + C
+%    \sum_{i, j}(\xi_{ij} + \xi_{ij}^{*}), \text{~subject to~}\]
+%    \[ \begin{cases} -\veps - \vx^{*}_i \leq \by_i - \bx_i\bW  - \bb \leq \veps + \vx_i, \\
+%     \xi_{ij}\xi^{*}_{ij} > 0.
+%    \end{cases}\]
+\item artificial neural network (ANN), 
+\item random forest (RF).
+\end{enumerate}
+\subsection{Datasets}
 \begin{itemize}
 \item Energy consumption dataset. The dataset consists of the Polish electricity load time series~\cite{EnergyWeatherData} and weather time series in Warsaw (Longtitude: 21.25, Latitude: 52.30, Elevation: 94). Energy time series contain hourly records, weather time series were measured daily. The dataset comprises two original time multiscale series, which correspond to the periods of 1999--2001 and 2002-2004 and is augmented with artificially modified versions of these two time series. \hl{More on data preparation.}
 \item Accelerometry dataset. This dataset consists of accelerometry time series from the Human Activity Sensing Consortium~\cite{HASCdata}. Each time series in the datasets is a sequence of acceleration records. The time series were recorded for 120 seconds while a subject performed a sequence of activities: stay, walk, jog, skip, stair up or stair down. The sampling rate varies between 10 and 100Hz, but stays constant for each time series.
@@ -363,31 +384,6 @@ Feature set & Models &MAPE test & MAPE train & AIC\\
 \caption{Mean residual by number of forecasted point for historical data only and all generation strategies with PCA.}
 \end{figure}
 
-\begin{figure}
-\centering
-\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001VAR.png}}
-\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001VAR.png}}\\
-\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001SVR.png}}
-\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001_fs_SVR.png}}\\
-\subfloat[Random forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001Random_Forest.png}}
-\subfloat[Random forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001_fs_Random_Forest.png}} \\
-\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001Neural_network.png}}
-\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/npdf_HASC1001_fs_Neural_network.png}}
-\caption{Normal probability density functions fitted to residuals of each model.}
-\end{figure}
-
-\begin{figure}
-\centering
-\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/qq_HASC1001VAR.png}}
-\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/qq_HASC1001_fs_VAR.png}}\\
-\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/frc_analysis/HascData/qq_HASC1001SVR.png}}\\
-\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/frc_analysis/HascData/qq_HASC1001_fs_SVR.png}}
-\subfloat[Random forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/qq_HASC1001Random_Forest.png}}
-\subfloat[Random forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/qq_HASC1001_fs_Random_Forest.png}}
-\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/qq_HASC1001Neural_network.png}}\\
-\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/qq_HASC1001_fs_Neural_network.png}}
-\caption{Quantile-quantile plots for each model.}
-\end{figure}
 
 \begin{figure}
 \centering
