@@ -12,8 +12,32 @@ function [add_features, mdl] = ConvGenerator(X, mdl, ~)
 % Output:
 % [m x 5] matrix of the new features to add
 
-    add_features = [sum(X, 2), mean(X, 2), min(X, [], 2), max(X, [], 2), std(X, 0, 2)]; 
-    mdl.transform = @(X) [sum(X, 2), mean(X, 2), min(X, [], 2), max(X, [], 2), std(X, 0, 2)];
+DEPTH = 5;
+add_features = [mean(X, 2), min(X, [], 2), max(X, [], 2), std(X, 0, 2), haarTransform(X, DEPTH)]; 
+mdl.transform = @(X) [mean(X, 2), min(X, [], 2), max(X, [], 2), std(X, 0, 2), haarTransform(X, DEPTH)];
     
     
+end
+
+function res = haarTransform(X, depth)
+
+logSizeX = floor(log2(size(X, 2)));
+depth = min([depth, logSizeX]);
+zeroPadX = zeros(size(X, 1), 2^(logSizeX + 1));
+zeroPadX(:, 1:size(X, 2)) = X;
+depth = 2.^(logSizeX-1:-1:logSizeX-depth);
+idx = [0,cumsum(depth)];
+resAv = zeros(size(X, 1), sum(depth));
+resDif = zeros(size(X, 1), sum(depth));
+
+avX = zeroPadX;
+difX = zeroPadX;
+for i = 1:numel(depth)
+    avX = (avX(:, 1:2:2*depth(i) - 1) + avX(:, 2:2:2*depth(i)))/2;
+    difX = (difX(:, 1:2:2*depth(i) - 1) - difX(:, 2:2:2*depth(i)))/2;
+    resAv(:, idx(i)+1:idx(i+1)) = avX;
+    resDif(:, idx(i)+1:idx(i+1)) = difX; 
+end
+
+res = [resAv, resDif];
 end
