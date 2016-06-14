@@ -16,15 +16,18 @@ function [test_forecast, train_forecast, model] = SVRMethod(validationX, model, 
 % model - ipdated model structure
 
 N_RANDOM_SEARCH_TRIALS = 200;
-
+if ~isfield( model.params, 'kerneloption')
+    model.params.kerneloption = 1;
+end
+if ~isfield(model.params, 'kernel')
+    model.params.kernel='gaussian';
+end
+if ~isfield(model.params, 'verbose')
+    model.params.verbose=0;
+end
+    
 if model.unopt_flag % For now, no optimization
     model.unopt_flag = false;
-    %model.params.C = 1e5;  
-    %model.params.lambda = 0.000001; 
-    %model.params.epsilon = .1;
-    model.params.kerneloption = 1;
-    model.params.kernel='gaussian';
-    model.params.verbose=0;
     % Optimize [C, lambda, epsilon]:
     model = svr_random_search(trainX, trainY, model, N_RANDOM_SEARCH_TRIALS);
     

@@ -22,8 +22,13 @@ ts = tsStructArray{1}; % FIXIT
 % Models
 nameModel = {'VAR', 'SVR', 'Random Forest', 'Neural network'};   % Set of models. 
 handleModel = {@VarForecast, @SVRMethod, @TreeBaggerForecast, @NnForecast};
-model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'transform', [],...
-    'trainError', [], 'testError', [], 'unopt_flag', true, 'forecasted_y', []);
+pars = cell(1, numel(nameModel));
+pars{1} = struct('regCoeff', 2);
+pars{2} = struct('C', 10000, 'lambda', 0.00001, 'epsilon', 0.01);
+pars{3} = struct('nTrees', 25, 'nVars', 48);
+pars{4} = struct('hiddenSize', 25);
+model = struct('handle', handleModel, 'name', nameModel, 'params', pars, 'transform', [],...
+    'trainError', [], 'testError', [], 'unopt_flag', false, 'forecasted_y', []);
 
 
 %Generating extra features:
@@ -38,9 +43,10 @@ pars = struct('maxComps', 50, 'expVar', 90, 'plot', @plot_pca_results);
 feature_selection_mdl = struct('handle', @DimReducePCA, 'params', pars);
 
 
-
+trainMAPE = zeros(numel(model), 1);
+testMAPE = zeros(numel(model), 1);
 for i = 1:numel(model)
-demoForecastAnalysis(tsStructArray, model(i), generators, feature_selection_mdl);
+[testMAPE, trainMAPE] = demoForecastAnalysis(tsStructArray, model(i), generators, feature_selection_mdl);
 end
 
 
