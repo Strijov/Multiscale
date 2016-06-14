@@ -29,8 +29,8 @@ ylabel(names{2},  'FontSize', 20, 'FontName', 'Times','Interpreter','latex');
 %zlabel('RMSE',  'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
 set(gca, 'FontSize', 16, 'FontName', 'Times')
 
-saveas(fig, [fname,regexprep(names{1}, '$', ''), '_',...
-                                regexprep(names{2}, '$', '')], 'fig');
+saveas(fig, [fname,regexprep(names{1}, '\$', ''), '_',...
+                                regexprep(names{2}, '\$', '')], 'fig');
 close(fig);
 
 

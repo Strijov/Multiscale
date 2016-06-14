@@ -14,26 +14,29 @@ EXPLAINED_VAR = 99;
 MAX_COMPS = 20;
 
 
-if isempty(mdl.params) 
-    params.expVar = EXPLAINED_VAR;
-    params.maxComps = MAX_COMPS;
-    params.minComps = 1;
-    params.plot = false;  
-    mdl.params = params;
-else
-    params = mdl.params;
+if ~isfield(mdl.params, 'expVar') 
+    mdl.params.expVar = EXPLAINED_VAR;
+end
+if ~isfield(mdl.params, 'maxComps')
+    mdl.params.maxComps = MAX_COMPS;
+end
+if ~isfield(mdl.params, 'minComps')    
+    mdl.params.minComps = 1;
+end
+if ~isfield(mdl.params, 'plot')
+    mdl.params.plot = false;  
 end
 
 
 
 [wcoeff,~,variance,~,var_ratio] = pca(X, 'algorithm', 'svd');
-if isfield(params, 'nComps')
-    nComps = params.nComps;
-    nComps = min([nComps, maxComps, size(wcoeff, 2)]);
+if isfield(mdl.params, 'nComps')
+    nComps = mdl.params.nComps;
+    nComps = min([nComps, mdl.params.maxComps, size(wcoeff, 2)]);
 else
-    nComps = choose_n_comps(var_ratio, params.expVar);
-    nComps = max([nComps, params.minComps]);
-    nComps = min([nComps, params.maxComps, size(wcoeff, 2)]);
+    nComps = choose_n_comps(var_ratio, mdl.params.expVar);
+    nComps = max([nComps, mdl.params.minComps]);
+    nComps = min([nComps, mdl.params.maxComps, size(wcoeff, 2)]);
     mdl.params.nComps = nComps;
 end
 
