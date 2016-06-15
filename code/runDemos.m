@@ -42,18 +42,36 @@ generators(4).replace = true; % NW applies smoothing to the original data
 pars = struct('maxComps', 50, 'expVar', 90, 'plot', @plot_pca_results);
 feature_selection_mdl = struct('handle', @DimReducePCA, 'params', pars);
 
+% Separately:
+trainMAPE = zeros(numel(model) + 1, 1);
+testMAPE = zeros(numel(model) + 1, 1);
 
-for i = 2:numel(tsStructArray)
-demoFeatureSelection(tsStructArray{i}, model, generators);
+for nTs = 1:numel(tsStructArray{1}) 
+% Define baseline model:    
+ts = {tsStructArray{1}(i), tsStructArray{2}(i)};    
+pars = struct('deltaTr', ts{1}.deltaTr, 'deltaTp', ts{1}.deltaTp);
+baselineModel = struct('handle', @MartingalForecast, 'name', 'Martingal', 'params', pars, 'transform', [],...
+    'trainError', [], 'testError', [], 'unopt_flag', false, 'forecasted_y', []);
+[testMAPE(1), trainMAPE(1)] = demoForecastAnalysis(ts, baselineModel, [], []);    
+
+for i = 1:numel(model)
+    [testMAPE(i + 1), trainMAPE(i + 1)] = demoForecastAnalysis(ts, model(i), generators, feature_selection_mdl);
 end
+end
+disp([testMAPE, trainMAPE])
 
-
-trainMAPE = zeros(numel(model), 1);
-testMAPE = zeros(numel(model), 1);
+% Proposed framework:
 for i = 1:numel(model)
 [testMAPE(i), trainMAPE(i)] = demoForecastAnalysis(tsStructArray, model(i), generators, feature_selection_mdl);
 end
 disp([testMAPE, trainMAPE])
+
+for i = 1:numel(tsStructArray)
+demoFeatureSelection(tsStructArray{i}, model, generators);
+end
+
+
+
 
 
 demoCompareForecasts(tsStructArray, model, generators, feature_selection_mdl);

@@ -3,6 +3,16 @@ function [testMAPE, trainMAPE] = demoForecastAnalysis(tsStructArray, model, gene
 TRAIN_TEST_VAL_RATIO = [0.5, 0.4, 0.1];
 SUBSAMPLE_SIZE = 50;
 N_PREDICTIONS = 1;
+
+% Check arguments:
+if nargin < 2 || isempty(generators)
+generators = struct('handle', @IdentityGenerator, 'name', 'Identity', ...
+                                          'replace', false, 'transform', []);
+end
+if nargin < 3 || isempty(feature_selection_mdl)
+feature_selection_mdl = struct('handle', @IdentityGenerator, 'params', []);    
+end
+
 % Create dir for saving figures:
 FOLDER = fullfile('fig/frc_analysis');
 if ~exist(FOLDER, 'dir')
@@ -19,8 +29,9 @@ ts = MergeDataset(tsStructArray, N_PREDICTIONS);
 % Split design matrix rows into train and test subsamples
 [idxTrain, idxPreTrain, idxTest] = MultipleSplit(size(ts.X, 1), size(ts.X, 1), TRAIN_TEST_VAL_RATIO);
 
-tsPT = GenerateFeatures(ts, generators, idxPreTrain, [idxTrain, idxTest]);
-[tsPT, feature_selection_mdl] = FeatureSelection(tsPT, feature_selection_mdl, ...
+%--------------------------------------------------------------------------
+tsGen = GenerateFeatures(ts, generators, idxPreTrain, [idxTrain, idxTest]);
+[tsPT, feature_selection_mdl] = FeatureSelection(tsGen, feature_selection_mdl, ...
                                              idxPreTrain, [idxTrain, idxTest]);
 [~, preTrainRes, model] = computeForecastingResiduals(tsPT, model, idxPreTrain, [idxTrain, idxTest]);
 
@@ -33,10 +44,11 @@ trainMAPE = zeros(nSplits, 1);
 testMAPE = zeros(nSplits, 1);    
 testStats = zeros(nSplits, 2*numel(ts.x));
 trainStats = zeros(nSplits, 2*numel(ts.x));
+tsOrig = ts;
 %--------------------------------------------------------------------------
 % Calc frc residuals by split: 
 for i = 1:nSplits
-    [ts, feature_selection_mdl] = FeatureSelection(ts, feature_selection_mdl, ...
+    [ts, feature_selection_mdl] = FeatureSelection(tsGen, feature_selection_mdl, ...
                                              idxTrain(i, :), idxTest(i, :));
 
     [testRes, trainRes, model] = computeForecastingResiduals(ts, model, idxTrain(i,:), idxTest(i,:));
@@ -46,7 +58,7 @@ for i = 1:nSplits
     testStats(i, :) = cell2mat(cellfun(@(x) stats(x), testRes, 'UniformOutput', false));
     trainStats(i, :) = cell2mat(cellfun(@(x) stats(x), trainRes, 'UniformOutput', false));
 end
-save(['res_',model.name,'EW.mat'], 'testMAPE', 'trainMAPE', 'testStats', 'trainStats');
+save(['res_',model.name, '_', ts.legend{1}, '.mat'], 'testMAPE', 'trainMAPE', 'testStats', 'trainStats');
 trainMAPE = mean(trainMAPE);
 testMAPE = mean(testMAPE);
 disp(model.name)
@@ -76,7 +88,7 @@ for i = 1:numel(testRes)
     plot_residuals_stats(testRes{i}', trainRes{i}',...
                          StructTS, model, FOLDER, ...
                          [regexprep(StructTS.legend{i}, ' ', '_'), ...
-                         '_fs_',regexprep(model.name, ' ', '_')]);
+                         '_marg_',regexprep(model.name, ' ', '_')]);
 
 
     testRes{i} = testRes{i}(:);
