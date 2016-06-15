@@ -1,9 +1,16 @@
 function demoFeatureSelection(StructTS, model, generators)
 
-N_PREDICTIONS = 5;
+N_PREDICTIONS = 1;
 TRAIN_TEST_VAL_RATIO = [0, 0.75, 0.25];
 
+% Properly set 'replace' parameter for all generators:
 nGenerators = numel(generators);
+gen_replace = repmat({false}, 1, nGenerators);
+idxNW = strcmp({generators().name}, {'NW'});
+[generators.replace] = deal(gen_replace{:});
+generators(idxNW).replace = true;
+
+reset_transform = cell(1, numel(model));
 
 
 % Feature selection models are defined later
@@ -14,8 +21,11 @@ report_struct = struct('handles', [], 'algos', [], 'headers', [],...
 report_struct.handles = {@include_subfigs, @vertical_res_table};   
 report_struct.algos = {model().name};
 report_struct.headers = {'MAPE test', 'MAPE train'};
-report_struct.res = cell(1, nGenerators + 4); % + no features, all features and PCA
+report_struct.res = cell(1, nGenerators + 4); % + no features, all features,  PCA, NPCA
 figs = struct('names', cell(1, 2), 'captions', cell(1, 2));
+
+
+results = cell(6, nGenerators + 4); % 6: testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE, trainMAPE
 
 FOLDER = fullfile('fig/feature_selection/');
 % If necessary, create dir
@@ -36,6 +46,9 @@ StructTS = CreateRegMatrix(StructTS);
 figs(1).names = fname;
 figs(1).captions = caption;
 
+% put all time series from the dataset into a huge desigm matrix:
+%ts = MergeDataset(tsStructArray, N_PREDICTIONS);
+
 % Split data into train and test:
 [idxTrain, ~, idxTest] = MultipleSplit(size(StructTS.X, 1), size(StructTS.X, 1), ...
                                         TRAIN_TEST_VAL_RATIO);
@@ -44,11 +57,16 @@ figs(1).captions = caption;
 %--------------------------------------------------------------------------
 % First, try with original features
 [testMeanRes, trainMeanRes, testStdRes, trainStdRes, model] = calcErrorsByModel(StructTS, model, idxTrain, idxTest);
-testMAPE = mean(reshape([model().testError], [], numel(model)), 1);
-trainMAPE = mean(reshape([model().trainError], [], numel(model)), 1);
+testMAPE = reshape([model().testError], [], numel(model));
+trainMAPE = reshape([model().trainError], [], numel(model));
+%testMeanMAPE = mean(reshape([model().testError], [], numel(model)), 1);
+%trainMeanMAPE = mean(reshape([model().trainError], [], numel(model)), 1);
+%testStdMAPE = std(reshape([model().testError], [], numel(model)), 0, 1);
+%trainStdMAPE = std(reshape([model().trainError], [], numel(model)), 0, 1);
+results(:, 1) = {testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE', trainMAPE'};
 
 disp('Results with original features:')
-disp([testMAPE', trainMAPE'])  
+disp([testMAPE, trainMAPE])  
     
 % plot frc results:
 [fname, caption, ~, ~] = plot_forecasting_results(StructTS, model, N_PREDICTIONS, 10, ...
@@ -57,27 +75,25 @@ figs(2).names = fname;
 figs(2).captions = caption;
 report_struct.res{1} = struct('data', 'History', 'errors', [testMAPE', trainMAPE']);
 report_struct.res{1}.figs = figs;
-                                          
-%}
 
 %--------------------------------------------------------------------------
 % Next, try transformations by one:
-for n_gen = 1:nGenerators
-    generators(n_gen).replace = false;
-    
+for n_gen = 1:nGenerators  
     newStructTS = GenerateFeatures(StructTS, generators(n_gen), idxTrain, idxTest);
     [gen_fname, gen_caption] = plot_generated_feature_matrix(newStructTS, ...
                                 {generators(n_gen).name}, ...
                                 FOLDER, ['_fs_',generators(n_gen).name]);
     
     generators(n_gen).replace = true;
-    model.transform = [];
-    [~,~,~,~, model] = calcErrorsByModel(newStructTS, model, idxTrain, idxTest);
-    testMAPE = mean(reshape([model().testError], [], numel(model)), 1);
-    trainMAPE = mean(reshape([model().trainError], [], numel(model)), 1);
+    [model.transform] = deal(reset_transform{:});
+    [testMeanRes, trainMeanRes, testStdRes, trainStdRes, model] = ...
+                    calcErrorsByModel(newStructTS, model, idxTrain, idxTest);
+    testMAPE = reshape([model().testError], [], numel(model));
+    trainMAPE = reshape([model().trainError], [], numel(model));
     disp(['Results with ', generators(n_gen).name])
-    disp([testMAPE', trainMAPE'])  
-    
+    disp([testMAPE, trainMAPE])  
+    results(:, 1 + n_gen) = {testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE', trainMAPE'};
+
     [fname, caption, ~, ~] = plot_forecasting_results(newStructTS, model, N_PREDICTIONS, 10,...
                                                        FOLDER, ['_fs_',generators(n_gen).name]);
     figs = struct('names', cell(1), 'captions', cell(1));
@@ -85,24 +101,25 @@ for n_gen = 1:nGenerators
     figs(1).captions = {gen_caption, caption};
     report_struct.res{1 + n_gen} = struct('data', generators(n_gen).name, 'errors', [testMAPE', trainMAPE']);
     report_struct.res{1 + n_gen}.figs = figs;                               
-    %}
+    
 end
-%}
 %--------------------------------------------------------------------------
 % Then for all features ...
-    
+gen_replace = repmat({true}, 1, nGenerators);
+[generators.replace] = deal(gen_replace{:});
 StructTS = GenerateFeatures(StructTS, generators, idxTrain, idxTest);
 [gen_fname, gen_caption] = plot_generated_feature_matrix(StructTS, ...
                             {generators().name}, ...
                             FOLDER, '_fs_all');
-
-model.transform = [];
-[~,~,~,~, model] = calcErrorsByModel(StructTS, model, idxTrain, idxTest);
-testMAPE = mean(reshape([model().testError], [], numel(model)), 1);
-trainMAPE = mean(reshape([model().trainError], [], numel(model)), 1);
+[model.transform] = deal(reset_transform{:});
+[testMeanRes, trainMeanRes, testStdRes, trainStdRes, model] = ...
+                       calcErrorsByModel(StructTS, model, idxTrain, idxTest);
+testMAPE = reshape([model().testError], [], numel(model));
+trainMAPE = reshape([model().trainError], [], numel(model));
+results(:, 2 + nGenerators) = {testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE', trainMAPE'};
 
 disp('Results with all generators:')
-disp([testMAPE', trainMAPE'])  
+disp([testMAPE, trainMAPE])  
 
 [fname, caption, ~, ~] = plot_forecasting_results(StructTS, model, N_PREDICTIONS, ...
                                                    10, FOLDER, '_fs_all');
@@ -130,15 +147,17 @@ figs = struct('names', cell(1, 2), 'captions', cell(1, 2));
 figs(1).names = fs_fname;
 figs(1).captions = fs_caption;                                                        
 
-model.transform = [];
-[~,~,~,~, model] = calcErrorsByModel(StructTS, model, idxTrain, idxTest);
-testMAPE = mean(reshape([model().testError], [], numel(model)), 1);
-trainMAPE = mean(reshape([model().trainError], [], numel(model)), 1);
+[model.transform] = deal(reset_transform{:});
+[testMeanRes, trainMeanRes, testStdRes, trainStdRes, model] = ...
+                    calcErrorsByModel(pcaStructTS, model, idxTrain, idxTest);
+testMAPE = reshape([model().testError], [], numel(model));
+trainMAPE =reshape([model().trainError], [], numel(model));
+results(:, 3+nGenerators) = {testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE', trainMAPE'};
 
 disp('Results with PCA applied to all generators:')
-disp([testMAPE', trainMAPE'])  
+disp([testMAPE, trainMAPE])  
 % plot frc results:
-[~, ~, fname, caption] = plot_forecasting_results(StructTS, model, N_PREDICTIONS, 10, ...
+[~, ~, fname, caption] = plot_forecasting_results(pcaStructTS, model, N_PREDICTIONS, 10, ...
                                                         FOLDER, '_fs_pca');
 figs(2).names = fname;
 figs(2).captions = caption;
@@ -161,13 +180,15 @@ figs = struct('names', cell(1, 2), 'captions', cell(1, 2));
 figs(1).names = fs_fname;
 figs(1).captions = fs_caption;                                                        
 
-model.transform = [];
-[~,~,~,~, model] = calcErrorsByModel(StructTS, model, idxTrain, idxTest);
-testMAPE = mean(reshape([model().testError], [], numel(model)), 1);
-trainMAPE = mean(reshape([model().trainError], [], numel(model)), 1);
+[model.transform] = deal(reset_transform{:});
+[testMeanRes, trainMeanRes, testStdRes, trainStdRes, model] = ...
+                        calcErrorsByModel(StructTS, model, idxTrain, idxTest);
+testMAPE = reshape([model().testError], [], numel(model));
+trainMAPE =reshape([model().trainError], [], numel(model));
+results(:, 4+nGenerators) = {testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE', trainMAPE'};
 
 disp('Results with NPCA applied to all generators:')
-disp([testMAPE', trainMAPE'])  
+disp([testMAPE, trainMAPE])  
 % plot frc results:
 [~, ~, fname, caption] = plot_forecasting_results(StructTS, model, N_PREDICTIONS, 10, ...
                                                         FOLDER, '_fs_npca');
@@ -179,6 +200,7 @@ report_struct.res{4 + nGenerators}.figs = figs;
 
 %--------------------------------------------------------------------------
 % save results and generate report:
+save(['results_fs_', StructTS.name ,'.mat'], 'results');
 save(['report_struct_fs_', StructTS.name ,'.mat'], 'report_struct');
 generate_tex_report(report_struct, 'FeatureSelection.tex');
 
