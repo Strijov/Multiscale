@@ -83,7 +83,7 @@ We assume that the sampling rate of each time series is fixed and each time seri
 
 
 To demonstrate the application of the proposed framework of time series forecasting, we utilize Multivariate Linear Regression (MLR) as the naive approach, as well as three more complex models: Random Forests (RF)~\cite{Yu2016, Kane2014}, Support Vector Regression (SVR)~\cite{Trafalis2000, Navarrete2015, Hao2006} and artificial neural networks (ANN)~\cite{Busseti2012, Taylor2009}.  Random Forests combine decision trees with randomly generated nodes to increase the accuracy of classification or regression~\cite{Criminisi2011}. In case of regression trees, each node of the tree splits the input space into two subspaces and each leaf specifies a distinct regression model, which is used for prediction if the input is found in the corresponding region of the input space. Predictions of the trees in the forest are averaged, or, for the probabilistic random forest, the probabilities of the outputs are averaged. The advantage of random forests is their efficiency in case of highly dimensional data due to the randomness incorporated into selecting informative features. Since random forests are essentially ensembles of weak learners, they enjoy high generalization ability, associated with boosting algorithms.
- Similarly, the formulation of optimization problem within support vector regression promotes its robustness in case of highly dimensional data. The authors of~\cite{Trafalis2000, Hao2006} reported high predictive performance of SVR applied to time series forecasting. In case of SVR, MIMO strategy is based on multivariate SVR~\cite{PerezCruz2002}. Finally, artificial neural networks attract researches and practitioners from various domains~\cite{Taylor2009, Qiu2014}. one of the reasons for that is the ability os ANNs to model complex relationships between the input data in such fashion that does not require direct feature engineering. For more suggestions on how to combine these forecasting methods~\cite{Qiu2014, Grover2015} or use them in the multi-scale fashion we refer the reader to~\cite{Chen2004, Zhu2012, Cui2016, Bai2015, Ferrari2012}.
+ Similarly, the formulation of optimization problem within support vector regression promotes its robustness in case of highly dimensional data. The authors of~\cite{Trafalis2000, Hao2006} reported high predictive performance of SVR applied to time series forecasting. In case of SVR, MIMO strategy is based on multivariate SVR~\cite{PerezCruz2002}. Finally, artificial neural networks attract researches and practitioners from various domains~\cite{Taylor2009, Qiu2014}. One of the reasons for that is the ability os ANNs to model complex relationships between the input data in such fashion that does not require direct feature engineering. For more suggestions on how to combine these forecasting methods~\cite{Qiu2014, Grover2015} or use them in the multi-scale fashion we refer the reader to~\cite{Chen2004, Zhu2012, Cui2016, Bai2015, Ferrari2012}.
 
 
 \section{Problem statement}
@@ -93,15 +93,13 @@ is a sequence of observations $s_i = s(t_i)$ of some real-valued signal $s(t)$.
 Each time series $\bs^{(q)}$ has its own sampling rate $1/\tau^{(q)}$:
 \[t_i^{(q)} = {i}\cdot\tau^{(q)}.\]
 
- The task is to obtain forecasts $\hat{s}(t_i)$ of $\bs \in \fD$ for  $\dtr <  t_i \leq T_{\max} + \dtr$, given the set  $\fD$ (see Fig.~\ref{fg:online_frc}, \ref{fg:retrospective}), which minimise mean absolute percentage errors
+ The task is to obtain forecasts $\hat{s}(t_i)$ of $\bs \in \fD$ for  $\dtr <  t_i \leq T_{\max} + \dtr$, given the set  $\fD$ (see Fig.~\ref{fg:online_frc}, \ref{fg:retrospective}). The forecasts $\hat{\bs}$ should minimise symmetric mean absolute percentage error:
  \begin{equation}\label{eq:MAPE}
  SMAPE(\bs, \hat{\bs}) = \frac{1}{r}\sum_{i = 1}^{r} \frac{2|s_i - \hat{s}_i|}{|s_i + \hat{s}_i|}. \end{equation}
+ Here and throughout this paper we assume that each time series are standardized. 
+ 
+
 %Here MAPE is evaluated for the retrospective forecasts~\ref{fg:retrospective}, where the most recent historical samples $\bx_0^{*}$ are concealed and forecasted as if they were unknown. Then the quality of the model $\fx$ is evaluated according to its performance on these concealed samples.
-
-
- We consider the forecasting problem as the multivariate regression problem, where target variables are the vectors of lagged values $s(t_i)$ of all the time series $\bs \in \fD$. Let $\bx^{*}$ denote rows of the design matrix for the regression problem. Each vector~$\bx^{*} = [\by| \bx]$ collects all the time series over the time period~$\dtp$ (Fig.~\ref{fg:draw}), which stands for the local \emph{prehistory}. The vector $\bx^{*}$ includes samples from previous history of time series from $\fD$ as well as any derivatives $\vf$, which are called generated features.
-
-
 
 \begin{figure}[!ht]
 \centering
@@ -113,45 +111,7 @@ Each time series $\bs^{(q)}$ has its own sampling rate $1/\tau^{(q)}$:
 \caption{Forecasting (a) as regression problem (b).}
 \end{figure}
 
-\begin{algorithm}[!h]
-%\DontPrintSemicolon
-%\textbf{\emph{ComputeForecastingErrors()}}\\
- \KwData{$\bX^{*} \in \mathbb{R}^{m\times(n+r)}$. Parameters: sample size $m$, train to test ratio $\alpha$, minimal sample (test) size $m_{\min}$.}
- \KwResult{Forecasting error.}
- Decompose matrix $\bX^{*}$ into train and test matrices:
- \[\bX^{*}_{\text{train}}, \; \bX^{*}_{\text{test}} = TrainTestSplit(\bX^{*}, \alpha);\]
- Optimize hyperparameters $\hat{\beta}$ of the model $\fx$, using $\bX^{*}_{\text{train}}$ \;
- \For{$i$ in $\{1, \dots,  m_{\text{test}} - m_{\min}\}$:}{
- define $\bX^{*}_{\text{train}, i}$ as $(i+1)$-th to $(i+ m_{\min} + 1)$-th rows of $\bX^{*}_{\text{test}}$ \;
- define $\bx^{*}_{\text{val}, i}$ as the $i$-th row of $\bX^{*}_{\text{test}}$ \;
-  train forecasting model $\fx(\x, \hat{\w}_i, \hat{\beta})$, using $\bX^{*}_{\text{train}, i}$ and \;
-  obtain vector of residuals $\veps  = \by_{\text{val}, i} - \fx(\bx_{\text{val}, i}, \hat{\w}_i, \hat{\beta})$ \;
-  compute forecasting quality:
-  \[ {SMAPE}(i)  = \frac{1}{r} \sum_{t=1}^{r} \frac{2|\varepsilon_{t}|}{|2(y_{\text{val}, i})_t - \varepsilon_{t}|};\]
-  }
-  Return $SMAPE$, averaged over data splits:
-  \[ \text{Error}  = \frac{1}{m_{\text{test}} - m_{\min}} \sum_{i=1}^{m_{\text{test}} - m_{\min}} {SMAPE}(i).\]
-  \bigskip
- \caption{Compute forecasting errors imitating rolling forecast procedure.}\label{alg:train_test_rmse}
-\end{algorithm}
 
-\begin{algorithm}[!h]
-\DontPrintSemicolon
-%\textbf{\emph{TrainTestSplit()}}\\
-\KwData{Object-feature matrix $\bX^{*} \in \mathbb{R}^{m\times(n+r)}$. Train to test ratio $\alpha \in [0, 1]$.}
- \KwResult{Train and test, $\bX^{*}_{\text{test}}$, $\bX^{*}_{\text{val}}$.}
- Set train set and test set sizes:
-
- $ \quad m_{\text{train}} = \lfloor\alpha\cdot m\rfloor, \quad m_{\text{test}} = m - m_{\text{train}} $ \; %(1-\alpha)(m-1)
- Decompose matrix $\bX^{*}$ into train and test matrices $\bX^{*}_{\text{train}}$, $\bX^{*}_{\text{test}}$:
- \[\bX^{*} = \left[\begin{array}{c|c}
- \underset{m_{\text{test}}{\times}n}{\bX_{\text{test}}} & \underset{m_{\text{test}}{\times}r}{\bY_{\text{test}}}  \\
- \hdashline
- \underset{m_{\text{train}}{\times}n}{\bX_{\text{train}}}  & \underset{m_{\text{train}}{\times}r}{\bY_{\text{train}}}
- \end{array}\right]
- \]
-  \caption{Initial train-test split procedure.}\label{alg:train_test_rmse}
-\end{algorithm}
 
 
 \subsection{Design matrix}
@@ -162,6 +122,9 @@ Each time series $\bs^{(q)}$ has its own sampling rate $1/\tau^{(q)}$:
 \centering\subfloat[]{\includegraphics[width=0.4\textwidth]{design_matrix_generation.png}\label{fg:design}}
 \caption{Draw an object from time series history.}
 \end{figure}
+ We consider the forecasting problem as the multivariate regression problem, where target variables are the vectors of lagged values $s(t_i)$ of all the time series $\bs \in \fD$.
+ 
+Let $\bx^{*}$ denote rows of the design matrix~$\bX^*$ for the regression problem. Each vector~$\bx^{*} = [\bx| \by]$ collects all the time series over the time period~$\dtp$ (Fig.~\ref{fg:draw}), which stands for the local \emph{prehistory}. The vector $\bx^{*}$ includes samples from previous history of time series from $\fD$ as well as any derivatives or \emph{generated features}. We describe the types of generated features in Section~\ref{sc:feature_generation}.
 
 The design matrix~$\bX^*$ for the multiscale autoregressive problem statement is constructed  as follows (Fig.~\ref{fg:design}). Let $\bs^{(q)}_i$ denote the~$i$-th segment of the time series $\bs^{(q)}$
 \begin{equation}\label{eq:segment}
@@ -202,18 +165,54 @@ Denote a row from the pair~$\bY,\bX$ as $\by,\bx$ and call these vectors the tar
 \caption{\hl{Retrospective forecast includes most recent samples in data set.}\label{fg:retrospective}}
 \end{figure}
 
+\subsection{Testing procedure}
 Now we are able the regression problem as follows:
 \begin{equation}\label{eq:regression_problem}
 \hat{\y} = f(\x, \hat{\w}), \hat{\w} = \argmin_{\hat{\w}}S\bigl(\bw|\fx(\bw,\bx),\by\bigr). %\text{~where~}
 \end{equation}
-Here the error function is given by $MAPE$~\eqref{eq:MAPE} for each segment $[\x_i \by_i]$, averaged over all segments $i = 1, \dots, m$ in the test set:
+Here the error function is given by $SMAPE$~\eqref{eq:MAPE} for each segment $[\x_i \by_i]$, averaged over all segments $i = 1, \dots, m$ in the test set:
 \[ S\bigl(\bw|\fx(\bw,\bx),\by\bigr) = \frac{r}{m}\sum_{i=1}^{m} MAPE(\y_i, f(\x_i, \w)).\]
-%Due to the various origins of the time series and their transformations the residual vector should be normalized:
-%\[\veps = \frac{\hat\by-\by}{|\by| \cdot \|\by\|_2^1}.
-%\]
-%Here $|\by|$ is the number of elements in $\by$.
 
-\section{Feature generation}
+The algorithm below describes the procedure used to evaluate the forecasting errors within the proposed framework given the model $\fx$.
+\begin{algorithm}[!h]
+%\DontPrintSemicolon
+%\textbf{\emph{ComputeForecastingErrors()}}\\
+ \KwData{$\bX^{*} \in \mathbb{R}^{m\times(n+r)}$. Parameters: sample size $m$, train to test ratio $\alpha$, minimal sample (test) size $m_{\min}$.}
+ \KwResult{Forecasting error.}
+ 
+ Decompose matrix $\bX^{*}$ into train and test matrices:
+ \[\bX^{*}_{\text{train}}, \; \bX^{*}_{\text{test}} = TrainTestSplit(\bX^{*}, \alpha);\]
+ Augment $\bX^{*}_{\text{train}}$ with generated features $\vf$ \;
+ Reduce dimensionality of $\bX^{*}_{\text{train}}$ \;
+ Optimize hyperparameters $\hat{\beta}$ of the model $\fx$, using $\bX^{*}_{\text{train}}$\;
+ \For{$i$ in $\{1, \dots,  m_{\text{test}} - m_{\min}\}$:}{
+ define $\bX^{*}_{\text{train}, i}$ as $(i+1)$-th to $(i+ m_{\min} + 1)$-th rows of $\bX^{*}_{\text{test}}$ and
+  $\bx^{*}_{\text{val}, i}$ as the $i$-th row of $\bX^{*}_{\text{test}}$\;
+ 
+ \[\bX^{*}_{\text{test}} = \left[\begin{array}{c|c}
+ \dots & \dots \\
+ \hline
+ \underset{1{\times}n}{\bx_{\text{val}, i}} & \underset{1{\times}r}{\by_{\text{val}, i}}  \\
+ \hdashline
+ \underset{m_{\min}{\times}n}{\bX_{\text{train}, i}}  & \underset{m_{\min}{\times}r}{\bY_{\text{train}, i}} \\
+ \hline
+ \dots & \dots \\
+ \end{array}\right]
+ \]
+ apply feature transformation to $\bX^{*}_{\text{train}, i}$, $\bX^{*}_{\text{val}, i}$\;
+  train forecasting model $\fx(\x, \hat{\w}_i, \hat{\beta})$, using $\bX^{*}_{\text{train}, i}$\;
+  obtain vector of residuals $\veps  = \by_{\text{val}, i} - \fx(\bx_{\text{val}, i}, \hat{\w}_i, \hat{\beta})$\;
+  compute forecasting quality:
+  \[ {SMAPE}(i)  = \frac{1}{r} \sum_{t=1}^{r} \frac{2|\varepsilon_{t}|}{|2(y_{\text{val}, i})_t - \varepsilon_{t}|};\]
+  }
+  Return $SMAPE$, averaged over data splits:
+  \[ \text{Error}  = \frac{1}{m_{\text{test}} - m_{\min}} \sum_{i=1}^{m_{\text{test}} - m_{\min}} {SMAPE}(i).\]
+  \bigskip
+ \caption{Compute forecasting errors imitating rolling forecast procedure.}\label{alg:train_test_rmse}
+\end{algorithm}
+
+
+\section{Feature generation}\label{sc:feature_generation}
 Denote the generated feature vector as~$\vf$. This vector consists of concatenated row-vectors~$\vf=[\vf^{(1)},\dots,\vf^{(Q)}]$, which corresponds to time series local histories ~$\bs=[\bs^{(1)},\dots,\bs^{(Q)}]$, modified with set of transformations~$G$. The elements~$g:\bs\to\vf$ of this set are listed below. The augmented feature set $\vf$ includes
 \begin{enumerate}[1)]
 \item the local history of all time series themselves,
@@ -454,6 +453,48 @@ Feature set & Models &MAPE test & MAPE train & AIC\\
 
 \end{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\begin{algorithm}[!h]
+%%\DontPrintSemicolon
+%%\textbf{\emph{ComputeForecastingErrors()}}\\
+% \KwData{$\bX^{*} \in \mathbb{R}^{m\times(n+r)}$. Parameters: sample size $m$, train to test ratio $\alpha$, minimal sample (test) size $m_{\min}$.}
+% \KwResult{Forecasting error.}
+% Decompose matrix $\bX^{*}$ into train and test matrices:
+% \[\bX^{*}_{\text{train}}, \; \bX^{*}_{\text{test}} = TrainTestSplit(\bX^{*}, \alpha);\]
+% Optimize hyperparameters $\hat{\beta}$ of the model $\fx$, using $\bX^{*}_{\text{train}}$ \;
+% \For{$i$ in $\{1, \dots,  m_{\text{test}} - m_{\min}\}$:}{
+% define $\bX^{*}_{\text{train}, i}$ as $(i+1)$-th to $(i+ m_{\min} + 1)$-th rows of $\bX^{*}_{\text{test}}$ \;
+% define $\bx^{*}_{\text{val}, i}$ as the $i$-th row of $\bX^{*}_{\text{test}}$ \;
+%  train forecasting model $\fx(\x, \hat{\w}_i, \hat{\beta})$, using $\bX^{*}_{\text{train}, i}$ and \;
+%  obtain vector of residuals $\veps  = \by_{\text{val}, i} - \fx(\bx_{\text{val}, i}, \hat{\w}_i, \hat{\beta})$ \;
+%  compute forecasting quality:
+%  \[ {SMAPE}(i)  = \frac{1}{r} \sum_{t=1}^{r} \frac{2|\varepsilon_{t}|}{|2(y_{\text{val}, i})_t - \varepsilon_{t}|};\]
+%  }
+%  Return $SMAPE$, averaged over data splits:
+%  \[ \text{Error}  = \frac{1}{m_{\text{test}} - m_{\min}} \sum_{i=1}^{m_{\text{test}} - m_{\min}} {SMAPE}(i).\]
+%  \bigskip
+% \caption{Compute forecasting errors imitating rolling forecast procedure.}\label{alg:train_test_rmse}
+%\end{algorithm}
+%
+%\begin{algorithm}[!h]
+%\DontPrintSemicolon
+%\textbf{\emph{TrainTestSplit()}}\\
+%\KwData{Object-feature matrix $\bX^{*} \in \mathbb{R}^{m\times(n+r)}$. Train to test ratio $\alpha \in [0, 1]$.}
+% \KwResult{Train and test, $\bX^{*}_{\text{test}}$, $\bX^{*}_{\text{val}}$.}
+% Set train set and test set sizes:
+%
+% $ \quad m_{\text{train}} = \lfloor\alpha\cdot m\rfloor, \quad m_{\text{test}} = m - m_{\text{train}} $ \; %(1-\alpha)(m-1)
+% Decompose matrix $\bX^{*}$ into train and test matrices $\bX^{*}_{\text{train}}$, $\bX^{*}_{\text{test}}$:
+% \[\bX^{*} = \left[\begin{array}{c|c}
+% \underset{m_{\text{test}}{\times}n}{\bX_{\text{test}}} & \underset{m_{\text{test}}{\times}r}{\bY_{\text{test}}}  \\
+% \hdashline
+% \underset{m_{\text{train}}{\times}n}{\bX_{\text{train}}}  & \underset{m_{\text{train}}{\times}r}{\bY_{\text{train}}}
+% \end{array}\right]
+% \]
+%  \caption{Initial train-test split procedure.}\label{alg:train_test_rmse}
+%\end{algorithm}
+
+
 %\begin{figure}
 %\centering
 %\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_VAR.png}}
