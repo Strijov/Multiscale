@@ -1,6 +1,6 @@
 %% Creator: Inkscape 0.91_64bit, www.inkscape.org
 %% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
-%% Accompanies image file 'drawing3.eps' (pdf, eps, ps)
+%% Accompanies image file 'draw_object.eps' (pdf, eps, ps)
 %%
 %% To include the image in your LaTeX document, write
 %%   \input{<filename>.pdf_tex}
@@ -49,7 +49,7 @@
   \global\let\svgscale\undefined%
   \makeatother%
   \begin{picture}(1,1.41428571)%
-    \put(0,0){\includegraphics[width=\unitlength]{drawing3.eps}}%
+    \put(0,0){\includegraphics[width=\unitlength]{draw_object.eps}}%
     \put(0.60188209,1.25080121){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t$, continuous time}}}%
     \put(0.33693879,1.29111869){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$y_i$}}}%
     \put(0.4415722,1.28823885){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$x_i$\\ }}}%

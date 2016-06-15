@@ -1,6 +1,6 @@
 %% Creator: Inkscape 0.91_64bit, www.inkscape.org
 %% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
-%% Accompanies image file 'drawing2.eps' (pdf, eps, ps)
+%% Accompanies image file 'forecasting_model.eps' (pdf, eps, ps)
 %%
 %% To include the image in your LaTeX document, write
 %%   \input{<filename>.pdf_tex}
@@ -49,7 +49,7 @@
   \global\let\svgscale\undefined%
   \makeatother%
   \begin{picture}(1,1.41428571)%
-    \put(0,0){\includegraphics[width=\unitlength]{drawing2.eps}}%
+    \put(0,0){\includegraphics[width=\unitlength]{forecasting_model.eps}}%
     \put(0.42407021,1.32663581){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$f$}}}%
     \put(0.68070395,1.31467977){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{train}}}%
     \put(0.68070395,1.2608805){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{test\\ }}}%
