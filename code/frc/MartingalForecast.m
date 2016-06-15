@@ -1,4 +1,4 @@
-function [test_forecast, train_forecast, model] = MarginalForecast(testX, model,trainX, trainY)
+function [test_forecast, train_forecast, model] = MartingalForecast(testX, model,trainX, trainY)
 % Compute forecast using VAR model with fixed parameters.
 %
 % Input:
