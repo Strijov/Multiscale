@@ -2,7 +2,7 @@ function [testMAPE, trainMAPE] = demoForecastAnalysis(tsStructArray, model, gene
 
 TRAIN_TEST_VAL_RATIO = [0.5, 0.4, 0.1];
 SUBSAMPLE_SIZE = 50;
-N_PREDICTIONS = 10;
+N_PREDICTIONS = 1;
 % Create dir for saving figures:
 FOLDER = fullfile('fig/frc_analysis');
 if ~exist(FOLDER, 'dir')
@@ -31,6 +31,8 @@ tsPT = GenerateFeatures(ts, generators, idxPreTrain, [idxTrain, idxTest]);
 nSplits = size(idxTrain, 1);
 trainMAPE = zeros(nSplits, 1);    
 testMAPE = zeros(nSplits, 1);    
+testStats = zeros(nSplits, 2*numel(ts.x));
+trainStats = zeros(nSplits, 2*numel(ts.x));
 %--------------------------------------------------------------------------
 % Calc frc residuals by split: 
 for i = 1:nSplits
@@ -41,8 +43,10 @@ for i = 1:nSplits
     
     trainMAPE(i) = mean(model.trainError);
     testMAPE(i) = mean(model.testError);
+    testStats(i, :) = cell2mat(cellfun(@(x) stats(x), testRes, 'UniformOutput', false));
+    trainStats(i, :) = cell2mat(cellfun(@(x) stats(x), trainRes, 'UniformOutput', false));
 end
-
+save(['res_',model.name,'EW.mat'], 'testMAPE', 'trainMAPE', 'testStats', 'trainStats');
 trainMAPE = mean(trainMAPE);
 testMAPE = mean(testMAPE);
 disp(model.name)
@@ -59,36 +63,9 @@ plot_results(testRes, trainRes, ts, model, ...
 
 end
 
-function [testFrc, trainFrc] = split_forecast_by_ts(forecasts, idxTrain, idxTest, ...
-                                               deltaTr)
-                                           
-testFrc = cell(1, numel(deltaTr)); 
-trainFrc = cell(1, numel(deltaTr));
-for i = 1:numel(deltaTr)
-    [testFrc{i}, trainFrc{i}] = split_forecast(cell2mat(forecasts(:, i)), idxTrain, idxTest, deltaTr(i));
-end
+function res = stats(x)
 
-end
-
-
-function [testFrc, trainFrc] = split_forecast(forecasts, idxTrain, idxTest, ...
-                                               deltaTr)
-                                           
-nTrain = size(idxTrain, 2);
-nTest = size(idxTest, 2);
-
-testFrc = zeros(deltaTr, numel(idxTest));
-trainFrc = zeros(deltaTr, numel(idxTrain));
-
-
-for i = 1:size(idxTrain, 1)
-    idxTrainMat = bsxfun(@plus, idxTrain(i, :), (0:deltaTr - 1)');
-    idxTestMat = bsxfun(@plus, idxTest(i, :), (0:deltaTr - 1)');
-
-    testFrc(:, (i-1)*nTest + 1:i*nTest) = forecasts(idxTestMat);
-    trainFrc(:, (i-1)*nTrain + 1:i*nTrain) = forecasts(idxTrainMat);
-end
-
+res = [mean(x(:)), std(x(:))];
 end
 
 function plot_results(testRes, trainRes, StructTS, model, ...
