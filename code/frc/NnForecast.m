@@ -20,13 +20,13 @@ HIDDEN_LAYER_SIZE = 10;
 
 if model.unopt_flag
     model.params = struct('nHiddenLayers', HIDDEN_LAYER_SIZE);
-    net = fitnet(model.params.nHiddenLayers);
-    net.trainParam.showWindow = false;
-    trained_net = train(net, trainX',trainY');
-    model.transform = @(x) transform(x, trained_net);
-    model.unopt_flag = true; %FIXIT Should be false, but can't find function to retrain NN using old parameters.
+    model.unopt_flag = false; %FIXIT Should be false, but can't find function to retrain NN using old parameters.
 end
 
+net = fitnet(model.params.nHiddenLayers);
+net.trainParam.showWindow = false;
+trained_net = train(net, trainX',trainY');
+model.transform = @(x) transform(x, trained_net);
 test_forecast = feval(model.transform, validationX);
 train_forecast = feval(model.transform, trainX);
 
