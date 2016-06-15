@@ -1,7 +1,7 @@
 \documentclass[conference]{IEEEtran}
 %\usepackage{a4wide}
 \usepackage{NotationStyle}
-\usepackage[ruled, vlined]{algorithm2e}
+\usepackage[ruled,noend,noline,slide]{algorithm2e}
 \usepackage{multicol, multirow}
 %\usepackage[noend]{algorithmic}
 \usepackage[english]{babel}
@@ -64,41 +64,39 @@
 \maketitle
 
 \begin{abstract}
-The paper presents a framework for the multiscale time series forecast. We reduce the problem of time series forecast to the regression problem and propose a method of constructing efficient feature description for the regression problem.
-The method involves feature generation, followed with dimensionality reduction procedure. Generated features include historical information about the target time series as well as other available time series, local transformations and  multiscale features. We apply several forecasting algorithms to the resulting regression problem and investigate the quality of the forecasts for various horizon values.
+The paper presents a framework for the multiscale time series forecast. We propose a method of constructing efficient feature description for the corresponding regression problem. The method involves feature generation and dimensionality reduction procedures. Generated features include historical information about the target time series as well as other available time series, local transformations and  multiscale features. We apply several forecasting algorithms to the resulting regression problem and investigate the quality of the forecasts for various horizon values.
 \end{abstract}
 
 
 
 \section{Introduction}
-The paper investigates behavior of a device within the concept of Internet of Things. The device at question is monitored by a set of sensors, which produces large amount of multi-scale time series during its lifespan. These time series have various time scales since distinct sensors produce observations with various frequencies (milliseconds, days, weeks, etc).  The main goal is to forecast the observations of a device in a given time range.
+We focus on the problem of forecasting behavior of a device within the concept of Internet of Things. The device at question is monitored by a set of sensors, which produces large amount of multi-scale time series during its lifespan. These time series have various time scales since distinct sensors produce observations with various frequencies from milliseconds to weeks.  The main goal is to predict the observations of a device in a given time range.
 
-We assume that the sampling rate of each time series is fixed and each time series has its own forecast horizon. The problem of multi-scale analysis arises in such applications as weather prediction, medical diagnosis and monitoring various sensor time series~\cite{Costa2008, Ahmed2012, Cortez2012, Ferreira2006} \hl{[medical, medical, traffic, ecology]}. Motivation for multi-scale analysis comes from the assumption that the behaviour of complex signals may be governed by  essentially different processes at various time scales. Thus, the time series should be modeled separately at each scale. This approach is used in time series classification, prediction and fault detection~\cite{Cui2016, Cortez2012, Aldrich2013}. Regardless of the goal of multi-scale analysis, it includes sequential averaging of the time series to obtain more coarse-scaled time series~\cite{Wu2013}, or, more rarely, differencing the time series for a more detailed, fine-scaled version of the time series~\cite{Jiang2011}. Averaging and differencing, which is equivalent to application of Haar's wavelet transform~\cite{Jiang2011}, may be replaced by any other pair of low and high pass wavelet filters~\cite{Chen2004} or convolution operation with some kernel function~\cite{Vespier2012}. Next steps depend on the goal of multi-scale analysis. Using multi-scale approach in time series prediction usually involves determining optimal scales~\cite{Vespier2012, Ahmed2012}, decomposition of time series into separately forecasted components and combination of the obtained forecasts.
+We assume that the sampling rate of each time series is fixed and each time series has its own forecast horizon. The problem of multi-scale analysis arises in such applications as weather prediction, medical diagnosis and monitoring various sensor time series~\cite{Costa2008, Ahmed2012, Cortez2012, Ferreira2006}. Motivation for multi-scale analysis comes from the assumption that the behaviour of complex signals may be governed by  essentially different processes at various time scales. Thus, the time series should be modeled separately at each scale. This approach is used in time series classification, prediction and fault detection~\cite{Cui2016, Cortez2012, Aldrich2013}. Regardless of the goal of multi-scale analysis, it includes sequential averaging of the time series to obtain more coarse-scaled time series~\cite{Wu2013}, or, more rarely, differencing the time series for a more detailed, fine-scaled version of the time series~\cite{Jiang2011}. Averaging and differencing, which is equivalent to application of Haar's wavelet transform~\cite{Jiang2011}, may be replaced by any other pair of low and high pass wavelet filters~\cite{Chen2004} or convolution operation with some kernel function~\cite{Vespier2012}. Using multi-scale approach in time series prediction usually involves determining optimal scales~\cite{Vespier2012, Ahmed2012}, decomposition of time series into separately forecasted components and combination of the obtained forecasts.
 
 
 \section{Related work}
- Along with generic methods of time series forecasting, such as Autoregressive Moving Average Models (ARMA), Autoregressive Integrated Moving Average Models (ARIMA), many authors report high predictive performance of the methods, originally developed for classification or regression, applied to forecast time series. The latter include Support Vector Regression~\cite{Trafalis2000, Navarrete2015, Hao2006}, random forests~\cite{Yu2016, Kane2014} and artificial neural networks~\cite{Busseti2012, Taylor2009}.
- %The authors of~\cite{Trafalis2000, Hao2006} reported high predictive performance of SVR applied to time series forecasting.
- Random Forests combine decision trees with randomly generated nodes to increase the accuracy of classification or regression~\cite{Criminisi2011}. In case of regression trees, each node of the tree splits the input space into two subspaces and each leaf specifies a distinct regression model, which is used for prediction if the input is found in the corresponding region of the input space. Predictions of the trees in the forest are averaged, or, for the probabilistic random forest, the probabilities of the outputs are averaged. The advantage of random forests is their efficiency in case of highly dimensional data due to the randomness incorporated into selecting informative features. Since random forests are essentially ensembles of weak learners, they enjoy high generalization ability, associated with boosting algorithms. The authors of~\cite{Criminisi2011} compare regression with probabilistic Random Forest with
+ Along with generic methods of time series forecasting, such as Autoregressive Moving Average Models (ARMA), Autoregressive Integrated Moving Average Models (ARIMA), many authors report high predictive performance of the methods, originally developed for classification or regression, applied to forecast time series. 
+ Here the input variables are the delayed observations  of the time series, and the output is the forecasted value of time series. However, the authors of~\cite{Navarrete2015} show that this prediction framework suffers from systematic error that does not converge to zero as the sample size increases, and  ensure error convergence applying cubic spline approximation to noisy data, which yields much lower RMSE in case of noisy data. 
 
- Here the input variables are the delayed observations  of the time series, and the output is the forecasted value of time series. However, the authors of~\cite{Navarrete2015} show that this prediction framework suffers from systematic error that does not converge to zero as the sample size increases, since both the inputs and the outputs are noised and regression algorithms do not handle the noise in the input correctly. To ensure error convergence, the authors first apply cubic spline approximation, which yields much lower RMSE in case of noisy data. The impact of spline approximation is not so great when the noise is low or discretization is too coarse.
+ To extend this one-step-ahead forecasting scheme to the case of multiple predictions, one may use iterative, direct or multiple output strategies~\cite{Bao2014}. Within the iterative strategy, one-step-ahead forecasts are computed recursively, with the newly predicted values of the time series used as the actual future records. A less prone to error accumulation, though more time consuming method is the direct strategy, which involves estimation of $h$ models to predict $h$ future values of the time series~\cite{Zhang2013}. Finally, the multiple input multiple output (MIMO) strategy allows to obtain $h$ prediction with at one step.  The paper~\cite{Bao2014} compares different strategies of multi-step-ahead prediction in SVR-based forecasting: direct, iterative and multiple output. Regardless of the horizon values, direct and MIMO strategies consistently achieve more accurate forecasts, than the iterative strategy, with MIMO being most accurate in most cases.
 
- To extend this one-step-ahead forecasting scheme to the case of multiple predictions, one may use iterative, direct or multiple output strategies~\cite{Bao2014}. Within the iterative strategy, one-step-ahead forecasts are computed recursively, with the newly predicted values of the time series used as the actual future records. A less prone to error accumulation, though more time consuming method is the direct strategy, which involves estimation of $h$ models to predict $h$ future values of the time series~\cite{Zhang2013}. Finally, the multiple input multiple output (MIMO) strategy allows to obtain $h$ prediction with at one step. In case of SVR, MIMO strategy is based on multivariate SVR~\cite{PerezCruz2002}. The paper~\cite{Bao2014} compares different strategies of multi-step-ahead prediction in SVR-based forecasting: direct, iterative and multiple output. Regardless of the horizon values, direct and MIMO strategies consistently achieve more accurate forecasts, than the iterative strategy, with MIMO being most accurate in most cases.
 
-Additionally, there are multiple suggestions on how to combine these forecasting methods~\cite{Qiu2014, Grover2015} or use them in the multi-scale fashion~\cite{Chen2004, Zhu2012, Cui2016, Bai2015, Ferrari2012}.
+To demonstrate the application of the proposed framework of time series forecasting, we utilize Multivariate Linear Regression (MLR) as the naive approach, as well as three more complex models: Random Forests (RF)~\cite{Yu2016, Kane2014}, Support Vector Regression (SVR)~\cite{Trafalis2000, Navarrete2015, Hao2006} and artificial neural networks (ANN)~\cite{Busseti2012, Taylor2009}.  Random Forests combine decision trees with randomly generated nodes to increase the accuracy of classification or regression~\cite{Criminisi2011}. In case of regression trees, each node of the tree splits the input space into two subspaces and each leaf specifies a distinct regression model, which is used for prediction if the input is found in the corresponding region of the input space. Predictions of the trees in the forest are averaged, or, for the probabilistic random forest, the probabilities of the outputs are averaged. The advantage of random forests is their efficiency in case of highly dimensional data due to the randomness incorporated into selecting informative features. Since random forests are essentially ensembles of weak learners, they enjoy high generalization ability, associated with boosting algorithms.
+ Similarly, the formulation of optimization problem within support vector regression promotes its robustness in case of highly dimensional data. The authors of~\cite{Trafalis2000, Hao2006} reported high predictive performance of SVR applied to time series forecasting. In case of SVR, MIMO strategy is based on multivariate SVR~\cite{PerezCruz2002}. Finally, artificial neural networks attract researches and practitioners from various domains~\cite{Taylor2009, Qiu2014}. one of the reasons for that is the ability os ANNs to model complex relationships between the input data in such fashion that does not require direct feature engineering. For more suggestions on how to combine these forecasting methods~\cite{Qiu2014, Grover2015} or use them in the multi-scale fashion we refer the reader to~\cite{Chen2004, Zhu2012, Cui2016, Bai2015, Ferrari2012}.
 
 
 \section{Problem statement}
-Consider a large set of time series~$\fD=\{\bs^{(m)}| \; m = 1,\dots, {M}\}$, where each real-valued time series~$\bs$
+Consider a large set of time series~$\fD=\{\bs^{(q)}| \; q = 1,\dots, {Q}\}$, where each real-valued time series~$\bs$
 \[ \bs = [s_1, \dots, s_i, \dots, s_{T}], ~~ s_i = s(t_i),\quad 0 \leq t_i \leq t_{\max}\]
-is a sequence of observations $s_i = s(t_i)$ of some real-valued signal $s(t)$\footnote{\hl{The signal s(t) and the resultant time series $\bs$ are potentially multivariate. We use the same notation for multivariate and univariate time series.} }.
-Each time series $\bs^{(m)}$ has its own sampling rate $1/\tau^{(m)}$:
-\[t_i^{(m)} = {i}\cdot\tau^{(m)}.\]
+is a sequence of observations $s_i = s(t_i)$ of some real-valued signal $s(t)$.
+Each time series $\bs^{(q)}$ has its own sampling rate $1/\tau^{(q)}$:
+\[t_i^{(q)} = {i}\cdot\tau^{(q)}.\]
 
- The task is to obtain forecasts $\hat{s}(t_i)$ of $\bs \in \fD$ for  $\dtr <  t_i \leq T_{\max} + \dtr$, given the set  $\fD$. (Fig.~\ref{fg:online_frc}, \ref{fg:retrospective}), which minimise mean absolute percentage errors
+ The task is to obtain forecasts $\hat{s}(t_i)$ of $\bs \in \fD$ for  $\dtr <  t_i \leq T_{\max} + \dtr$, given the set  $\fD$ (see Fig.~\ref{fg:online_frc}, \ref{fg:retrospective}), which minimise mean absolute percentage errors
  \begin{equation}\label{eq:MAPE}
- MAPE(\bs, \hat{\bs}) = \frac{1}{r}\sum_{i = 1}^{r} \frac{|s_i - \hat{s}_i|}{|s_i|}. \end{equation}
-Here MAPE is evaluated for the retrospective forecasts~\ref{fg:retrospective}, where the most recent historical samples $\bx_0^{*}$ are concealed and forecasted as if they were unknown. Then the quality of the model $\fx$ is evaluated according to its performance on these concealed samples.
+ SMAPE(\bs, \hat{\bs}) = \frac{1}{r}\sum_{i = 1}^{r} \frac{2|s_i - \hat{s}_i|}{|s_i + \hat{s}_i|}. \end{equation}
+%Here MAPE is evaluated for the retrospective forecasts~\ref{fg:retrospective}, where the most recent historical samples $\bx_0^{*}$ are concealed and forecasted as if they were unknown. Then the quality of the model $\fx$ is evaluated according to its performance on these concealed samples.
 
 
  We consider the forecasting problem as the multivariate regression problem, where target variables are the vectors of lagged values $s(t_i)$ of all the time series $\bs \in \fD$. Let $\bx^{*}$ denote rows of the design matrix for the regression problem. Each vector~$\bx^{*} = [\by| \bx]$ collects all the time series over the time period~$\dtp$ (Fig.~\ref{fg:draw}), which stands for the local \emph{prehistory}. The vector $\bx^{*}$ includes samples from previous history of time series from $\fD$ as well as any derivatives $\vf$, which are called generated features.
@@ -115,6 +113,47 @@ Here MAPE is evaluated for the retrospective forecasts~\ref{fg:retrospective}, w
 \caption{Forecasting (a) as regression problem (b).}
 \end{figure}
 
+\begin{algorithm}[!h]
+%\DontPrintSemicolon
+%\textbf{\emph{ComputeForecastingErrors()}}\\
+ \KwData{$\bX^{*} \in \mathbb{R}^{m\times(n+r)}$. Parameters: sample size $m$, train to test ratio $\alpha$, minimal sample (test) size $m_{\min}$.}
+ \KwResult{Forecasting error.}
+ Decompose matrix $\bX^{*}$ into train and test matrices:
+ \[\bX^{*}_{\text{train}}, \; \bX^{*}_{\text{test}} = TrainTestSplit(\bX^{*}, \alpha);\]
+ Optimize hyperparameters $\hat{\beta}$ of the model $\fx$, using $\bX^{*}_{\text{train}}$ \;
+ \For{$i$ in $\{1, \dots,  m_{\text{test}} - m_{\min}\}$:}{
+ define $\bX^{*}_{\text{train}, i}$ as $(i+1)$-th to $(i+ m_{\min} + 1)$-th rows of $\bX^{*}_{\text{test}}$ \;
+ define $\bx^{*}_{\text{val}, i}$ as the $i$-th row of $\bX^{*}_{\text{test}}$ \;
+  train forecasting model $\fx(\x, \hat{\w}_i, \hat{\beta})$, using $\bX^{*}_{\text{train}, i}$ and \;
+  obtain vector of residuals $\veps  = \by_{\text{val}, i} - \fx(\bx_{\text{val}, i}, \hat{\w}_i, \hat{\beta})$ \;
+  compute forecasting quality:
+  \[ {SMAPE}(i)  = \frac{1}{r} \sum_{t=1}^{r} \frac{2|\varepsilon_{t}|}{|2(y_{\text{val}, i})_t - \varepsilon_{t}|};\]
+  }
+  Return $SMAPE$, averaged over data splits:
+  \[ \text{Error}  = \frac{1}{m_{\text{test}} - m_{\min}} \sum_{i=1}^{m_{\text{test}} - m_{\min}} {SMAPE}(i).\]
+  \bigskip
+ \caption{Compute forecasting errors imitating rolling forecast procedure.}\label{alg:train_test_rmse}
+\end{algorithm}
+
+\begin{algorithm}[!h]
+\DontPrintSemicolon
+%\textbf{\emph{TrainTestSplit()}}\\
+\KwData{Object-feature matrix $\bX^{*} \in \mathbb{R}^{m\times(n+r)}$. Train to test ratio $\alpha \in [0, 1]$.}
+ \KwResult{Train and test, $\bX^{*}_{\text{test}}$, $\bX^{*}_{\text{val}}$.}
+ Set train set and test set sizes:
+
+ $ \quad m_{\text{train}} = \lfloor\alpha\cdot m\rfloor, \quad m_{\text{test}} = m - m_{\text{train}} $ \; %(1-\alpha)(m-1)
+ Decompose matrix $\bX^{*}$ into train and test matrices $\bX^{*}_{\text{train}}$, $\bX^{*}_{\text{test}}$:
+ \[\bX^{*} = \left[\begin{array}{c|c}
+ \underset{m_{\text{test}}{\times}n}{\bX_{\text{test}}} & \underset{m_{\text{test}}{\times}r}{\bY_{\text{test}}}  \\
+ \hdashline
+ \underset{m_{\text{train}}{\times}n}{\bX_{\text{train}}}  & \underset{m_{\text{train}}{\times}r}{\bY_{\text{train}}}
+ \end{array}\right]
+ \]
+  \caption{Initial train-test split procedure.}\label{alg:train_test_rmse}
+\end{algorithm}
+
+
 \subsection{Design matrix}
 
 \begin{figure}[!ht]
@@ -124,33 +163,35 @@ Here MAPE is evaluated for the retrospective forecasts~\ref{fg:retrospective}, w
 \caption{Draw an object from time series history.}
 \end{figure}
 
-The design matrix~$\bX^*$ for the multiscale autoregressive problem statement is constructed  as follows (Fig.~\ref{fg:design}). Let $\bs^{(m)}_i$ denote the~$i$-th segment of the time series $\bs^{(m)}$
+The design matrix~$\bX^*$ for the multiscale autoregressive problem statement is constructed  as follows (Fig.~\ref{fg:design}). Let $\bs^{(q)}_i$ denote the~$i$-th segment of the time series $\bs^{(q)}$
 \begin{equation}\label{eq:segment}
-[\bx^{(m)}_i | \by^{(m)}_i] = \end{equation}
-\[ \underbrace{s^{(m)}(t_i-\dtr-\dtp),\dots,}_{\bx^{(m)}_i} \underbrace{s^{(m)}(t_i-\dtr),\dots,s^{(m)}(t_i))}_{\by^{(m)}_i}], \]
+[\bx^{(q)}_i | \by^{(q)}_i] = \end{equation}
+\[ \underbrace{s^{(q)}(t_i-\dtr-\dtp),\dots,}_{\bx^{(q)}_i} \underbrace{s^{(q)}(t_i-\dtr),\dots,s^{(q)}(t_i))}_{\by^{(q)}_i}], \]
 
-where~$s^{(m)}(t)$ is an element of time series~$\bs^{(m)}$. To construct the design matrix, select $t_i$, $i = 1, \dots, q$ from $\Gs = \{t_1, \dots, t_T\}$ such that segments $\bs_i = [\x_i|\y_i]$ cover time series $\bs$
+where~$s^{(q)}(t)$ is an element of time series~$\bs^{(q)}$. To construct the design matrix, select $t_i$, $i = 1, \dots, m$ from $\Gs = \{t_1, \dots, t_T\}$ such that segments $\bs_i = [\x_i|\y_i]$ cover time series $\bs$
 %\begin{equation}\label{eq:strategy2} \{s(t_{1}), \dots, s(t_{\max})\} = \bigcup_{i=1}^{q-1} \{s(t_i-\Delta t_\text{r}),\dots,s(t_i)\}\end{equation}
 without intersection in target parts  $\y_i$:
 \begin{equation}\label{eq:strategy2} |t_{i+1} - t_i| > \dtr.
 \end{equation}
-Following~\eqref{eq:segment} and~\eqref{eq:strategy2}, extract segments $[\bx^{(m)}_i | \by^{(m)}_i]$, $i = 1, \dots, q$ from all time series $\bs^{(m)} \in \fD$ and form the matrix
+Following~\eqref{eq:segment} and~\eqref{eq:strategy2}, extract segments $[\bx^{(q)}_i | \by^{(q)}_i]$, $i = 1, \dots, m$ from all time series $\bs^{(q)} \in \fD$ and form the matrix
  \begin{equation}\label{eq:design_matrix}
 \bX^*= \left[
 \begin{array}{c|c}
- \underset{q{\times}n}\bX & \underset{q{\times}r}\bY  \\
- \hline
- \underset{1{\times}n}{\x} & \underset{1{\times}r}{{\by}}  \\
-\end{array}
+\underset{1{\times}n}{\x} & \underset{1{\times}r}{{\by}}  \\
+\hline
+ \underset{m{\times}n}\bX & \underset{m{\times}r}\bY  \\
+ %\hline
+ \end{array}
 \right] = \end{equation}
 \[ \left[
 \begin{array}{lll|lll}
-\bx_1^{(1)}  & \dots & \bx_1^{(M)} & \by_1^{(1)} &  \dots & \by_1^{(M)}   \\
+%\bx^{(1)} & \dots & \bx^{(Q)} & \by^{(1)} &  \dots & {\by}^{(Q)}   \\
+%\hline
+\bx_m^{(1)}  & \dots & \bx_m^{(Q)} & \by_m^{(1)} &  \dots & \by_m^{(Q)}   \\
 \vdots & \vdots & \ddots & \vdots & \vdots & \ddots  \\
-\bx_q^{(1)} & \dots & \bx_q^{(M)} & \by_q^{(1)}  & \dots & \by_q^{(M)}   \\
+\bx_1^{(1)} & \dots & \bx_1^{(Q)} & \by_1^{(1)}  & \dots & \by_1^{(Q)}   \\
 
-\hline
-\bx^{(1)} & \dots & \bx^{(M)} & \by^{(1)} &  \dots & {\by}^{(M)}   \\
+
 \end{array}
 \right]. \]
 
@@ -165,15 +206,15 @@ Now we are able the regression problem as follows:
 \begin{equation}\label{eq:regression_problem}
 \hat{\y} = f(\x, \hat{\w}), \hat{\w} = \argmin_{\hat{\w}}S\bigl(\bw|\fx(\bw,\bx),\by\bigr). %\text{~where~}
 \end{equation}
-Here the error function is given by $MAPE$~\eqref{eq:MAPE} for each segment $[\x_i \by_i]$, averaged over all segments $i = 1, \dots, q$ in the test set:
-\[ S\bigl(\bw|\fx(\bw,\bx),\by\bigr) = \frac{r}{q}\sum_{i=1}^{q} MAPE(\y_i, f(\x_i, \w)).\]
+Here the error function is given by $MAPE$~\eqref{eq:MAPE} for each segment $[\x_i \by_i]$, averaged over all segments $i = 1, \dots, m$ in the test set:
+\[ S\bigl(\bw|\fx(\bw,\bx),\by\bigr) = \frac{r}{m}\sum_{i=1}^{m} MAPE(\y_i, f(\x_i, \w)).\]
 %Due to the various origins of the time series and their transformations the residual vector should be normalized:
 %\[\veps = \frac{\hat\by-\by}{|\by| \cdot \|\by\|_2^1}.
 %\]
 %Here $|\by|$ is the number of elements in $\by$.
 
 \section{Feature generation}
-Denote the generated feature vector as~$\vf$. This vector consists of concatenated row-vectors~$\vf=[\vf^{(1)},\dots,\vf^{(M)}]$, which corresponds to time series local histories ~$\bs=[\bs^{(1)},\dots,\bs^{(M)}]$, modified with set of transformations~$G$. The elements~$g:\bs\to\vf$ of this set are listed below. The augmented feature set $\vf$ includes
+Denote the generated feature vector as~$\vf$. This vector consists of concatenated row-vectors~$\vf=[\vf^{(1)},\dots,\vf^{(Q)}]$, which corresponds to time series local histories ~$\bs=[\bs^{(1)},\dots,\bs^{(Q)}]$, modified with set of transformations~$G$. The elements~$g:\bs\to\vf$ of this set are listed below. The augmented feature set $\vf$ includes
 \begin{enumerate}[1)]
 \item the local history of all time series themselves,
 \item transformations (non-parametric and parametric) of local history,
@@ -196,7 +237,7 @@ The second one optimizes the transformation parameters~$\hat\bb$ given the obtai
 \[
 \hat\bb = \arg\min_{\bb} S\bigl(\bb|\fx(\hat\bw,\vf),\by\bigr).
 \]
-This parametric feature generation procedure repeats these problems until vectors~$\hat\bw,\hat\bb$ converge. The initial values of the parameters~$\bb$ are assigned empirically. 
+This parametric feature generation procedure repeats these problems until vectors~$\hat\bw,\hat\bb$ converge. The initial values of the parameters~$\bb$ are assigned empirically.
 
 \subsection{Convolutions, statistics and parameters of local history}
 These block of feature generation functions includes convolutions, time averaging and differencing, and basic statistics of each time series, such as mean and standard deviation, minimum and maximum of the input $\bx$. The features from these part can be seen as applying Haar's wavelet transform to each segment~\cite{Jiang2011}. Motivation for this comes from assuming the multi-scale nature of the time series: complex signals may be governed by essentially different processes at various time scales. Averaging of the time series allows to obtain more coarse-scaled time series, while differencing the time series provides a more detailed, fine-scaled version of the time series.
@@ -217,14 +258,14 @@ s_k & \dots & s_1 \\
 \]
 Reconstruct the regression to the first column of the matrix~$\bH^*=[\bh, \bH]$ and denote its least square parameters as the feature vector
 \[
-\boldsymbol{\phi}^{(m)} = \arg\min \| \bh-\bH \boldsymbol{\phi}\|_2^2.
+\boldsymbol{\phi}^{(q)} = \arg\min \| \bh-\bH \boldsymbol{\phi}\|_2^2.
 \]
-For the time series~$\bs^{(m)}$, $m=1,\dots, M$ use the parameters $\boldsymbol{\phi}^{(m)}$ as the features.
+For the time series~$\bs^{(q)}$, $q=1,\dots, Q$ use the parameters $\boldsymbol{\phi}^{(q)}$ as the features.
 
 \subsection{Distances to centroids of local clusters}
-This procedure applies the kernel trick to the time series. For given local history time series~$\bx_i^{(m)}$, $m=1,\dots, M$ compute $k$-means centroids~$\bc_p^{(m)}$, $p = 1, \dots, P$.  With the selected $k$-means distance function~$\rho$ construct the feature vector
+This procedure applies the kernel trick to the time series. For given local history time series~$\bx_i^{(q)}$, $q=1,\dots, Q$ compute $k$-means centroids~$\bc_p^{(q)}$, $p = 1, \dots, P$.  With the selected $k$-means distance function~$\rho$ construct the feature vector
 \[
-\vf_i^{(m)} = [\rho(\bc_1^{(m)},\bs_i^{(m)}),\dots,\rho(\bc^{(m)}_P,\bs_i^{(m)})] \in \R_+^P.
+\vf_i^{(q)} = [\rho(\bc_1^{(q)},\bs_i^{(q)}),\dots,\rho(\bc^{(q)}_P,\bs_i^{(q)})] \in \R_+^P.
 \]
 This $k$-means of another clustering procedure may use internal parameters, so that there are no parameters to be included to the feature vector or to the forecasting model.
 
@@ -246,18 +287,18 @@ time series forecasting.
 
 This section presents the results of computational comparison of the forecasting models presented above. To test each model, we used several datasets, described below.
 \subsection{Models}
-The models that we use are: 
+The models that we use are:
 \begin{enumerate}[a)]
-\item multivariate linear regression (MVR) with $l_2$-regularization 
+\item multivariate linear regression (MVR) with $l_2$-regularization
 %\[f(\bx, \bW) = \bx\bW , ~~ \hat{\bW} = \argmin_{\bW} S(\bW) + \lambda||\bW||_2^2, \]
-\item support vector regression (SVR), 
+\item support vector regression (SVR),
 %where the regression function also has the linear form $f(\bX, \{\bW, \bb\}) = \bx\bW + \bb$, but the optimization problem is more complex:
 %    \[ \hat{\bW} = \argmin_{\bW,\;\vx,\;\vx^{*}} \frac{1}{2}||\bW||_2^2 + C
 %    \sum_{i, j}(\xi_{ij} + \xi_{ij}^{*}), \text{~subject to~}\]
 %    \[ \begin{cases} -\veps - \vx^{*}_i \leq \by_i - \bx_i\bW  - \bb \leq \veps + \vx_i, \\
 %     \xi_{ij}\xi^{*}_{ij} > 0.
 %    \end{cases}\]
-\item artificial neural network (ANN), 
+\item artificial neural network (ANN),
 \item random forest (RF).
 \end{enumerate}
 \subsection{Datasets}
