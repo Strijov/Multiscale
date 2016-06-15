@@ -10,7 +10,9 @@ idxNW = strcmp({generators().name}, {'NW'});
 [generators.replace] = deal(gen_replace{:});
 generators(idxNW).replace = true;
 
+% Be ready to reset models
 reset_transform = cell(1, numel(model));
+
 
 
 % Feature selection models are defined later
@@ -25,7 +27,7 @@ report_struct.res = cell(1, nGenerators + 4); % + no features, all features,  PC
 figs = struct('names', cell(1, 2), 'captions', cell(1, 2));
 
 
-results = cell(6, nGenerators + 4); % 6: testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE, trainMAPE
+results = cell(6, nGenerators + 5); % 6: testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE, trainMAPE
 
 FOLDER = fullfile('fig/feature_selection/');
 % If necessary, create dir
@@ -53,7 +55,20 @@ figs(1).captions = caption;
 [idxTrain, ~, idxTest] = MultipleSplit(size(StructTS.X, 1), size(StructTS.X, 1), ...
                                         TRAIN_TEST_VAL_RATIO);
                                             
-%
+%--------------------------------------------------------------------------
+% Define baseline model:
+pars = struct('deltaTr', StructTS.deltaTr, 'deltaTp', StructTS.deltaTp);
+baselineModel = struct('handle', @MarginalForecast, 'name', 'Marginal', 'params', pars, 'transform', [],...
+    'trainError', [], 'testError', [], 'unopt_flag', false, 'forecasted_y', []);
+
+
+[testMeanRes, trainMeanRes, testStdRes, trainStdRes, baselineModel] = ...
+    calcErrorsByModel(StructTS, baselineModel, idxTrain, idxTest);
+testMAPE = reshape([baselineModel().testError], [], numel(baselineModel));
+trainMAPE = reshape([baselineModel().trainError], [], numel(baselineModel));
+disp('Baseline results')
+disp([testMAPE, trainMAPE])
+results(:, 1) = {testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE', trainMAPE'};
 %--------------------------------------------------------------------------
 % First, try with original features
 [testMeanRes, trainMeanRes, testStdRes, trainStdRes, model] = calcErrorsByModel(StructTS, model, idxTrain, idxTest);
@@ -63,7 +78,7 @@ trainMAPE = reshape([model().trainError], [], numel(model));
 %trainMeanMAPE = mean(reshape([model().trainError], [], numel(model)), 1);
 %testStdMAPE = std(reshape([model().testError], [], numel(model)), 0, 1);
 %trainStdMAPE = std(reshape([model().trainError], [], numel(model)), 0, 1);
-results(:, 1) = {testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE', trainMAPE'};
+results(:, 2) = {testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE', trainMAPE'};
 
 disp('Results with original features:')
 disp([testMAPE, trainMAPE])  
@@ -92,7 +107,7 @@ for n_gen = 1:nGenerators
     trainMAPE = reshape([model().trainError], [], numel(model));
     disp(['Results with ', generators(n_gen).name])
     disp([testMAPE, trainMAPE])  
-    results(:, 1 + n_gen) = {testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE', trainMAPE'};
+    results(:, 2 + n_gen) = {testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE', trainMAPE'};
 
     [fname, caption, ~, ~] = plot_forecasting_results(newStructTS, model, N_PREDICTIONS, 10,...
                                                        FOLDER, ['_fs_',generators(n_gen).name]);
@@ -116,7 +131,7 @@ StructTS = GenerateFeatures(StructTS, generators, idxTrain, idxTest);
                        calcErrorsByModel(StructTS, model, idxTrain, idxTest);
 testMAPE = reshape([model().testError], [], numel(model));
 trainMAPE = reshape([model().trainError], [], numel(model));
-results(:, 2 + nGenerators) = {testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE', trainMAPE'};
+results(:, 3 + nGenerators) = {testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE', trainMAPE'};
 
 disp('Results with all generators:')
 disp([testMAPE, trainMAPE])  
@@ -152,7 +167,7 @@ figs(1).captions = fs_caption;
                     calcErrorsByModel(pcaStructTS, model, idxTrain, idxTest);
 testMAPE = reshape([model().testError], [], numel(model));
 trainMAPE =reshape([model().trainError], [], numel(model));
-results(:, 3+nGenerators) = {testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE', trainMAPE'};
+results(:, 4 + nGenerators) = {testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE', trainMAPE'};
 
 disp('Results with PCA applied to all generators:')
 disp([testMAPE, trainMAPE])  
@@ -185,7 +200,7 @@ figs(1).captions = fs_caption;
                         calcErrorsByModel(StructTS, model, idxTrain, idxTest);
 testMAPE = reshape([model().testError], [], numel(model));
 trainMAPE =reshape([model().trainError], [], numel(model));
-results(:, 4+nGenerators) = {testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE', trainMAPE'};
+results(:, 5 + nGenerators) = {testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE', trainMAPE'};
 
 disp('Results with NPCA applied to all generators:')
 disp([testMAPE, trainMAPE])  
