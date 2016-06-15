@@ -26,7 +26,7 @@ pars = cell(1, numel(nameModel));
 pars{1} = struct('regCoeff', 2);
 pars{2} = struct('C', 10000, 'lambda', 0.00001, 'epsilon', 0.01);
 pars{3} = struct('nTrees', 25, 'nVars', 48);
-pars{4} = struct('hiddenSize', 25);
+pars{4} = struct('nHiddenLayers', 25);
 model = struct('handle', handleModel, 'name', nameModel, 'params', pars, 'transform', [],...
     'trainError', [], 'testError', [], 'unopt_flag', false, 'forecasted_y', []);
 
@@ -43,15 +43,20 @@ pars = struct('maxComps', 50, 'expVar', 90, 'plot', @plot_pca_results);
 feature_selection_mdl = struct('handle', @DimReducePCA, 'params', pars);
 
 
-trainMAPE = zeros(numel(model), 1);
-testMAPE = zeros(numel(model), 1);
-for i = 1:numel(model)
-[testMAPE, trainMAPE] = demoForecastAnalysis(tsStructArray, model(i), generators, feature_selection_mdl);
+for i = 2:numel(tsStructArray)
+demoFeatureSelection(tsStructArray{i}, model, generators);
 end
 
 
+trainMAPE = zeros(numel(model), 1);
+testMAPE = zeros(numel(model), 1);
+for i = 1:numel(model)
+[testMAPE(i), trainMAPE(i)] = demoForecastAnalysis(tsStructArray, model(i), generators, feature_selection_mdl);
+end
+disp([testMAPE, trainMAPE])
+
+
 demoCompareForecasts(tsStructArray, model, generators, feature_selection_mdl);
-demoFeatureSelection(ts);
 
 for i = 1:numel(model)
 demoForecastHorizon(ts, model(i));

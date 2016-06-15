@@ -41,6 +41,8 @@ if ~any([generators().replace])
    Xnew = [Xold, X]; 
 end
 
+% no matter what, add a constant:
+Xnew = [Xnew, ones(size(X, 1), 1)];
 ts.X = Xnew;
     
 end    
