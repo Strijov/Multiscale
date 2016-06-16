@@ -44,7 +44,6 @@ trainMAPE = zeros(nSplits, 1);
 testMAPE = zeros(nSplits, 1);    
 testStats = zeros(nSplits, 2*numel(ts.x));
 trainStats = zeros(nSplits, 2*numel(ts.x));
-tsOrig = ts;
 %--------------------------------------------------------------------------
 % Calc frc residuals by split: 
 for i = 1:nSplits
@@ -65,8 +64,7 @@ disp(model.name)
 disp([trainMAPE, testMAPE])
 %--------------------------------------------------------------------------
 % Plot evolution of res mean and std by for each model 
-plot_results(testRes, trainRes, ts, model, ...
-                                ts.deltaTr*N_PREDICTIONS, FOLDER);
+plot_results(testRes, trainRes, ts, model, N_PREDICTIONS, FOLDER);
                             
                             
 
@@ -82,13 +80,22 @@ end
 
 function plot_results(testRes, trainRes, StructTS, model, ...
                                            nPredictions, FOLDER)
+                                       
+                                       
+if numel(StructTS.x) > 1
+    str = '_mult_';
+else
+    str = '_marg_';
+end
 
+plot_forecasting_results(StructTS, model, nPredictions, 10, FOLDER, str);                                       
+                  
 for i = 1:numel(testRes)
-    if nPredictions(i) > 1
+    if nPredictions*ts.deltaTr(i) > 1
     plot_residuals_stats(testRes{i}', trainRes{i}',...
                          StructTS, model, FOLDER, ...
                          [regexprep(StructTS.legend{i}, ' ', '_'), ...
-                         '_marg_',regexprep(model.name, ' ', '_')]);
+                         str ,regexprep(model.name, ' ', '_')]);
 
 
     testRes{i} = testRes{i}(:);
