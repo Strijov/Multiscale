@@ -7,7 +7,9 @@ DATASET = 'EnergyWeather';
 NAME_PATTERN = 'missing*'; % set to \w* to get all names
 
 % All .mat data is stored in data/ProcessedData/ directory;
-DATADIR = fullfile('data', 'ProcessedData');
+LoadAndSave('EnergyWeatherTS/orig');
+LoadAndSave('EnergyWeatherTS/missing_value');
+%LoadAndSave('EnergyWeatherTS/varying_rates');
 % Check if data dir exists and is not empty 
 if ~exist(DATADIR, 'dir') || isempty(dir(fullfile(DATADIR, '*.mat')))
     % Otherwise, load all data from 'data/' and save it 'data/ProcessedData/'
