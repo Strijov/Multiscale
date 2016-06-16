@@ -17,7 +17,7 @@ ts.x = rawTs;
 if numel(ts.x) > 1
     ts.name = [ts.name, '_all'];
 else
-    ts.name = [ts.name, '_', ts.legend, '_all'];
+    ts.name = [ts.name, '_', ts.legend{1}, '_all'];
 end
 end
 
