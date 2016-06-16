@@ -74,6 +74,7 @@ We focus on the problem of forecasting behavior of a device within the concept o
 
 We assume that the sampling rate of each time series is fixed and each time series has its own forecast horizon. The problem of multi-scale analysis arises in such applications as weather prediction, medical diagnosis and monitoring various sensor time series~\cite{Costa2008, Ahmed2012, Cortez2012, Ferreira2006}. Motivation for multi-scale analysis comes from the assumption that the behaviour of complex signals may be governed by  essentially different processes at various time scales. Thus, the time series should be modeled separately at each scale. This approach is used in time series classification, prediction and fault detection~\cite{Cui2016, Cortez2012, Aldrich2013}. Regardless of the goal of multi-scale analysis, it includes sequential averaging of the time series to obtain more coarse-scaled time series~\cite{Wu2013}, or, more rarely, differencing the time series for a more detailed, fine-scaled version of the time series~\cite{Jiang2011}. Averaging and differencing, which is equivalent to application of Haar's wavelet transform~\cite{Jiang2011}, may be replaced by any other pair of low and high pass wavelet filters~\cite{Chen2004} or convolution operation with some kernel function~\cite{Vespier2012}. Using multi-scale approach in time series prediction usually involves determining optimal scales~\cite{Vespier2012, Ahmed2012}, decomposition of time series into separately forecasted components and combination of the obtained forecasts.
 
+The problem gets more complex when the task is to forecast multiple time series, which are characterized with different scales and ranges. Forecasting time series separately might lead to loss of valuable information. In this paper we propose a novel framework for multiscale time series forecasting, which is based on regression-based forecasts. The goal is to obtain forecasts of all time series from the given set simultaneously. Adopting this approach we endeavour to profit as much as possible from the interconnections between the time series of the set. Within the proposed framework the time series of various scales are combined into are single regression problem. The forecasts viewed as target variables of the regression problem, where feature description contains local history of the time series as well as various derivations. We describe the steps of creating feature description to this problem: composition of design matrix, feature generation and selection. Note that the problem of model selection rests beyond the scope of the paper. To illustrate the proposed framework in application to the multiscale data set~\cite{EnergyWeatherData} we use several widely used regression models~\cite{Yu2016, Kane2014, Trafalis2000, Navarrete2015, Taylor2009, Qiu2014}. The following section provides a brief overview of these methods and provide the motivation to use them.
 
 \section{Related work}
  Along with generic methods of time series forecasting, such as Autoregressive Moving Average Models (ARMA), Autoregressive Integrated Moving Average Models (ARIMA), authors report high predictive performance of the methods, originally developed for classification or regression, applied to forecast time series~\cite{Yu2016, Kane2014, Trafalis2000, Navarrete2015, Busseti2012, Taylor2009}.  Here the input variables are the delayed observations  of the time series, and the output is the forecasted value of time series. However, the authors of~\cite{Navarrete2015} show that this prediction framework suffers from systematic error that does not converge to zero as the sample size increases, and  ensure error convergence applying cubic spline approximation to noisy data, which yields much lower RMSE in case of noisy data.
@@ -102,6 +103,7 @@ Each time series $\bs^{(q)}$ has its own sampling rate $1/\tau^{(q)}$:
 \def\svgwidth{0.4\textwidth}
 \centering
 \subfloat[]{\input{fig/online_forecasting_paradigm.eps_tex}
+%\subfloat[]{\includegraphics[width=0.4\textwidth]{fig/online_forecasting_paradigm.eps}
 \label{fg:online_frc}} \\
 \def\svgwidth{0.4\textwidth}
 \centering \subfloat[]
@@ -120,9 +122,11 @@ Each time series $\bs^{(q)}$ has its own sampling rate $1/\tau^{(q)}$:
 \begin{figure}[!ht]
 \def\svgwidth{0.4\textwidth}
 \centering
+%\subfloat[]{\includegraphics[width=0.4\textwidth]{fig/draw_object.eps}\label{fg:draw}} \\
 \subfloat[]{\input{fig/draw_object.eps_tex}\label{fg:draw}} \\
 \def\svgwidth{0.4\textwidth}
 \centering\subfloat[]{\input{fig/design_matrix_generation.eps_tex}\label{fg:design}}
+%\centering\subfloat[]{\includegraphics[width=0.4\textwidth]{fig/design_matrix_generation.eps}\label{fg:design}}
 \caption{Draw an object from time series history.}
 \end{figure}
  We consider the forecasting problem as the multivariate regression problem, where target variables are the vectors of lagged values $s(t_i)$ of all the time series $\bs \in \fD$.
@@ -297,10 +301,12 @@ This section presents the results of computational comparison of the forecasting
 \hline
 Model name & Hyper parameters \\
 \hline
- multivariate linear regression (MVR) with $l_2$-regularization & regularization coefficient \\
+Baseline method: $\hat{s}_i = s_{i-1}$ & None \\
+\hline
+ Multivariate linear regression (MVR) with $l_2$-regularization & regularization coefficient \\
  \hline
 %\[f(\bx, \bW) = \bx\bW , ~~ \hat{\bW} = \argmin_{\bW} S(\bW) + \lambda||\bW||_2^2, \]
-support vector regression (SVR) & parameters $C$, $\lambda$, $\varepsilon$ \\
+Support vector regression (SVR) & parameters $C$, $\lambda$, $\varepsilon$ \\
 %where the regression function also has the linear form $f(\bX, \{\bW, \bb\}) = \bx\bW + \bb$, but the optimization problem is more complex:
 %    \[ \hat{\bW} = \argmin_{\bW,\;\vx,\;\vx^{*}} \frac{1}{2}||\bW||_2^2 + C
 %    \sum_{i, j}(\xi_{ij} + \xi_{ij}^{*}), \text{~subject to~}\]
@@ -308,8 +314,8 @@ support vector regression (SVR) & parameters $C$, $\lambda$, $\varepsilon$ \\
 %     \xi_{ij}\xi^{*}_{ij} > 0.
 %    \end{cases}\]
 \hline
-artificial neural network (ANN) &  number of hidden layers, hidden layers size \\
-\hline random forest (RF) & number of trees, number of variables per tree\\
+Artificial neural network (ANN) &  number of hidden layers, hidden layers size \\
+\hline random forest (RF) & number of trees: , number of variables per tree\\
 \hline
 \end{tabular}
 \end{table}
@@ -319,8 +325,8 @@ artificial neural network (ANN) &  number of hidden layers, hidden layers size \
 
 \item  The Energy-Weather dataset was used to generate several artificial datasets.
 
-\item Accelerometry dataset. This dataset consists of accelerometry time series from the Human Activity Sensing Consortium~\cite{HASCdata}. Each time series in the datasets is a sequence of acceleration records. The time series were recorded for 120 seconds while a subject performed a sequence of activities: stay, walk, jog, skip, stair up or stair down. The sampling rate varies between 10 and 100Hz, but stays constant for each time series.
-\item Financial dataset~\cite{NNcompetition}.  The dataset A (final, complete) from the 2006/07 Forecasting Competition for Neural Networks \& Computational Intelligence. The dataset contains 111 monthly time series drawn from homogeneous population of empirical business time series.
+%\item Accelerometry dataset. This dataset consists of accelerometry time series from the Human Activity Sensing Consortium~\cite{HASCdata}. Each time series in the datasets is a sequence of acceleration records. The time series were recorded for 120 seconds while a subject performed a sequence of activities: stay, walk, jog, skip, stair up or stair down. The sampling rate varies between 10 and 100Hz, but stays constant for each time series.
+%\item Financial dataset~\cite{NNcompetition}.  The dataset A (final, complete) from the 2006/07 Forecasting Competition for Neural Networks \& Computational Intelligence. The dataset contains 111 monthly time series drawn from homogeneous population of empirical business time series.
 \end{itemize}
 
 \subsection{Experimental results}
@@ -454,6 +460,12 @@ Feature set & Models &MAPE test & MAPE train & AIC\\
 \subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_Neural_network_fs_pca.png}}\\
 \caption{ Forecasting results for HASC1001 with all feature generation strategies applied and PCA feature selection.}\label{fg:pca_frc}
 \end{figure}
+
+
+\section{Discussion and conclusion}
+In this paper we have suggested a framework for multiscale time series forecast. The proposed framework employs regression-based approach combined with feature generation. We have found that even for such naive approach the results are still better then those of the baseline method. Though the results are somewhat discouraging, we expect further improvement
+associated with application of mixtures of experts~\cite{Yuksel2015}, ensembles of weak learners, where each learner is relevant to some subspace of the feature space. For this reason we introduce such feature generation strategies, based on local approximation parameters and distances to centroids: these kinds of features have proven efficient in time series classification problems~\cite{Ignatov2015}.
+
 
 \nocite{*}
 \bibliographystyle{IEEEtran}%{unsrt}
