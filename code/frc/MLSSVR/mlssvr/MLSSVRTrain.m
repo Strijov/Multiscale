@@ -20,7 +20,7 @@ end
 
 [l, m] = size(trainY); 
 
-K = KernelFunction(kernel_type, trainX, trainX, p1, p2); 
+K = KernelFunction(kernel_type, p1, p2, trainX, trainX); 
 H = repmat(K, m, m) + eye(m * l) / gamma; 
 
 P = zeros(m*l, m); 
