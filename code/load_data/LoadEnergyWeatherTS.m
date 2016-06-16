@@ -10,7 +10,7 @@ function tsSheaf = LoadEnergyWeatherTS(dirname)
 % tsSheaf [struct]
 
 folders = strsplit(fullfile(dirname), filesep);
-folder_name = folders{end};
+folder_name = folders{end-1};
 
 readme = struct('orig', 'Original time energy-weather series',...
                 'missing_value', 'Energy-weather time series with artificially inserted missing values',...
@@ -97,8 +97,8 @@ ts = csvread(filename, 1, 0);
 % add hourly time stamps:
 time_stamps = add_hours_to_dates(ts(:, 1), 1:24);
 other = ts(:, 2:3);
-ts = ts(:, 4:end);
-ts = reshape(ts, numel(ts), 1);
+ts = ts(:, 4:end)';
+ts = ts(:);
 
 if numel(ts) ~= 24*1096
     disp([filename, ': Data size: ', num2str(numel(ts)),...
