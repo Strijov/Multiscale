@@ -133,7 +133,7 @@ end
 function checkRes = checkTsTrimming(ts)
 
 y2ts = unravel_target_var(ts.Y, ts.deltaTr, ts.norm_div, ts.norm_subt);
-checkRes = all(cell2mat(cellfun(@(x, y) x == y, y2ts, ts.x,...
+checkRes = all(cell2mat(cellfun(@(x, y) all(x == y), y2ts, ts.x,...
                             'UniformOutput', false)));
 
 end
