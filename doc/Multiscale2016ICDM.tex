@@ -95,17 +95,18 @@ Each time series $\bs^{(q)}$ has its own sampling rate $1/\tau^{(q)}$:
  The task is to obtain forecasts $\hat{s}(t_i)$ of $\bs \in \fD$ for  $\dtr <  t_i \leq T_{\max} + \dtr$, given the set  $\fD$ (see Fig.~\ref{fg:online_frc}, \ref{fg:retrospective}). The forecasts $\hat{\bs}$ should minimise symmetric mean absolute percentage error:
  \begin{equation}\label{eq:MAPE}
  SMAPE(\bs, \hat{\bs}) = \frac{1}{r}\sum_{i = 1}^{r} \frac{2|s_i - \hat{s}_i|}{|s_i + \hat{s}_i|}. \end{equation}
- Here and throughout this paper we assume that each time series are standardized. 
- 
+ Here and throughout this paper we assume that each time series are standardized.
 
-%Here MAPE is evaluated for the retrospective forecasts~\ref{fg:retrospective}, where the most recent historical samples $\bx_0^{*}$ are concealed and forecasted as if they were unknown. Then the quality of the model $\fx$ is evaluated according to its performance on these concealed samples.
 
 \begin{figure}[!ht]
+\def\svgwidth{0.4\textwidth}
 \centering
-\subfloat[]{\includegraphics[width=0.4\textwidth]{online_forecasting_paradigm.png}
+\subfloat[]{\input{fig/online_forecasting_paradigm.eps_tex}
 \label{fg:online_frc}} \\
-\centering \subfloat[]{\includegraphics[width=0.4\textwidth]{forecasting_model.png}
-%\input{fig/forecasting_model.eps_tex}
+\def\svgwidth{0.4\textwidth}
+\centering \subfloat[]
+%{\includegraphics[width=0.4\textwidth]{forecasting_model.png}
+{\input{fig/forecasting_model.eps_tex}
 \label{fg:forecasting}
 }
 \caption{Forecasting (a) as regression problem (b).}
@@ -117,13 +118,15 @@ Each time series $\bs^{(q)}$ has its own sampling rate $1/\tau^{(q)}$:
 \subsection{Design matrix}
 
 \begin{figure}[!ht]
+\def\svgwidth{0.4\textwidth}
 \centering
-\subfloat[]{\includegraphics[width=0.4\textwidth]{draw_object.png}\label{fg:draw}} \\
-\centering\subfloat[]{\includegraphics[width=0.4\textwidth]{design_matrix_generation.png}\label{fg:design}}
+\subfloat[]{\input{fig/draw_object.eps_tex}\label{fg:draw}} \\
+\def\svgwidth{0.4\textwidth}
+\centering\subfloat[]{\input{fig/design_matrix_generation.eps_tex}\label{fg:design}}
 \caption{Draw an object from time series history.}
 \end{figure}
  We consider the forecasting problem as the multivariate regression problem, where target variables are the vectors of lagged values $s(t_i)$ of all the time series $\bs \in \fD$.
- 
+
 Let $\bx^{*}$ denote rows of the design matrix~$\bX^*$ for the regression problem. Each vector~$\bx^{*} = [\bx| \by]$ collects all the time series over the time period~$\dtp$ (Fig.~\ref{fg:draw}), which stands for the local \emph{prehistory}. The vector $\bx^{*}$ includes samples from previous history of time series from $\fD$ as well as any derivatives or \emph{generated features}. We describe the types of generated features in Section~\ref{sc:feature_generation}.
 
 The design matrix~$\bX^*$ for the multiscale autoregressive problem statement is constructed  as follows (Fig.~\ref{fg:design}). Let $\bs^{(q)}_i$ denote the~$i$-th segment of the time series $\bs^{(q)}$
@@ -161,6 +164,7 @@ Following~\eqref{eq:segment} and~\eqref{eq:strategy2}, extract segments $[\bx^{(
 Denote a row from the pair~$\bY,\bX$ as $\by,\bx$ and call these vectors the target and the features.
 
 \begin{figure}[!ht]
+%\def\svgwidth{0.4\textwidth}
 \centering\includegraphics[width=0.4\textwidth]{retrospective_validation.png}
 \caption{\hl{Retrospective forecast includes most recent samples in data set.}\label{fg:retrospective}}
 \end{figure}
@@ -248,8 +252,8 @@ This $k$-means of another clustering procedure may use internal parameters, so t
 \section{Testing procedure}
 The algorithm below describes the procedure used to evaluate the forecasting errors within the proposed framework given the model $\fx$,  data matrix $\bX^{*} \in \mathbb{R}^{m\times(n+r)}$ and fixed parameters train to test ratio $\alpha$, minimal sample (test) size $m_{\min}$. This procedure involves creation of design matrix~\eqref{eq:design_matrix}, generation of augmented feature description $\vf$ and, since it is likely to be redundant, dimensionality reduction. Here we use principal component analysis (PCA) and nonlinear PCA~\cite{}.
 \begin{enumerate}[1)]
-\item Create design matrix $\bX^{*}$ according to~\eqref{eq:design_matrix} from $\fD$.  
-\item Split matrix $\bX^{*}$ into train and test matrices $\bX^{*}_{\text{train}}$ and $\bX^{*}_{\text{test}}$ 
+\item Create design matrix $\bX^{*}$ according to~\eqref{eq:design_matrix} from $\fD$.
+\item Split matrix $\bX^{*}$ into train and test matrices $\bX^{*}_{\text{train}}$ and $\bX^{*}_{\text{test}}$
 according to the train-test splitting procedure~\ref{alg:train_test}\;
 \item Augment $\bX^{*}_{\text{train}}$ with generated features $\vf$\;
 \item Reduce dimensionality of $\bX^{*}_{\text{train}}$ \;
@@ -303,7 +307,7 @@ support vector regression (SVR) & parameters $C$, $\lambda$, $\varepsilon$ \\
 %    \[ \begin{cases} -\veps - \vx^{*}_i \leq \by_i - \bx_i\bW  - \bb \leq \veps + \vx_i, \\
 %     \xi_{ij}\xi^{*}_{ij} > 0.
 %    \end{cases}\]
-\hline 
+\hline
 artificial neural network (ANN) &  number of hidden layers, hidden layers size \\
 \hline random forest (RF) & number of trees, number of variables per tree\\
 \hline
@@ -312,8 +316,8 @@ artificial neural network (ANN) &  number of hidden layers, hidden layers size \
 \subsection{Datasets}
 \begin{itemize}
 \item Energy-Weather dataset. The dataset consists of the Polish electricity load time series~\cite{EnergyWeatherData} and weather time series in Warsaw (Longtitude: 21.25, Latitude: 52.30, Elevation: 94). Energy time series contain hourly records (total of 52512 observations), while weather time series were measured daily and contain 2188 observations. The multiscale time series correspond to the period of 1999 to 2004.
-    
-\item  The Energy-Weather dataset was used to generate several artificial datasets. 
+
+\item  The Energy-Weather dataset was used to generate several artificial datasets.
 
 \item Accelerometry dataset. This dataset consists of accelerometry time series from the Human Activity Sensing Consortium~\cite{HASCdata}. Each time series in the datasets is a sequence of acceleration records. The time series were recorded for 120 seconds while a subject performed a sequence of activities: stay, walk, jog, skip, stair up or stair down. The sampling rate varies between 10 and 100Hz, but stays constant for each time series.
 \item Financial dataset~\cite{NNcompetition}.  The dataset A (final, complete) from the 2006/07 Forecasting Competition for Neural Networks \& Computational Intelligence. The dataset contains 111 monthly time series drawn from homogeneous population of empirical business time series.

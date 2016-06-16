@@ -48,16 +48,16 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,1.41428571)%
+  \begin{picture}(1,0.41428571)%
     \put(0,0){\includegraphics[width=\unitlength]{forecasting_model_validation.eps}}%
-    \put(0.0659235,1.30393591){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_m$}}}%
-    \put(0.14181039,1.3039359){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_i$\\ }}}%
-    \put(0.25804546,1.30325713){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_2$\\ }}}%
-    \put(0.31099027,1.30257834){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_1$\\ }}}%
-    \put(0.36597143,1.30257835){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_0$}}}%
-    \put(0.50647887,1.3073298){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t$\\ }}}%
-    \put(0.40048009,1.39421361){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{now\\ }}}%
-    \put(0.39776494,1.36163219){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{end of history}}}%
-    \put(0.36721982,1.26796057){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{validation}}}%
+    \put(0.0659235,0.30393591){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_m$}}}%
+    \put(0.14181039,0.3039359){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_i$ }}}%
+    \put(0.25804546,0.30325713){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_2$ }}}%
+    \put(0.31099027,0.30257834){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_1$ }}}%
+    \put(0.36597143,0.30257835){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_0$}}}%
+    \put(0.50647887,0.3073298){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t$ }}}%
+    \put(0.40048009,0.39421361){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{now }}}%
+    \put(0.39776494,0.36163219){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{end of history}}}%
+    \put(0.36721982,0.26796057){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{validation}}}%
   \end{picture}%
 \endgroup%

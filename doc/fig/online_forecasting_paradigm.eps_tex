@@ -1,6 +1,6 @@
 %% Creator: Inkscape 0.91_64bit, www.inkscape.org
 %% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
-%% Accompanies image file 'drawing1.eps' (pdf, eps, ps)
+%% Accompanies image file 'online_forecasting_paradigm.eps' (pdf, eps, ps)
 %%
 %% To include the image in your LaTeX document, write
 %%   \input{<filename>.pdf_tex}
@@ -36,7 +36,7 @@
   }%
   \providecommand\rotatebox[2]{#2}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{595.27559055bp}%
+    \setlength{\unitlength}{260.84911772bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -48,14 +48,14 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,1.41428571)%
-    \put(0,0){\includegraphics[width=\unitlength]{drawing1.eps}}%
-    \put(0.14975057,0.93018139){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\begin{minipage}{0.05855631\unitlength}\raggedright \end{minipage}}}%
-    \put(0.13535148,0.92922144){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{life history}}}%
-    \put(0.28126227,0.9330612){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{dataset history}}}%
-    \put(0.1766289,1.07417233){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{prehistory}}}%
-    \put(0.43869239,1.06073316){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{forecast}}}%
-    \put(0.50012849,0.97625852){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t$, time}}}%
-    \put(0.35325771,1.07321238){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{now}}}%
+  \begin{picture}(1,0.37614757)%
+    \put(0,0){\includegraphics[width=\unitlength]{online_forecasting_paradigm.eps}}%
+    \put(0.07448204,0.01294656){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\begin{minipage}{0.13362952\unitlength}\raggedright \end{minipage}}}%
+    \put(0.04162231,0.01075589){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{life history}}}%
+    \put(0.37460076,0.01951849){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{dataset history}}}%
+    \put(0.13582022,0.34154378){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{prehistory}}}%
+    \put(0.7338671,0.31087466){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{forecast}}}%
+    \put(0.8740685,0.11809773){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{t, time}}}%
+    \put(0.5388993,0.33935311){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{now}}}%
   \end{picture}%
 \endgroup%
