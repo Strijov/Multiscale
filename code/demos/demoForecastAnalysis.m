@@ -1,6 +1,6 @@
 function [testMAPE, trainMAPE] = demoForecastAnalysis(tsStructArray, model, generators, feature_selection_mdl)
 
-TRAIN_TEST_VAL_RATIO = [0.5, 0.4, 0.1];
+TRAIN_TEST_VAL_RATIO = [0.5, 0.5];
 SUBSAMPLE_SIZE = 50;
 N_PREDICTIONS = 1;
 
@@ -27,17 +27,18 @@ ts = MergeDataset(tsStructArray, N_PREDICTIONS);
 %ts = CreateRegMatrix(structTsArray, N_PREDICTIONS);
 
 % Split design matrix rows into train and test subsamples
-[idxTrain, idxPreTrain, idxTest] = MultipleSplit(size(ts.X, 1), size(ts.X, 1), TRAIN_TEST_VAL_RATIO);
+[idxPreTrain, idxTrain, idxTest] = MultipleSplit(size(ts.X, 1), size(ts.X, 1), TRAIN_TEST_VAL_RATIO);
 
 %--------------------------------------------------------------------------
 tsGen = GenerateFeatures(ts, generators, idxPreTrain, [idxTrain, idxTest]);
 [tsPT, feature_selection_mdl] = FeatureSelection(tsGen, feature_selection_mdl, ...
-                                             idxPreTrain, [idxTrain, idxTest]);
-[~, preTrainRes, model] = computeForecastingResiduals(tsPT, model, idxPreTrain, [idxTrain, idxTest]);
+                                             idxPreTrain, [idxTest, idxTrain]);
+[~, preTrainRes, model] = computeForecastingResiduals(tsPT, model, idxPreTrain, [idxTest, idxTrain]);
 
 
 % Split design matrix rows into subsamples of size SUBSAMPLE_SIZE
-[idxTrain, ~, idxTest] = MultipleSplit(size(ts.X, 1) - numel(idxPreTrain), ...
+TRAIN_TEST_VAL_RATIO = [0, 1];
+[~, idxTrain, idxTest] = MultipleSplit(size(ts.X, 1) - numel(idxPreTrain), ...
                             SUBSAMPLE_SIZE, TRAIN_TEST_VAL_RATIO);
 nSplits = size(idxTrain, 1);
 trainMAPE = zeros(nSplits, 1);    

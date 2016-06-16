@@ -29,6 +29,8 @@ if nargin == 3
     trainTestValRatio = idxTrain;
     [idxTrain, idxTest, ~] = TrainTestSplit(size(ts.X, 1), trainTestValRatio);
 end
+idxTrain = sort(idxTrain);
+idxTest = sort(idxTest);
 
 [forecastY, matTrainForecastY, model] = feval(model.handle, ts.X(idxTest, :), model, ...
                             ts.X(idxTrain, :), ts.Y(idxTrain, :)); 
@@ -43,7 +45,7 @@ end
 nPredictions = size(ts.Y, 2)/sum(ts.deltaTr);
 [model.forecasted_y, idxTrain] = addFrcToModel(model.forecasted_y, matTrainForecastY, idxTrain, ts, nPredictions);                         
 [model.forecasted_y, idxTest] = addFrcToModel(model.forecasted_y, forecastY, idxTest, ts, nPredictions);                         
-if checkTrainTestIdx(idxTrain, idxTest)
+if ~checkTrainTestIdx(idxTrain, idxTest)
     disp('compFrc: idxTrain and idxTest intersect')
 end
 % compute frc residuals for each time series (cell array [1 x nTimeSeries])
