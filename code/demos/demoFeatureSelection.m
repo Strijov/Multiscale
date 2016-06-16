@@ -1,7 +1,7 @@
 function demoFeatureSelection(StructTS, model, generators)
 
 N_PREDICTIONS = 1;
-TRAIN_TEST_VAL_RATIO = [0.75, 0.25, 0]; %FIXED TRAIN_TEST_VAL_RATIO, train 
+TRAIN_TEST_VAL_RATIO = [0.75, 0.25]; %FIXED TRAIN_TEST_VAL_RATIO, train 
                                         %ratio was 0
 
 % Properly set 'replace' parameter for all generators:

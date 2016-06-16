@@ -38,6 +38,8 @@ idxTest = sort(idxTest);
 % Remember that forecasts, ts.X and ts.Y are normalized, while ts.x are not!
 % Unravel forecasts from matrices to vecors and denormalize forecasts:
 % unravel_target_var returns a cell array of size [1 x nTimeSeries]
+
+
 if isempty(model.forecasted_y)
     model.forecasted_y = cell(1, numel(ts.x));
     model.forecasted_y = cellfun(@(x) zeros(numel(x), 1), ts.x, 'UniformOutput', false);
@@ -50,8 +52,18 @@ if ~checkTrainTestIdx(idxTrain, idxTest)
 end
 % compute frc residuals for each time series (cell array [1 x nTimeSeries])
 residuals = calcResidualsByTs(model.forecasted_y, ts.x, ts.deltaTp);
+%{
+if isempty(model.intercept)
+    trainRes = cellfun(@(x, y) x(y), residuals, idxTrain, 'UniformOutput', false);
+    model.intercept = cellfun(@(x) mean(x), trainRes, 'UniformOutput', false);
+end
+model.forecasted_y = cellfun(@(x, y) x + y, model.forecasted_y, model.intercept, 'UniformOutput', false);
+residuals = cellfun(@(x, y) x - y, residuals, model.intercept, 'UniformOutput', false);
+%}
 testRes = cellfun(@(x, y) x(y), residuals, idxTest, 'UniformOutput', false);
 trainRes = cellfun(@(x, y) x(y), residuals, idxTrain, 'UniformOutput', false);
+
+
 
 testFrc = cellfun(@(x, y) x(y), model.forecasted_y, idxTest, 'UniformOutput', false);
 trainFrc = cellfun(@(x, y) x(y), model.forecasted_y, idxTrain, 'UniformOutput', false);
@@ -89,10 +101,9 @@ function [modelFrc, idxFrc] = addFrcToModel(modelFrc, newFrc, idxFrc, ts, nPred)
 
 forecasted_y = unravel_target_var(newFrc, ...
                                     ts.deltaTr, ts.norm_div, ts.norm_subt);
-%idxFrc = cellfun(@(x) idxFrc(1):idxFrc(1) + x, mat2cell(idxFrc, 1, numel(idxFrc)), ...
-%                                'UniformOutput', false);
 idxFrc = arrayfun(@(x) (idxFrc(1) - 1)*x + 1:(idxFrc(1) - 1)*x + numel(idxFrc)*x, ...
-    ts.deltaTr*nPred, 'UniformOutput', false);                             
+    ts.deltaTr*nPred, 'UniformOutput', false);  
+idxFrc = cellfun(@(x, y) fliplr(numel(y) + 1 - x), idxFrc, ts.x, 'UniformOutput', false);  
 modelFrc = cellfun(@(x, y, z) addVecByIdx(x, y, z), ...
                                 modelFrc, forecasted_y, idxFrc, ...
                                 'UniformOutput', false);
