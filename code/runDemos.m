@@ -5,7 +5,7 @@ addpath(genpath(cd));
 % Dataset options: 'HascData', 'EnergyWeather', 'NNcompetition'
 DATASET = 'EnergyWeather';
 NAME_PATTERN = 'missing*'; % set to \w* to get all names
-
+DATADIR = fullfile('data', 'ProcessedData');
 % All .mat data is stored in data/ProcessedData/ directory;
 LoadAndSave('EnergyWeatherTS/orig');
 LoadAndSave('EnergyWeatherTS/missing_value');
@@ -18,7 +18,7 @@ end
 
 % LoadTimeSeries returns a cell array of ts structure arrays
 tsStructArray  = LoadTimeSeries(DATASET, NAME_PATTERN);
-ts = tsStructArray{1:2}; % FIXIT 
+ts = tsStructArray(1:2); % FIXIT 
 
 % Models
 nameModel = {'VAR', 'MSVR', 'Random Forest', 'Neural network'};   % Set of models. 
