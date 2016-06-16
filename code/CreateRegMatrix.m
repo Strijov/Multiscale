@@ -68,16 +68,25 @@ if ~ckeckTimeIsRight(timeY)
     disp('CreateRegMatrix: Time entries might be inconsistent');
 end
 
+
 % write the results to one stuct:
 s(1).deltaTr = [s().deltaTr];
 s(1).deltaTp = [s().deltaTp];
 s(1).x = {s().x};
+s(1).time = {s().time};
 s(1).legend = {s().legend};
 s = s(1);
 s.X = X;
 s.Y = Y;
 s.norm_subt = norm_subt;
 s.norm_div = norm_div;
+
+s = trimTimeSeries(s);
+    
+if ~checkTsTrimming(s)
+    disp('CreateRegMatrix: Time series trimming went wrong');
+end
+
 
 end
 
@@ -103,25 +112,29 @@ end
 % plot(reshape(flip(Y)', 1, numel(Y)), normalized_ts(s.deltaTp+1:end))
 end
 
+function ts = trimTimeSeries(ts)
+
+% leaves only the parts of original time series that will be foreasted
+nRows = size(ts.Y, 1);
+ts.x = arrayfun(@(i) ts.x{i}(ts.deltaTp(i) + 1:ts.deltaTp(i) ...
+                            + nRows*ts.deltaTr(i)), 1:numel(ts.x), ...
+                            'UniformOutput', false);
+%ts.time = arrayfun(@(i) ts.time{i}(ts.deltaTp(i) + 1:ts.deltaTp(i) ...
+%                            + nRows*ts.deltaTr(i)), 1:numel(ts.x), ...
+%                            'UniformOutput', false);
+end
+
 function checkRes = ckeckTimeIsRight(timeY)
 
 checkRes =  ~any(max(timeY(2:end, :), [], 2) > min(timeY(1:end-1, :), [], 2));
 
 end
 
+function checkRes = checkTsTrimming(ts)
 
-function X = add_timeseries(s, nozmalized_ts, timeY)
-
-% reverse time series, so that the top row is allways to be forecasted
-ts = flip(nozmalized_ts);
-time = flip(s.time);
-
-X = zeros(numel(timeY), s.deltaTp);
-for i = 1:numel(timeY)
-   idx_rows = find(time < timeY(i));
-   idx_rows = idx_rows(s.deltaTp:-1:1);  
-   X(i, :) = ts(idx_rows);
-end
+y2ts = unravel_target_var(ts.Y, ts.deltaTr, ts.norm_div, ts.norm_subt);
+checkRes = all(cell2mat(cellfun(@(x, y) x == y, y2ts, ts.x,...
+                            'UniformOutput', false)));
 
 end
 

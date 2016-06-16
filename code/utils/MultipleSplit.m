@@ -1,4 +1,4 @@
-function [idxTest, idxTrain, idxVal] = MultipleSplit(nRowsTotal, nRows, trainTestValRatio);
+function [idxTrain, idxTest, idxVal] = MultipleSplit(nRowsTotal, nRows, trainTestValRatio);
 % Split design matrix rows into subsamples of size nRows
 
 idxSplits = sequentialSplit(nRowsTotal, nRows);

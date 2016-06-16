@@ -1,6 +1,6 @@
-function tsArray = unravel_target_var(Y, yBlocks, norm_div, norm_subt)
+function tsArray = unravel_target_var(Y, deltaTr, norm_div, norm_subt)
 
-yBlocks = [0, cumsum(yBlocks)];
+yBlocks = [0, cumsum(deltaTr)];
 nPredictions = size(Y, 2)/yBlocks(end);
 yBlocks = yBlocks*nPredictions;
 tsArray = cell(1, numel(yBlocks) - 1);
