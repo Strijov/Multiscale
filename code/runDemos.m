@@ -18,14 +18,14 @@ end
 
 % LoadTimeSeries returns a cell array of ts structure arrays
 tsStructArray  = LoadTimeSeries(DATASET, NAME_PATTERN);
-ts = tsStructArray{1}; % FIXIT 
+ts = tsStructArray{1:2}; % FIXIT 
 
 % Models
-nameModel = {'VAR', 'SVR', 'Random Forest', 'Neural network'};   % Set of models. 
-handleModel = {@VarForecast, @SVRMethod, @TreeBaggerForecast, @NnForecast};
+nameModel = {'VAR', 'MSVR', 'Random Forest', 'Neural network'};   % Set of models. 
+handleModel = {@VarForecast, @MLSSVRMethod, @TreeBaggerForecast, @NnForecast};
 pars = cell(1, numel(nameModel));
 pars{1} = struct('regCoeff', 2);
-pars{2} = struct('C', 10000, 'lambda', 0.00001, 'epsilon', 0.01);
+pars{2} = struct('kernel_type', 'rbf', 'p1', 2, 'p2', 0, 'gamma', 0.5, 'lambda', 4);
 pars{3} = struct('nTrees', 25, 'nVars', 48);
 pars{4} = struct('nHiddenLayers', 25);
 model = struct('handle', handleModel, 'name', nameModel, 'params', pars, 'transform', [],...
