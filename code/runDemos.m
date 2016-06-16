@@ -48,7 +48,7 @@ testMAPE = zeros(numel(model) + 1, 1);
 
 for nTs = 1:numel(tsStructArray{1}) 
 % Define baseline model:    
-ts = {tsStructArray{1}(i), tsStructArray{2}(i)};    
+ts = {tsStructArray{1}(nTs), tsStructArray{2}(nTs)};    
 pars = struct('deltaTr', ts{1}.deltaTr, 'deltaTp', ts{1}.deltaTp);
 baselineModel = struct('handle', @MartingalForecast, 'name', 'Martingal', 'params', pars, 'transform', [],...
     'trainError', [], 'testError', [], 'unopt_flag', false, 'forecasted_y', []);

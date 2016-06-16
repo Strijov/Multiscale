@@ -1,7 +1,8 @@
 function demoFeatureSelection(StructTS, model, generators)
 
 N_PREDICTIONS = 1;
-TRAIN_TEST_VAL_RATIO = [0, 0.75, 0.25];
+TRAIN_TEST_VAL_RATIO = [0.75, 0.25, 0]; %FIXED TRAIN_TEST_VAL_RATIO, train 
+                                        %ratio was 0
 
 % Properly set 'replace' parameter for all generators:
 nGenerators = numel(generators);
@@ -52,7 +53,7 @@ figs(1).captions = caption;
 %ts = MergeDataset(tsStructArray, N_PREDICTIONS);
 
 % Split data into train and test:
-[idxTrain, ~, idxTest] = MultipleSplit(size(StructTS.X, 1), size(StructTS.X, 1), ...
+[idxTest, idxTrain, ~] = MultipleSplit(size(StructTS.X, 1), size(StructTS.X, 1), ...
                                         TRAIN_TEST_VAL_RATIO);
                                             
 %--------------------------------------------------------------------------

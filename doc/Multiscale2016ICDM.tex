@@ -64,7 +64,7 @@
 \maketitle
 
 \begin{abstract}
-The paper presents a framework for the multiscale time series forecast. We propose a method of constructing efficient feature description for the corresponding regression problem. The method involves feature generation and dimensionality reduction procedures. Generated features include historical information about the target time series as well as other available time series, local transformations and  multiscale features. We apply several forecasting algorithms to the resulting regression problem and investigate the quality of the forecasts for various horizon values.
+The paper presents a framework for the massive multiscale time series forecast. We propose a method of constructing efficient feature description for the corresponding regression problem. The method involves feature generation and dimensionality reduction procedures. Generated features include historical information about the target time series as well as other available time series, local transformations and  multiscale features. We apply several forecasting algorithms to the resulting regression problem and investigate the quality of the forecasts for various horizon values.
 \end{abstract}
 
 
@@ -76,8 +76,7 @@ We assume that the sampling rate of each time series is fixed and each time seri
 
 
 \section{Related work}
- Along with generic methods of time series forecasting, such as Autoregressive Moving Average Models (ARMA), Autoregressive Integrated Moving Average Models (ARIMA), many authors report high predictive performance of the methods, originally developed for classification or regression, applied to forecast time series. 
- Here the input variables are the delayed observations  of the time series, and the output is the forecasted value of time series. However, the authors of~\cite{Navarrete2015} show that this prediction framework suffers from systematic error that does not converge to zero as the sample size increases, and  ensure error convergence applying cubic spline approximation to noisy data, which yields much lower RMSE in case of noisy data. 
+ Along with generic methods of time series forecasting, such as Autoregressive Moving Average Models (ARMA), Autoregressive Integrated Moving Average Models (ARIMA), authors report high predictive performance of the methods, originally developed for classification or regression, applied to forecast time series~\cite{Yu2016, Kane2014, Trafalis2000, Navarrete2015, Busseti2012, Taylor2009}.  Here the input variables are the delayed observations  of the time series, and the output is the forecasted value of time series. However, the authors of~\cite{Navarrete2015} show that this prediction framework suffers from systematic error that does not converge to zero as the sample size increases, and  ensure error convergence applying cubic spline approximation to noisy data, which yields much lower RMSE in case of noisy data.
 
  To extend this one-step-ahead forecasting scheme to the case of multiple predictions, one may use iterative, direct or multiple output strategies~\cite{Bao2014}. Within the iterative strategy, one-step-ahead forecasts are computed recursively, with the newly predicted values of the time series used as the actual future records. A less prone to error accumulation, though more time consuming method is the direct strategy, which involves estimation of $h$ models to predict $h$ future values of the time series~\cite{Zhang2013}. Finally, the multiple input multiple output (MIMO) strategy allows to obtain $h$ prediction with at one step.  The paper~\cite{Bao2014} compares different strategies of multi-step-ahead prediction in SVR-based forecasting: direct, iterative and multiple output. Regardless of the horizon values, direct and MIMO strategies consistently achieve more accurate forecasts, than the iterative strategy, with MIMO being most accurate in most cases.
 
@@ -96,16 +95,18 @@ Each time series $\bs^{(q)}$ has its own sampling rate $1/\tau^{(q)}$:
  The task is to obtain forecasts $\hat{s}(t_i)$ of $\bs \in \fD$ for  $\dtr <  t_i \leq T_{\max} + \dtr$, given the set  $\fD$ (see Fig.~\ref{fg:online_frc}, \ref{fg:retrospective}). The forecasts $\hat{\bs}$ should minimise symmetric mean absolute percentage error:
  \begin{equation}\label{eq:MAPE}
  SMAPE(\bs, \hat{\bs}) = \frac{1}{r}\sum_{i = 1}^{r} \frac{2|s_i - \hat{s}_i|}{|s_i + \hat{s}_i|}. \end{equation}
- Here and throughout this paper we assume that each time series are standardized. 
- 
+ Here and throughout this paper we assume that each time series are standardized.
 
-%Here MAPE is evaluated for the retrospective forecasts~\ref{fg:retrospective}, where the most recent historical samples $\bx_0^{*}$ are concealed and forecasted as if they were unknown. Then the quality of the model $\fx$ is evaluated according to its performance on these concealed samples.
 
 \begin{figure}[!ht]
+\def\svgwidth{0.4\textwidth}
 \centering
-\subfloat[]{\includegraphics[width=0.4\textwidth]{online_forecasting_paradigm.png}
+\subfloat[]{\input{fig/online_forecasting_paradigm.eps_tex}
 \label{fg:online_frc}} \\
-\centering \subfloat[]{\includegraphics[width=0.4\textwidth]{forecasting_model.png}
+\def\svgwidth{0.4\textwidth}
+\centering \subfloat[]
+%{\includegraphics[width=0.4\textwidth]{forecasting_model.png}
+{\input{fig/forecasting_model.eps_tex}
 \label{fg:forecasting}
 }
 \caption{Forecasting (a) as regression problem (b).}
@@ -117,13 +118,15 @@ Each time series $\bs^{(q)}$ has its own sampling rate $1/\tau^{(q)}$:
 \subsection{Design matrix}
 
 \begin{figure}[!ht]
+\def\svgwidth{0.4\textwidth}
 \centering
-\subfloat[]{\includegraphics[width=0.4\textwidth]{draw_object.png}\label{fg:draw}} \\
-\centering\subfloat[]{\includegraphics[width=0.4\textwidth]{design_matrix_generation.png}\label{fg:design}}
+\subfloat[]{\input{fig/draw_object.eps_tex}\label{fg:draw}} \\
+\def\svgwidth{0.4\textwidth}
+\centering\subfloat[]{\input{fig/design_matrix_generation.eps_tex}\label{fg:design}}
 \caption{Draw an object from time series history.}
 \end{figure}
  We consider the forecasting problem as the multivariate regression problem, where target variables are the vectors of lagged values $s(t_i)$ of all the time series $\bs \in \fD$.
- 
+
 Let $\bx^{*}$ denote rows of the design matrix~$\bX^*$ for the regression problem. Each vector~$\bx^{*} = [\bx| \by]$ collects all the time series over the time period~$\dtp$ (Fig.~\ref{fg:draw}), which stands for the local \emph{prehistory}. The vector $\bx^{*}$ includes samples from previous history of time series from $\fD$ as well as any derivatives or \emph{generated features}. We describe the types of generated features in Section~\ref{sc:feature_generation}.
 
 The design matrix~$\bX^*$ for the multiscale autoregressive problem statement is constructed  as follows (Fig.~\ref{fg:design}). Let $\bs^{(q)}_i$ denote the~$i$-th segment of the time series $\bs^{(q)}$
@@ -161,56 +164,17 @@ Following~\eqref{eq:segment} and~\eqref{eq:strategy2}, extract segments $[\bx^{(
 Denote a row from the pair~$\bY,\bX$ as $\by,\bx$ and call these vectors the target and the features.
 
 \begin{figure}[!ht]
+%\def\svgwidth{0.4\textwidth}
 \centering\includegraphics[width=0.4\textwidth]{retrospective_validation.png}
 \caption{\hl{Retrospective forecast includes most recent samples in data set.}\label{fg:retrospective}}
 \end{figure}
 
-\subsection{Testing procedure}
 Now we are able the regression problem as follows:
 \begin{equation}\label{eq:regression_problem}
-\hat{\y} = f(\x, \hat{\w}), \hat{\w} = \argmin_{\hat{\w}}S\bigl(\bw|\fx(\bw,\bx),\by\bigr). %\text{~where~}
+\hat{\y} = f(\x, \hat{\w}), ~\hat{\w} = \argmin_{\hat{\w}}S\bigl(\bw|\fx(\bw,\bx),\by\bigr). %\text{~where~}
 \end{equation}
 Here the error function is given by $SMAPE$~\eqref{eq:MAPE} for each segment $[\x_i \by_i]$, averaged over all segments $i = 1, \dots, m$ in the test set:
-\[ S\bigl(\bw|\fx(\bw,\bx),\by\bigr) = \frac{r}{m}\sum_{i=1}^{m} MAPE(\y_i, f(\x_i, \w)).\]
-
-The algorithm below describes the procedure used to evaluate the forecasting errors within the proposed framework given the model $\fx$.
-\begin{algorithm}[!h]
-%\DontPrintSemicolon
-%\textbf{\emph{ComputeForecastingErrors()}}\\
- \KwData{$\bX^{*} \in \mathbb{R}^{m\times(n+r)}$. Parameters: sample size $m$, train to test ratio $\alpha$, minimal sample (test) size $m_{\min}$.}
- \KwResult{Forecasting error.}
- 
- Decompose matrix $\bX^{*}$ into train and test matrices:
- \[\bX^{*}_{\text{train}}, \; \bX^{*}_{\text{test}} = TrainTestSplit(\bX^{*}, \alpha);\]
- Augment $\bX^{*}_{\text{train}}$ with generated features $\vf$ \;
- Reduce dimensionality of $\bX^{*}_{\text{train}}$ \;
- Optimize hyperparameters $\hat{\beta}$ of the model $\fx$, using $\bX^{*}_{\text{train}}$\;
- \For{$i$ in $\{1, \dots,  m_{\text{test}} - m_{\min}\}$:}{
- define $\bX^{*}_{\text{train}, i}$ as $(i+1)$-th to $(i+ m_{\min} + 1)$-th rows of $\bX^{*}_{\text{test}}$ and
-  $\bx^{*}_{\text{val}, i}$ as the $i$-th row of $\bX^{*}_{\text{test}}$\;
- 
- \[\bX^{*}_{\text{test}} = \left[\begin{array}{c|c}
- \dots & \dots \\
- \hline
- \underset{1{\times}n}{\bx_{\text{val}, i}} & \underset{1{\times}r}{\by_{\text{val}, i}}  \\
- \hdashline
- \underset{m_{\min}{\times}n}{\bX_{\text{train}, i}}  & \underset{m_{\min}{\times}r}{\bY_{\text{train}, i}} \\
- \hline
- \dots & \dots \\
- \end{array}\right]
- \]
- apply feature transformation to $\bX^{*}_{\text{train}, i}$, $\bX^{*}_{\text{val}, i}$\;
-  train forecasting model $\fx(\x, \hat{\w}_i, \hat{\beta})$, using $\bX^{*}_{\text{train}, i}$\;
-  obtain vector of residuals $\veps  = \by_{\text{val}, i} - \fx(\bx_{\text{val}, i}, \hat{\w}_i, \hat{\beta})$\;
-  compute forecasting quality:
-  \[ {SMAPE}(i)  = \frac{1}{r} \sum_{t=1}^{r} \frac{2|\varepsilon_{t}|}{|2(y_{\text{val}, i})_t - \varepsilon_{t}|};\]
-  }
-  Return $SMAPE$, averaged over data splits:
-  \[ \text{Error}  = \frac{1}{m_{\text{test}} - m_{\min}} \sum_{i=1}^{m_{\text{test}} - m_{\min}} {SMAPE}(i).\]
-  \bigskip
- \caption{Compute forecasting errors imitating rolling forecast procedure.}\label{alg:train_test_rmse}
-\end{algorithm}
-
+\[ S\bigl(\bw|\fx(\bw,\bx),\by\bigr) = \frac{r}{m}\sum_{i=1}^{m} SMAPE(\y_i, f(\x_i, \w)).\]
 
 \section{Feature generation}\label{sc:feature_generation}
 Denote the generated feature vector as~$\vf$. This vector consists of concatenated row-vectors~$\vf=[\vf^{(1)},\dots,\vf^{(Q)}]$, which corresponds to time series local histories ~$\bs=[\bs^{(1)},\dots,\bs^{(Q)}]$, modified with set of transformations~$G$. The elements~$g:\bs\to\vf$ of this set are listed below. The augmented feature set $\vf$ includes
@@ -268,16 +232,59 @@ This procedure applies the kernel trick to the time series. For given local hist
 \]
 This $k$-means of another clustering procedure may use internal parameters, so that there are no parameters to be included to the feature vector or to the forecasting model.
 
+\begin{algorithm}[!h]
+%\DontPrintSemicolon
+\KwData{Object-feature matrix $\bX^{*} \in \mathbb{R}^{m\times(n+r)}$. Train to test ratio $\alpha \in [0, 1]$.}
+ \KwResult{Train and test, $\bX^{*}_{\text{train}}$, $\bX^{*}_{\text{test}}$.}
+ Set train set and test set sizes:
 
+ $ \quad m_{\text{train}} = \lfloor\alpha\cdot m\rfloor, \quad m_{\text{test}} = m - m_{\text{train}} $ \; %(1-\alpha)(m-1)
+ Decompose matrix $\bX^{*}$ into train and test matrices $\bX^{*}_{\text{train}}$, $\bX^{*}_{\text{test}}$:
+ \[\bX^{*} = \left[\begin{array}{c|c}
+ \underset{m_{\text{test}}{\times}n}{\bX_{\text{test}}} & \underset{m_{\text{test}}{\times}r}{\bY_{\text{test}}}  \\
+ \hdashline
+ \underset{m_{\text{train}}{\times}n}{\bX_{\text{train}}}  & \underset{m_{\text{train}}{\times}r}{\bY_{\text{train}}}
+ \end{array}\right]
+ \]
+  \caption{Initial train-test splitting procedure.}\label{alg:train_test}
+\end{algorithm}
 
-\section{Feature selection}
-Since the augmented feature description $\vf$ is likely to be redundant, we reduce its dimensionality, applying principal component analysis (PCA) as a feature selection procedure.
-PCA allows to select linear directions in the input space such that projections of the input data onto these directions preserve most of the variance present in the input data. This is achieved trough applying singular value decomposition to the covariance matrix $X X^T$ of the input data $X$
- \[C = \frac{1}{n}X X^T = \frac{1}{n} U\Lambda^2 U^T, \text{ где } \Lambda = \text{diag}(\lambda_1, \dots, \lambda_n).\]
- Columns of $U$ define orthogonal projections of $X$. Squares $\lambda^2_i$ of singular values on the main diagonal of $\Lambda$ equal to the variance of the corresponding projections. Suppose that singular values $\lambda_i$ are ordered by decrease. Then the feature matrix $\tilde{X}$ of reduced dimensionality $k$ is given by
-\begin{equation}\label{eq:PCA}
-\tilde{X} = \tilde{U} X,\end{equation}
-where $\lambda_i$ is the matrix of the first $k$ columns of $\lambda_i$.
+\section{Testing procedure}
+The algorithm below describes the procedure used to evaluate the forecasting errors within the proposed framework given the model $\fx$,  data matrix $\bX^{*} \in \mathbb{R}^{m\times(n+r)}$ and fixed parameters train to test ratio $\alpha$, minimal sample (test) size $m_{\min}$. This procedure involves creation of design matrix~\eqref{eq:design_matrix}, generation of augmented feature description $\vf$ and, since it is likely to be redundant, dimensionality reduction. Here we use principal component analysis (PCA) and nonlinear PCA~\cite{}.
+\begin{enumerate}[1)]
+\item Create design matrix $\bX^{*}$ according to~\eqref{eq:design_matrix} from $\fD$.
+\item Split matrix $\bX^{*}$ into train and test matrices $\bX^{*}_{\text{train}}$ and $\bX^{*}_{\text{test}}$
+according to the train-test splitting procedure~\ref{alg:train_test}\;
+\item Augment $\bX^{*}_{\text{train}}$ with generated features $\vf$\;
+\item Reduce dimensionality of $\bX^{*}_{\text{train}}$ \;
+\item Optimize hyper parameters of the model $\fx$, using $\bX^{*}_{\text{train}}$\;
+\item
+For $k$ in $\{1, \dots,  m_{\text{test}} - m_{\min}\}$ repeat:
+\begin{itemize}
+\item define $\bX^{*}_{\text{train}, i}$ as $(i+1)$-th to $(i+ m_{\min} + 1)$-th rows of $\bX^{*}_{\text{test}}$ and
+  $\bx^{*}_{\text{val}, i}$ as the $i$-th row of $\bX^{*}_{\text{test}}$\;
+
+ \[\bX^{*}_{\text{test}} = \left[\begin{array}{c|c}
+ \dots & \dots \\
+ \hline
+ \underset{1{\times}n}{\bx_{\text{val}, i}} & \underset{1{\times}r}{\by_{\text{val}, i}}  \\
+ \hdashline
+ \underset{m_{\min}{\times}n}{\bX_{\text{train}, i}}  & \underset{m_{\min}{\times}r}{\bY_{\text{train}, i}} \\
+ \hline
+ \dots & \dots \\
+ \end{array}\right]
+ \]
+\item apply feature transformation to $\bX^{*}_{\text{train}, i}$, $\bX^{*}_{\text{val}, i}$\;
+\item  train forecasting model $\fx(\x, \hat{\w}_i)$, using $\bX^{*}_{\text{train}, i}$\;
+\item  obtain vector of residuals $\veps  = \by_{\text{val}, i} - \fx(\bx_{\text{val}, i}, \hat{\w}_i)$\;
+\item  compute forecasting quality:
+  \[ {SMAPE}(i)  = \frac{1}{r} \sum_{t=1}^{r} \frac{2|\varepsilon_{t}|}{|2(y_{\text{val}, i})_t - \varepsilon_{t}|};\]
+\end{itemize}
+\item
+  Return $SMAPE$, averaged over data splits:
+  \[ \text{Error}  = \frac{1}{m_{\text{test}} - m_{\min}} \sum_{i=1}^{m_{\text{test}} - m_{\min}} {SMAPE}(i).\]
+\end{enumerate}
+The models that we use are listed in the table~\ref{tb:regr_mdl} along with the optimized hyper parameters.
 
 
 \section{Computational experiment}
@@ -285,29 +292,38 @@ The goal of the experiment is to study the performance of multivariate regressio
 time series forecasting.
 
 This section presents the results of computational comparison of the forecasting models presented above. To test each model, we used several datasets, described below.
-\subsection{Models}
-The models that we use are:
-\begin{enumerate}[a)]
-\item multivariate linear regression (MVR) with $l_2$-regularization
+\begin{table}\caption{Regression models.}\label{tb:regr_mdl}
+\begin{tabular}{|p{4cm}|p{4cm}|}
+\hline
+Model name & Hyper parameters \\
+\hline
+ multivariate linear regression (MVR) with $l_2$-regularization & regularization coefficient \\
+ \hline
 %\[f(\bx, \bW) = \bx\bW , ~~ \hat{\bW} = \argmin_{\bW} S(\bW) + \lambda||\bW||_2^2, \]
-\item support vector regression (SVR),
+support vector regression (SVR) & parameters $C$, $\lambda$, $\varepsilon$ \\
 %where the regression function also has the linear form $f(\bX, \{\bW, \bb\}) = \bx\bW + \bb$, but the optimization problem is more complex:
 %    \[ \hat{\bW} = \argmin_{\bW,\;\vx,\;\vx^{*}} \frac{1}{2}||\bW||_2^2 + C
 %    \sum_{i, j}(\xi_{ij} + \xi_{ij}^{*}), \text{~subject to~}\]
 %    \[ \begin{cases} -\veps - \vx^{*}_i \leq \by_i - \bx_i\bW  - \bb \leq \veps + \vx_i, \\
 %     \xi_{ij}\xi^{*}_{ij} > 0.
 %    \end{cases}\]
-\item artificial neural network (ANN),
-\item random forest (RF).
-\end{enumerate}
+\hline
+artificial neural network (ANN) &  number of hidden layers, hidden layers size \\
+\hline random forest (RF) & number of trees, number of variables per tree\\
+\hline
+\end{tabular}
+\end{table}
 \subsection{Datasets}
 \begin{itemize}
-\item Energy consumption dataset. The dataset consists of the Polish electricity load time series~\cite{EnergyWeatherData} and weather time series in Warsaw (Longtitude: 21.25, Latitude: 52.30, Elevation: 94). Energy time series contain hourly records, weather time series were measured daily. The dataset comprises two original time multiscale series, which correspond to the periods of 1999--2001 and 2002-2004 and is augmented with artificially modified versions of these two time series. \hl{More on data preparation.}
+\item Energy-Weather dataset. The dataset consists of the Polish electricity load time series~\cite{EnergyWeatherData} and weather time series in Warsaw (Longtitude: 21.25, Latitude: 52.30, Elevation: 94). Energy time series contain hourly records (total of 52512 observations), while weather time series were measured daily and contain 2188 observations. The multiscale time series correspond to the period of 1999 to 2004.
+
+\item  The Energy-Weather dataset was used to generate several artificial datasets.
+
 \item Accelerometry dataset. This dataset consists of accelerometry time series from the Human Activity Sensing Consortium~\cite{HASCdata}. Each time series in the datasets is a sequence of acceleration records. The time series were recorded for 120 seconds while a subject performed a sequence of activities: stay, walk, jog, skip, stair up or stair down. The sampling rate varies between 10 and 100Hz, but stays constant for each time series.
 \item Financial dataset~\cite{NNcompetition}.  The dataset A (final, complete) from the 2006/07 Forecasting Competition for Neural Networks \& Computational Intelligence. The dataset contains 111 monthly time series drawn from homogeneous population of empirical business time series.
 \end{itemize}
 
-\paragraph{Experimental results}
+\subsection{Experimental results}
 Each time series from the datasets was converted to the design matrix~\eqref{eq:design_matrix} and used as input data to train regression models according to~\eqref{eq:regression_problem}.
 
 Table~\ref{fg:feature_selection_res_HASC1} lists forecasting errors for the proposed feature generation strategies applied to the test time series from the HASC dataset.
@@ -318,13 +334,6 @@ Fig.~\ref{fg:feature_gen_frc} illustrates the results of regression built on the
 
 Fig.~\ref{fg:pca_frc} demonstrates the forecasts, obtained by each model in the proposed framework. Here the design matrix was augmented with the generated features and PCA was applied to select a subset of features.
 
-
-
-\begin{figure}[!t]
-\centering\includegraphics[width=0.45\textwidth]{02_A0.png}
-\label{fg:IDEF}
-\caption{Multiscale forecasting pipeline.}
-\end{figure}
 
 
 \begin{table}

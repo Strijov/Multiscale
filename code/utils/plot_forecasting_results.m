@@ -28,7 +28,7 @@ function [figname, caption, figname_m, caption_m] = plot_forecasting_results_by_
                                                     folder,...
                                                     string)
 TIME_FRC_RATIO = 0.25;
-time_ticks_plot = 1:ts.deltaTr(nTs)*nPred;
+time_ticks_plot = numel(ts.x{nTs}) - ts.deltaTr(nTs)*nPred + 1:numel(ts.x{nTs});
 % plot frc by model
 ls = {'k--', 'k:', 'k-', 'k-.'};
 figname_m = cell(1, numel(model));

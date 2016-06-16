@@ -29,33 +29,81 @@ if nargin == 3
     trainTestValRatio = idxTrain;
     [idxTrain, idxTest, ~] = TrainTestSplit(size(ts.X, 1), trainTestValRatio);
 end
+idxTrain = sort(idxTrain);
+idxTest = sort(idxTest);
 
 [forecastY, matTrainForecastY, model] = feval(model.handle, ts.X(idxTest, :), model, ...
                             ts.X(idxTrain, :), ts.Y(idxTrain, :)); 
 
 % Remember that forecasts, ts.X and ts.Y are normalized, while ts.x are not!
-vecForecasts = zeros(size(ts.Y));
-vecForecasts(idxTrain, :) = matTrainForecastY;
-vecForecasts(idxTest, :) = forecastY;
-
 % Unravel forecasts from matrices to vecors and denormalize forecasts:
 % unravel_target_var returns a cell array of size [1 x nTimeSeries]
-model.forecasted_y = unravel_target_var(vecForecasts, ts.deltaTr, ts.norm_div, ts.norm_subt);
-
+if isempty(model.forecasted_y)
+    model.forecasted_y = cell(1, numel(ts.x));
+    model.forecasted_y = cellfun(@(x) zeros(numel(x), 1), ts.x, 'UniformOutput', false);
+end
+nPredictions = size(ts.Y, 2)/sum(ts.deltaTr);
+[model.forecasted_y, idxTrain] = addFrcToModel(model.forecasted_y, matTrainForecastY, idxTrain, ts, nPredictions);                         
+[model.forecasted_y, idxTest] = addFrcToModel(model.forecasted_y, forecastY, idxTest, ts, nPredictions);                         
+if ~checkTrainTestIdx(idxTrain, idxTest)
+    disp('compFrc: idxTrain and idxTest intersect')
+end
 % compute frc residuals for each time series (cell array [1 x nTimeSeries])
 residuals = calcResidualsByTs(model.forecasted_y, ts.x, ts.deltaTp);
+testRes = cellfun(@(x, y) x(y), residuals, idxTest, 'UniformOutput', false);
+trainRes = cellfun(@(x, y) x(y), residuals, idxTrain, 'UniformOutput', false);
+
+testFrc = cellfun(@(x, y) x(y), model.forecasted_y, idxTest, 'UniformOutput', false);
+trainFrc = cellfun(@(x, y) x(y), model.forecasted_y, idxTrain, 'UniformOutput', false);
+
+testY = cellfun(@(x, y) x(y), ts.x, idxTest, 'UniformOutput', false);
+trainY = cellfun(@(x, y) x(y), ts.x, idxTrain, 'UniformOutput', false);
+
 % split them into 2 arrays of residuals, each of size [1 x nTimeSeries]
-nPredictions = size(ts.Y, 2)/sum(ts.deltaTr);
+
+%{
 [testRes, trainRes] = splitForecastsByTs(residuals, idxTrain, idxTest, ...
                                                   ts.deltaTr*nPredictions);
-
 [testFrc, trainFrc] = splitForecastsByTs(model.forecasted_y, idxTrain, idxTest, ...
                                                   ts.deltaTr*nPredictions);                                              
+
+
 [testY, trainY] = splitForecastsByTs(ts.x, idxTrain, idxTest, ...
-                                                  ts.deltaTr*nPredictions);                                              
+                                                  ts.deltaTr*nPredictions);  
+%}                                            
 model.testError = cellfun(@calcSymMAPE, testY, testFrc);
 model.trainError = cellfun(@calcSymMAPE, trainY, trainFrc);
 
+
+end
+
+
+function checkRes = checkTrainTestIdx(idxTrain, idxTest)
+
+checkRes = ~any(cell2mat(cellfun(@(x, y) ismember(x, y), idxTrain, idxTest,...
+                            'UniformOutput', false)));
+
+end
+
+function [modelFrc, idxFrc] = addFrcToModel(modelFrc, newFrc, idxFrc, ts, nPred)
+
+forecasted_y = unravel_target_var(newFrc, ...
+                                    ts.deltaTr, ts.norm_div, ts.norm_subt);
+%idxFrc = cellfun(@(x) idxFrc(1):idxFrc(1) + x, mat2cell(idxFrc, 1, numel(idxFrc)), ...
+%                                'UniformOutput', false);
+idxFrc = arrayfun(@(x) (idxFrc(1) - 1)*x + 1:(idxFrc(1) - 1)*x + numel(idxFrc)*x, ...
+    ts.deltaTr*nPred, 'UniformOutput', false);                             
+modelFrc = cellfun(@(x, y, z) addVecByIdx(x, y, z), ...
+                                modelFrc, forecasted_y, idxFrc, ...
+                                'UniformOutput', false);
+
+
+end
+
+
+function oldVec = addVecByIdx(oldVec, addVec, idxAdd)
+
+oldVec(idxAdd) = addVec;
 
 end
 

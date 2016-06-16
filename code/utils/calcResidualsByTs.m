@@ -1,5 +1,14 @@
 function res = calcResidualsByTs(cellY, cellTs, deltaTp)
 
+%{
+if ~exist('idxTrain', 'var')
+    idxTrain = 1:numel(Y);
+end
+if ~exist('idxTest', 'var')
+    idxTest = [];
+end
+%}
+
 res = cell(1, numel(cellY));
 for i = 1:numel(cellY)
     res{i} = cellTs{i}(1:numel(cellY{i})) -  cellY{i};

@@ -1,6 +1,6 @@
 %% Creator: Inkscape 0.91_64bit, www.inkscape.org
 %% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
-%% Accompanies image file 'drawing3.eps' (pdf, eps, ps)
+%% Accompanies image file 'design_matrix_generation.eps' (pdf, eps, ps)
 %%
 %% To include the image in your LaTeX document, write
 %%   \input{<filename>.pdf_tex}
@@ -36,7 +36,7 @@
   }%
   \providecommand\rotatebox[2]{#2}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{595.27559055bp}%
+    \setlength{\unitlength}{286.16635015bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -48,26 +48,16 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-<<<<<<< HEAD
-  \begin{picture}(1,0.41428571)%
-    \put(0,0){\includegraphics[width=\unitlength]{draw_object.eps}}%
-    \put(0.60188209,0.25080121){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t$, continuous time}}}%
-    \put(0.33693879,0.29111869){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$y_i$}}}%
-    \put(0.4415722,0.28823885){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$x_i$ }}}%
-    \put(0.29086168,0.34391535){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\delta t_p$}}}%
-    \put(0.41661376,0.34199547){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\delta t_r$}}}%
-    \put(0.48284961,0.25368103){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_i$}}}%
-    \put(0.35901738,0.20568405){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\delta t_i$}}}%
-=======
-  \begin{picture}(1,1.41428571)%
-    \put(0,0){\includegraphics[width=\unitlength]{drawing3.eps}}%
-    \put(0.60188209,1.25080121){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t$, continuous time}}}%
-    \put(0.33693879,1.29111869){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$y_i$}}}%
-    \put(0.4415722,1.28823885){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$x_i$\\ }}}%
-    \put(0.29086168,1.34391535){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\deltat_p$}}}%
-    \put(0.41661376,1.34199547){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\deltat_r$}}}%
-    \put(0.48284961,1.25368103){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{t_i}}}%
-    \put(0.35901738,1.20568405){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\deltat_i$}}}%
->>>>>>> 892e5b02aa3ce277b7356353cc20e0916fc3d275
+  \begin{picture}(1,0.28275465)%
+    \put(0,0){\includegraphics[width=\unitlength]{design_matrix_generation.eps}}%
+    \put(0.04273897,0.02545602){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_m$}}}%
+    \put(0.2052866,0.02827997){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_i$ }}}%
+    \put(0.42696737,0.02980809){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_2$ }}}%
+    \put(0.56816529,0.02263204){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_1$ }}}%
+    \put(0.69241949,0.02122009){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_0$}}}%
+    \put(0.94469931,0.02110393){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t$ }}}%
+    \put(0.74183887,0.26183731){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{now }}}%
+    \put(0.6961909,0.1940623){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{end of history}}}%
+    \put(0.69806738,0.00062109){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{validation}}}%
   \end{picture}%
 \endgroup%
