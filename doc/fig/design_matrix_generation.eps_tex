@@ -36,7 +36,7 @@
   }%
   \providecommand\rotatebox[2]{#2}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{286.16635015bp}%
+    \setlength{\unitlength}{595.27559055bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -48,16 +48,16 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,0.28275465)%
+  \begin{picture}(1,0.41428571)%
     \put(0,0){\includegraphics[width=\unitlength]{design_matrix_generation.eps}}%
-    \put(0.04273897,0.02545602){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_m$}}}%
-    \put(0.2052866,0.02827997){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_i$ }}}%
-    \put(0.42696737,0.02980809){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_2$ }}}%
-    \put(0.56816529,0.02263204){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_1$ }}}%
-    \put(0.69241949,0.02122009){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_0$}}}%
-    \put(0.94469931,0.02110393){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t$ }}}%
-    \put(0.74183887,0.26183731){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{now }}}%
-    \put(0.6961909,0.1940623){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{end of history}}}%
-    \put(0.69806738,0.00062109){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{validation}}}%
+    \put(0.06176895,0.04){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_m$}}}%
+    \put(0.21054375,0.04){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_i$}}}%
+    \put(0.47911217,0.04){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_2$}}}%
+    \put(0.58699013,0.04){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_1$}}}%
+    \put(0.712,0.04){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_0$}}}%
+    \put(0.978,0.04){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t$}}}%
+    \put(0.76,0.23){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{now}}}%
+    \put(0.76,0.1763219){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{end of history}}}%
+    \put(0.60943785,-0.05){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{validation}}}%
   \end{picture}%
 \endgroup%

@@ -50,17 +50,17 @@
   \makeatother%
   \begin{picture}(1,0.41428571)%
     \put(0, 0){\includegraphics[width=\unitlength]{forecasting_model.eps}}%
-    \put(0.42407021,0.32663581){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$f$}}}%
-    \put(0.68070395,0.31467977){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{train}}}%
-    \put(0.68070395,0.2608805){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{test}}}%
-    \put(0.19741234,0.06462686){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$x_i$}}}%
-    \put(0.06974715,0.18816478){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$y_i$}}}%
-    \put(0.04395353,0.16508625){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$f(x_i)$}}}%
-    \put(0.68426454,0.20830983){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{validation}}}%
-    \put(0.0600055,0.25044875){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$y_0$}}}%
-    \put(0.46056743,0.0589237){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$x_0$}}}%
-    \put(0.11699572,0.36434731){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\mathbb{R}^r$}}}%
-    \put(0.67128932,0.06025396){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\mathbb{R}^p$}}}%
+    \put(0.50807021,0.43663581){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$f$}}}%
+    \put(0.95070395,0.42467977){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{train}}}%
+    \put(0.95070395,0.3258805){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{test}}}%
+    \put(0.16741234,-0.01){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$x_i$}}}%
+    \put(-0.025,0.22044875){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$y_i$}}}%
+    \put(-0.085,0.16816478){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$f(x_i)$}}}%
+    \put(0.95070395,0.24530983){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{validation}}}%
+    \put(-0.025,0.32044875){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$y_0$}}}%
+    \put(0.62056743,-0.01){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$x_0$}}}%
+    \put(-0.04,0.45){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\mathbb{R}^r$}}}%
+    \put(0.97128932,-0.03){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\mathbb{R}^p$}}}%
 
   \end{picture}%
 \endgroup%

@@ -50,12 +50,12 @@
   \makeatother%
   \begin{picture}(1,0.41428571)%
     \put(0,0){\includegraphics[width=\unitlength]{draw_object.eps}}%
-    \put(0.60188209,0.25080121){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t$, continuous time}}}%
-    \put(0.33693879,0.29111869){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$y_i$}}}%
-    \put(0.4415722,0.28823885){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$x_i$ }}}%
-    \put(0.29086168,0.34391535){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\delta t_p$}}}%
-    \put(0.41661376,0.34199547){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\delta t_r$}}}%
-    \put(0.48284961,0.25368103){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_i$}}}%
-    \put(0.35901738,0.20568405){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\delta t_i$}}}%
+    \put(0.90188209,0.0680121){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t$, continuous time}}}%
+    \put(0.61693879,0.0660121){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$y_i$}}}%
+    \put(0.3915722,0.0660121){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$x_i$ }}}%
+    \put(0.3815722,0.24391535){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Delta t_p$}}}%
+    \put(0.60693879,0.24199547){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Delta t_r$}}}%
+    \put(0.71,0.060121){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$t_i$}}}%
+    \put(0.47901738,-0.0568405){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Delta t_i$}}}%
   \end{picture}%
 \endgroup%
