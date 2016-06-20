@@ -1,0 +1,230 @@
+\documentclass[12pt]{article}
+\extrafloats{100}
+\usepackage{a4wide}
+\usepackage{multicol, multirow}
+\usepackage[cp1251]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath, amsfonts, amssymb, amsthm, amscd}
+\usepackage{graphicx, epsfig, subfig, epstopdf}
+\usepackage{longtable}
+\graphicspath{ {../fig/} {../} }
+\begin{document}
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[width=0.35\textwidth]{fig/feature_selection/EnergyWeather/best_models_all_colormatrix.eps}}
+\subfloat[]{\includegraphics[width=0.35\textwidth]{fig/feature_selection/EnergyWeather/improvement_all_colormatrix.eps}}
+\caption{(a) Best combinations of models and feature selection strategies that performed best for at least one of the time series or error function, all data sets (252 cases). (b) Ratio of best forecasts that outperform baseline among six data sets, given for each combination of error function versus time series.}
+\end{figure}
+
+Results of feature selection experiment.
+Parameters:
+\begin{verbatim}
+%Models:
+nameModel = {'VAR', 'MSVR', 'Random Forest', 'Neural network'};   % Set of models.
+handleModel = {@VarForecast, @MLSSVRMethod, @TreeBaggerForecast, @NnForecast};
+pars = cell(1, numel(nameModel));
+pars{1} = struct('regCoeff', 2);
+pars{2} = struct('kernel_type', 'rbf', 'p1', 2, 'p2', 0, 'gamma', 0.5, 'lambda', 4);
+pars{3} = struct('nTrees', 25, 'nVars', 48);
+pars{4} = struct('nHiddenLayers', 25);
+
+
+%Generating extra features:
+generator_names = {'SSA', 'Cubic', 'Conv', 'Centroids', 'NW'};
+
+%Feature selection:
+fs_names = {'PCA', 'NPCA'};
+
+N_PREDICTIONS = 1;
+TRAIN_TEST_VAL_RATIO = [0.75, 0.25];
+\end{verbatim}
+Splitting into train and test was performed only once. The table~\ref{tb:best_res} presents single best result (in terms of test SMAPE) for each time series, original and missing values data sets.
+
+
+\begin{table}
+\begin{tabular}{|p{2cm}|c|c|c|c|c|c|c|c|}
+\hline
+Data &Energy & Max T. & Min T. & Precipitation & Wind & Humidity & Solar\\
+\hline
+\multirow{1}{*}{orig} &   0.111 &    0.127 &    0.111 &    1.222 &    0.396 &    0.201 &    0.495\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.01} &   0.230 &    0.185 &    0.129 &    1.028 &    0.397 &    0.254 &    0.577\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.03} &   0.231 &    0.191 &    0.137 &    1.026 &    0.396 &    0.253 &    0.591\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.05} &   0.230 &    0.200 &    0.141 &    1.017 &    0.390 &    0.250 &    0.592\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.1} &   0.247 &    0.198 &    0.151 &    1.192 &    0.381 &    0.225 &    0.562\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{varying} &   0.124 &    0.139 &    0.102 &    1.232 &    0.395 &    0.219 &    0.489\\
+\cline{1-7}
+\hline
+\end{tabular}\caption{Best results obtained for each dataset (testSMAPE).}\label{tb:best_res}
+\end{table}
+
+
+
+\begin{table}
+\begin{tabular}{|p{2cm}|c|c|c|c|c|c|c|c|}
+\hline
+Data &Energy & Max T. & Min T. & Precipitation & Wind & Humidity & Solar\\
+\hline
+\multirow{1}{*}{orig} &   0.031 &    0.073 &    0.057 &    0.848 &    0.111 &    0.051 &    0.267\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.01} &   0.034 &    0.055 &    0.040 &    0.595 &    0.111 &    0.055 &    0.253\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.03} &   0.034 &    0.057 &    0.042 &    0.595 &    0.110 &    0.055 &    0.249\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.05} &   0.034 &    0.060 &    0.043 &    0.592 &    0.109 &    0.054 &    0.246\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.1} &   0.031 &    0.081 &    0.063 &    0.743 &    0.102 &    0.051 &    0.272\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{varying} &   0.027 &    0.057 &    0.044 &    0.888 &    0.112 &    0.055 &    0.272\\
+\cline{1-7}
+\hline
+\end{tabular}\caption{Best results obtained for each dataset (trainSMAPE).}
+\end{table}
+
+\begin{table}
+\begin{tabular}{|p{2cm}|c|c|c|c|c|c|c|c|}
+\hline
+Data &Energy & Max T. & Min T. & Precipitation & Wind & Humidity & Solar\\
+\hline
+\multirow{1}{*}{orig} &   0.001 &    0.000 &    0.000 &    0.001 &    0.002 &    0.001 &    0.000\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.01} &   0.000 &    0.005 &    0.001 &    0.003 &    0.000 &    0.000 &    0.009\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.03} &   0.001 &    0.004 &    0.002 &    0.001 &    0.001 &    0.000 &    0.001\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.05} &   0.001 &    0.004 &    0.000 &    0.000 &    0.001 &    0.001 &    0.018\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.1} &   0.001 &    0.002 &    0.000 &    0.004 &    0.000 &    0.001 &    0.001\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{varying} &   0.001 &    0.001 &    0.001 &    0.004 &    0.003 &    0.000 &    0.001\\
+\cline{1-7}
+\hline
+\end{tabular}\caption{testRes}
+\end{table}
+
+\begin{table}
+\begin{tabular}{|p{2cm}|c|c|c|c|c|c|c|c|}
+\hline
+Data &Energy & Max T. & Min T. & Precipitation & Wind & Humidity & Solar\\
+\hline
+\multirow{1}{*}{orig} &   0.000 &    0.000 &    0.000 &    0.000 &    0.000 &    0.000 &    0.000\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.01} &   0.000 &    0.000 &    0.000 &    0.000 &    0.000 &    0.000 &    0.000\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.03} &   0.000 &    0.000 &    0.000 &    0.000 &    0.000 &    0.000 &    0.000\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.05} &   0.000 &    0.000 &    0.000 &    0.000 &    0.000 &    0.000 &    0.000\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.1} &   0.000 &    0.000 &    0.000 &    0.000 &    0.000 &    0.000 &    0.000\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{varying} &   0.000 &    0.000 &    0.000 &    0.000 &    0.000 &    0.000 &    0.000\\
+\cline{1-7}
+\hline
+\end{tabular}\caption{trainRes}
+\end{table}
+
+\begin{table}
+\begin{tabular}{|p{2cm}|c|c|c|c|c|c|c|c|}
+\hline
+Data &Energy & Max T. & Min T. & Precipitation & Wind & Humidity & Solar\\
+\hline
+\multirow{1}{*}{orig} &   0.063 &    0.070 &    0.069 &    0.109 &    0.154 &    0.138 &    0.146\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.01} &   0.123 &    0.105 &    0.086 &    0.094 &    0.149 &    0.166 &    0.168\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.03} &   0.123 &    0.107 &    0.092 &    0.093 &    0.150 &    0.166 &    0.171\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.05} &   0.122 &    0.112 &    0.095 &    0.090 &    0.148 &    0.171 &    0.174\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.1} &   0.134 &    0.105 &    0.099 &    0.105 &    0.152 &    0.156 &    0.176\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{varying} &   0.068 &    0.071 &    0.066 &    0.117 &    0.149 &    0.142 &    0.151\\
+\cline{1-7}
+\hline
+\end{tabular}\caption{testStdRes}
+\end{table}
+
+\begin{table}
+\begin{tabular}{|p{2cm}|c|c|c|c|c|c|c|c|}
+\hline
+Data &Energy & Max T. & Min T. & Precipitation & Wind & Humidity & Solar\\
+\hline
+\multirow{1}{*}{orig} &   0.013 &    0.038 &    0.038 &    0.029 &    0.034 &    0.034 &    0.062\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.01} &   0.017 &    0.034 &    0.028 &    0.025 &    0.031 &    0.035 &    0.056\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.03} &   0.017 &    0.034 &    0.028 &    0.025 &    0.031 &    0.035 &    0.055\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.05} &   0.017 &    0.034 &    0.029 &    0.025 &    0.031 &    0.035 &    0.055\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.1} &   0.016 &    0.038 &    0.037 &    0.026 &    0.031 &    0.034 &    0.056\\
+\cline{1-7}
+\hline
+\multirow{1}{*}{varying} &   0.013 &    0.036 &    0.031 &    0.031 &    0.031 &    0.036 &    0.061\\
+\cline{1-7}
+\hline
+\end{tabular}\caption{trainResStd}
+\end{table}
+
+\begin{figure}
+\centering
+\subfloat[testRes]{\includegraphics[width=0.45\textwidth]{fig/feature_selection/EnergyWeather/best_models_testRes_colormatrix.eps}}
+\subfloat[testRes]{\includegraphics[width=0.4\textwidth]{fig/feature_selection/EnergyWeather/best_models_testRes_bar.eps}}\\
+\subfloat[trainRes]{\includegraphics[width=0.45\textwidth]{fig/feature_selection/EnergyWeather/best_models_trainRes_colormatrix.eps}}
+\subfloat[trainRes]{\includegraphics[width=0.4\textwidth]{fig/feature_selection/EnergyWeather/best_models_trainRes_bar.eps}}\\
+\subfloat[testResStd]{\includegraphics[width=0.45\textwidth]{fig/feature_selection/EnergyWeather/best_models_testResStd_colormatrix.eps}}
+\subfloat[testResStd]{\includegraphics[width=0.4\textwidth]{fig/feature_selection/EnergyWeather/best_models_testResStd_bar.eps}}\\
+\caption{Best performing models.}
+\end{figure}
+
+
+\begin{figure}
+\centering
+%\subfloat[testResStd]{\includegraphics[width=0.45\textwidth]{fig/feature_selection/EnergyWeather/best_models_testResStd_colormatrix.eps}}
+%\subfloat[testResStd]{\includegraphics[width=0.4\textwidth]{fig/feature_selection/EnergyWeather/best_models_testResStd_bar.eps}}\\
+\subfloat[trainResStd]{\includegraphics[width=0.45\textwidth]{fig/feature_selection/EnergyWeather/best_models_trainResStd_colormatrix.eps}}
+\subfloat[trainResStd]{\includegraphics[width=0.4\textwidth]{fig/feature_selection/EnergyWeather/best_models_trainResStd_bar.eps}}\\
+\subfloat[testSMAPE]{\includegraphics[width=0.45\textwidth]{fig/feature_selection/EnergyWeather/best_models_testSMAPE_colormatrix.eps}}
+\subfloat[testSMAPE]{\includegraphics[width=0.4\textwidth]{fig/feature_selection/EnergyWeather/best_models_testSMAPE_bar.eps}}\\
+\subfloat[trainSMAPE]{\includegraphics[width=0.45\textwidth]{fig/feature_selection/EnergyWeather/best_models_trainSMAPE_colormatrix.eps}}
+\subfloat[trainSMAPE]{\includegraphics[width=0.4\textwidth]{fig/feature_selection/EnergyWeather/best_models_trainSMAPE_bar.eps}}
+\caption{Best performing models.}
+\end{figure}
+
+
+
+\end{document} 
