@@ -55,7 +55,7 @@
 
 \renewcommand{\baselinestretch}{1.3}
 \begin{document}
-\title{Feature generation for multiscale time series forecasting multimodels}
+\title{Feature generation for multiscale time series forecasting multimodels\thanks{16-29-12912}}
 
 
 
@@ -428,6 +428,26 @@ martingal forecast:
 % \y_{m_{\text{test}}}& \x_{m_{\text{test}}} \end{array}\right] $ \;
  \caption{Train-test split.}\label{alg:train_test_rmse}
 \end{algorithm}
+
+\paragraph{Strijov's version of testing procedure}
+To test consequent series of forecasts introduce the rolling forecasting procedure. It computes forecasts over sequence of time segments. The testing procedure counts~$K$ segments. Each segment starts at time-point~$t_k$. It has a given length~$\dtr$. It varies from one time-tick to to the length of the forecast horizon, which estimated before the experiment. To construct the design matrices for each time-point~$t_k$ split time-scale into~$K$ segments~$\dtr$ up to the end. For each time-point~$t_k$ do the following:
+\begin{enumerate}[1)]
+\item construct the validation vector $\bx^*_{\text{val},k}$ for time series of the length~$\dtr$ as the first row of the design matrix~$\bZ$,
+\item construct the rest rows of the design matrix~$\bZ$ for the time after~$t_k$ and present it as
+ \[\bZ = \left[\begin{array}{c|c}
+ \dots & \dots \\
+ \hline
+ \underset{1{\times}n}{\bx_{\text{val}, k}} & \underset{1{\times}r}{\by_{\text{val}, k}}  \\
+ \hdashline
+ \underset{m_{\min}{\times}n}{\bX_{\text{train}, k}}  & \underset{m_{\min}{\times}r}{\bY_{\text{train}, k}} \\
+ \hline
+ \dots & \dots \\
+ \end{array}\right],
+ \]
+\item optimize model parameters~$(\bw,\beta)$ using~$\bX_{\text{train}, k}, \bY_{\text{train}, k}$, (run additional cross-validation procedure on there rows to select the optimal model structure, if necessary),
+\item use~$\bx_{\text{val}, k},\by_{\text{val}, k}$ to compute the forecast~$\bf(\bx_\text{val}\bw,\beta)$ and its residues~$(\fx-\by)$,
+\item compute~$\text{MAPE}$~\eqref{eq_MAPE}.
+\end{enumerate}
 
 \section{Feature generation}
 List of procedures for constructing the feature and the object sets will be placed here. Discussion point: vector~$\y$ {\bf remains always unchanged}. \\
