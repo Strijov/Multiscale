@@ -51,11 +51,11 @@
   \begin{picture}(1,0.37614757)%
     \put(0,0){\includegraphics[width=\unitlength]{online_forecasting_paradigm.eps}}%
     \put(0.07448204,0.01294656){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\begin{minipage}{0.13362952\unitlength}\raggedright \end{minipage}}}%
-    \put(0.04162231,0.01075589){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{life history}}}%
-    \put(0.37460076,0.01951849){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{dataset history}}}%
-    \put(0.13582022,0.34154378){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{prehistory}}}%
-    \put(0.7338671,0.31087466){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{forecast}}}%
-    \put(0.8740685,0.11809773){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{t, time}}}%
-    \put(0.5388993,0.33935311){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{now}}}%
+    \put(0.02162231,-0.05){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{life history}}}%
+    \put(0.28460076,-0.05){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{dataset history}}}%
+    \put(0.30582022,0.30154378){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{prehistory}}}%
+    \put(0.7538671,0.30154378){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{forecast}}}%
+    \put(0.9040685,0.07009773){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{t, time}}}%
+    \put(0.5988993,0.30154378){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{now}}}%
   \end{picture}%
 \endgroup%

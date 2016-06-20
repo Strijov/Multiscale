@@ -74,6 +74,7 @@ We focus on the problem of forecasting behavior of a device within the concept o
 
 We assume that the sampling rate of each time series is fixed and each time series has its own forecast horizon. The problem of multi-scale analysis arises in such applications as weather prediction, medical diagnosis and monitoring various sensor time series~\cite{Costa2008, Ahmed2012, Cortez2012, Ferreira2006}. Motivation for multi-scale analysis comes from the assumption that the behaviour of complex signals may be governed by  essentially different processes at various time scales. Thus, the time series should be modeled separately at each scale. This approach is used in time series classification, prediction and fault detection~\cite{Cui2016, Cortez2012, Aldrich2013}. Regardless of the goal of multi-scale analysis, it includes sequential averaging of the time series to obtain more coarse-scaled time series~\cite{Wu2013}, or, more rarely, differencing the time series for a more detailed, fine-scaled version of the time series~\cite{Jiang2011}. Averaging and differencing, which is equivalent to application of Haar's wavelet transform~\cite{Jiang2011}, may be replaced by any other pair of low and high pass wavelet filters~\cite{Chen2004} or convolution operation with some kernel function~\cite{Vespier2012}. Using multi-scale approach in time series prediction usually involves determining optimal scales~\cite{Vespier2012, Ahmed2012}, decomposition of time series into separately forecasted components and combination of the obtained forecasts.
 
+The problem gets more complex when the task is to forecast multiple time series, which are characterized with different scales and ranges. Forecasting time series separately might lead to loss of valuable information. On the other hand, forecasting the time series simultaneously might lead to increased errors since not all the time series in the given set necessarily depend on the others. In this paper we propose a novel framework for multiscale time series forecasting, which is based on regression-based forecasts. The goal is to obtain forecasts of all time series from the given set simultaneously. Adopting this approach we endeavour to profit as much as possible from the interconnections between the time series of the set while keeping the decrease in forecasting quality for the independent time series reasonably small. Within the proposed framework the time series of various scales are combined into are single regression problem. The forecasts viewed as target variables of the regression problem, where feature description contains local history of the time series as well as various derivations. We describe the steps of creating feature description to this problem: composition of design matrix, feature generation and selection. Note that the problem of model selection rests beyond the scope of the paper. To illustrate the proposed framework in application to the multiscale data set~\cite{EnergyWeatherData} we use several widely used regression models~\cite{Yu2016, Kane2014, Trafalis2000, Navarrete2015, Taylor2009, Qiu2014}. The following section provides a brief overview of these methods and provide the motivation to use them.
 
 \section{Related work}
  Along with generic methods of time series forecasting, such as Autoregressive Moving Average Models (ARMA), Autoregressive Integrated Moving Average Models (ARIMA), authors report high predictive performance of the methods, originally developed for classification or regression, applied to forecast time series~\cite{Yu2016, Kane2014, Trafalis2000, Navarrete2015, Busseti2012, Taylor2009}.  Here the input variables are the delayed observations  of the time series, and the output is the forecasted value of time series. However, the authors of~\cite{Navarrete2015} show that this prediction framework suffers from systematic error that does not converge to zero as the sample size increases, and  ensure error convergence applying cubic spline approximation to noisy data, which yields much lower RMSE in case of noisy data.
@@ -82,7 +83,7 @@ We assume that the sampling rate of each time series is fixed and each time seri
 
 
 To demonstrate the application of the proposed framework of time series forecasting, we utilize Multivariate Linear Regression (MLR) as the naive approach, as well as three more complex models: Random Forests (RF)~\cite{Yu2016, Kane2014}, Support Vector Regression (SVR)~\cite{Trafalis2000, Navarrete2015, Hao2006} and artificial neural networks (ANN)~\cite{Busseti2012, Taylor2009}.  Random Forests combine decision trees with randomly generated nodes to increase the accuracy of classification or regression~\cite{Criminisi2011}. In case of regression trees, each node of the tree splits the input space into two subspaces and each leaf specifies a distinct regression model, which is used for prediction if the input is found in the corresponding region of the input space. Predictions of the trees in the forest are averaged, or, for the probabilistic random forest, the probabilities of the outputs are averaged. The advantage of random forests is their efficiency in case of highly dimensional data due to the randomness incorporated into selecting informative features. Since random forests are essentially ensembles of weak learners, they enjoy high generalization ability, associated with boosting algorithms.
- Similarly, the formulation of optimization problem within support vector regression promotes its robustness in case of highly dimensional data. The authors of~\cite{Trafalis2000, Hao2006} reported high predictive performance of SVR applied to time series forecasting. In case of SVR, MIMO strategy is based on multivariate SVR~\cite{PerezCruz2002}. Finally, artificial neural networks attract researches and practitioners from various domains~\cite{Taylor2009, Qiu2014}. One of the reasons for that is the ability os ANNs to model complex relationships between the input data in such fashion that does not require direct feature engineering. For more suggestions on how to combine these forecasting methods~\cite{Qiu2014, Grover2015} or use them in the multi-scale fashion we refer the reader to~\cite{Chen2004, Zhu2012, Cui2016, Bai2015, Ferrari2012}.
+ Similarly, the formulation of optimization problem within support vector regression promotes its robustness in case of highly dimensional data. The authors of~\cite{Trafalis2000, Hao2006} reported high predictive performance of SVR applied to time series forecasting. In case of SVR, MIMO strategy is based on multivariate SVR~\cite{PerezCruz2002}. Finally, artificial neural networks attract researches and practitioners from various domains~\cite{Taylor2009, Qiu2014}. One of the reasons for that is the ability of ANNs to model complex relationships between the input data in such fashion that does not require direct feature engineering. For more suggestions on how to combine these forecasting methods~\cite{Qiu2014, Grover2015} or use them in the multi-scale fashion we refer the reader to~\cite{Chen2004, Zhu2012, Cui2016, Bai2015, Ferrari2012}.
 
 
 \section{Problem statement}
@@ -92,7 +93,7 @@ is a sequence of observations $s_i = s(t_i)$ of some real-valued signal $s(t)$.
 Each time series $\bs^{(q)}$ has its own sampling rate $1/\tau^{(q)}$:
 \[t_i^{(q)} = {i}\cdot\tau^{(q)}.\]
 
- The task is to obtain forecasts $\hat{s}(t_i)$ of $\bs \in \fD$ for  $\dtr <  t_i \leq T_{\max} + \dtr$, given the set  $\fD$ (see Fig.~\ref{fg:online_frc}, \ref{fg:retrospective}). The forecasts $\hat{\bs}$ should minimise symmetric mean absolute percentage error:
+ The task is to obtain forecasts $\hat{s}(t_i)$ of $\bs \in \fD$ for  $\dtr <  t_i \leq T_{\max} + \dtr$, given the set  $\fD$ (see Fig.~\ref{fg:online_frc}). The forecasts $\hat{\bs}$ should minimise symmetric mean absolute percentage error:
  \begin{equation}\label{eq:MAPE}
  SMAPE(\bs, \hat{\bs}) = \frac{1}{r}\sum_{i = 1}^{r} \frac{2|s_i - \hat{s}_i|}{|s_i + \hat{s}_i|}. \end{equation}
  Here and throughout this paper we assume that each time series are standardized.
@@ -101,15 +102,34 @@ Each time series $\bs^{(q)}$ has its own sampling rate $1/\tau^{(q)}$:
 \begin{figure}[!ht]
 \def\svgwidth{0.4\textwidth}
 \centering
-\subfloat[]{\input{fig/online_forecasting_paradigm.eps_tex}
-\label{fg:online_frc}} \\
+%\subfloat[]{
+\input{fig/online_forecasting_paradigm.eps_tex}
+%\label{fg:online_frc}} \\
+%\def\svgwidth{0.4\textwidth}
+%\centering
+%\subfloat[]{\input{fig/draw_object.eps_tex}\label{fg:draw}} \\
+%\def\svgwidth{0.4\textwidth}
+%\centering\subfloat[]{\input{fig/design_matrix_generation.eps_tex}\label{fg:design}}
+\caption{Illustration of the procedure of design matrix composition.}\label{fg:online_frc}
+\end{figure}
+
+
+\begin{figure}[!ht]
+\def\svgwidth{0.4\textwidth}
+\centering
+\input{fig/draw_object.eps_tex}
+\caption{Illustration of the procedure of design matrix composition.}\label{fg:draw}
+\end{figure}
+
+
+\begin{figure}
 \def\svgwidth{0.4\textwidth}
 \centering \subfloat[]
 %{\includegraphics[width=0.4\textwidth]{forecasting_model.png}
 {\input{fig/forecasting_model.eps_tex}
 \label{fg:forecasting}
 }
-\caption{Forecasting (a) as regression problem (b).}
+\caption{Forecasting as regression problem.}
 \end{figure}
 
 
@@ -117,19 +137,11 @@ Each time series $\bs^{(q)}$ has its own sampling rate $1/\tau^{(q)}$:
 
 \subsection{Design matrix}
 
-\begin{figure}[!ht]
-\def\svgwidth{0.4\textwidth}
-\centering
-\subfloat[]{\input{fig/draw_object.eps_tex}\label{fg:draw}} \\
-\def\svgwidth{0.4\textwidth}
-\centering\subfloat[]{\input{fig/design_matrix_generation.eps_tex}\label{fg:design}}
-\caption{Draw an object from time series history.}
-\end{figure}
  We consider the forecasting problem as the multivariate regression problem, where target variables are the vectors of lagged values $s(t_i)$ of all the time series $\bs \in \fD$.
 
 Let $\bx^{*}$ denote rows of the design matrix~$\bX^*$ for the regression problem. Each vector~$\bx^{*} = [\bx| \by]$ collects all the time series over the time period~$\dtp$ (Fig.~\ref{fg:draw}), which stands for the local \emph{prehistory}. The vector $\bx^{*}$ includes samples from previous history of time series from $\fD$ as well as any derivatives or \emph{generated features}. We describe the types of generated features in Section~\ref{sc:feature_generation}.
 
-The design matrix~$\bX^*$ for the multiscale autoregressive problem statement is constructed  as follows (Fig.~\ref{fg:design}). Let $\bs^{(q)}_i$ denote the~$i$-th segment of the time series $\bs^{(q)}$
+The design matrix~$\bX^*$ for the multiscale autoregressive problem statement is constructed  as follows. Let $\bs^{(q)}_i$ denote the~$i$-th segment of the time series $\bs^{(q)}$
 \begin{equation}\label{eq:segment}
 [\bx^{(q)}_i | \by^{(q)}_i] = \end{equation}
 \[ \underbrace{s^{(q)}(t_i-\dtr-\dtp),\dots,}_{\bx^{(q)}_i} \underbrace{s^{(q)}(t_i-\dtr),\dots,s^{(q)}(t_i))}_{\by^{(q)}_i}], \]
@@ -154,7 +166,7 @@ Following~\eqref{eq:segment} and~\eqref{eq:strategy2}, extract segments $[\bx^{(
 %\bx^{(1)} & \dots & \bx^{(Q)} & \by^{(1)} &  \dots & {\by}^{(Q)}   \\
 %\hline
 \bx_m^{(1)}  & \dots & \bx_m^{(Q)} & \by_m^{(1)} &  \dots & \by_m^{(Q)}   \\
-\vdots & \vdots & \ddots & \vdots & \vdots & \ddots  \\
+\vdots & \ddots & \vdots & \vdots & \ddots & \vdots  \\
 \bx_1^{(1)} & \dots & \bx_1^{(Q)} & \by_1^{(1)}  & \dots & \by_1^{(Q)}   \\
 
 
@@ -163,17 +175,17 @@ Following~\eqref{eq:segment} and~\eqref{eq:strategy2}, extract segments $[\bx^{(
 
 Denote a row from the pair~$\bY,\bX$ as $\by,\bx$ and call these vectors the target and the features.
 
-\begin{figure}[!ht]
+%\begin{figure}[!ht]
 %\def\svgwidth{0.4\textwidth}
-\centering\includegraphics[width=0.4\textwidth]{retrospective_validation.png}
-\caption{\hl{Retrospective forecast includes most recent samples in data set.}\label{fg:retrospective}}
-\end{figure}
+%\centering\input{fig/retrospective_validation.eps_tex}
+%\caption{\hl{Retrospective forecast includes most recent samples in data set.}\label{fg:retrospective}}
+%\end{figure}
 
 Now we are able the regression problem as follows:
 \begin{equation}\label{eq:regression_problem}
 \hat{\y} = f(\x, \hat{\w}), ~\hat{\w} = \argmin_{\hat{\w}}S\bigl(\bw|\fx(\bw,\bx),\by\bigr). %\text{~where~}
 \end{equation}
-Here the error function is given by $SMAPE$~\eqref{eq:MAPE} for each segment $[\x_i \by_i]$, averaged over all segments $i = 1, \dots, m$ in the test set:
+Here the error function is given by $SMAPE$~\eqref{eq:MAPE} for each segment $[\x_i | \by_i]$, averaged over all segments $i = 1, \dots, m$ in the test set:
 \[ S\bigl(\bw|\fx(\bw,\bx),\by\bigr) = \frac{r}{m}\sum_{i=1}^{m} SMAPE(\y_i, f(\x_i, \w)).\]
 
 \section{Feature generation}\label{sc:feature_generation}
@@ -187,7 +199,7 @@ Denote the generated feature vector as~$\vf$. This vector consists of concatenat
 
 
 
-\subsection{Transformations of local history}
+\subsection{Transformations of local history}\label{sc:Transform}
 We use non-parametric and parametric functions to generate features. The purpose of this block of features is to introduce nonlinearities into the feature space of regression problem~\eqref{eq:regression_problem}.
 
 The parametric procedure involves two optimization problems. The first one fixes the vector~$\hat\bb$, collected over all the primitive functions~$g=g(\bb,s) \in G$, which generate features~$\vf$:
@@ -202,12 +214,12 @@ The second one optimizes the transformation parameters~$\hat\bb$ given the obtai
 \]
 This parametric feature generation procedure repeats these problems until vectors~$\hat\bw,\hat\bb$ converge. The initial values of the parameters~$\bb$ are assigned empirically.
 
-\subsection{Convolutions, statistics and parameters of local history}
-These block of feature generation functions includes convolutions, time averaging and differencing, and basic statistics of each time series, such as mean and standard deviation, minimum and maximum of the input $\bx$. The features from these part can be seen as applying Haar's wavelet transform to each segment~\cite{Jiang2011}. Motivation for this comes from assuming the multi-scale nature of the time series: complex signals may be governed by essentially different processes at various time scales. Averaging of the time series allows to obtain more coarse-scaled time series, while differencing the time series provides a more detailed, fine-scaled version of the time series.
+\subsection{Convolutions, statistics and parameters of local history}\label{sc:Conv}
+This block of feature generation functions includes convolutions, time averaging and differencing, and basic statistics of each time series, such as mean and standard deviation, minimum and maximum of the input $\bx$. The features from these part can be seen as applying Haar's wavelet transform to each segment~\cite{Jiang2011}. Motivation for this comes from assuming the multi-scale nature of the time series: complex signals may be governed by essentially different processes at various time scales. Averaging of the time series allows to obtain more coarse-scaled time series, while differencing the time series provides a more detailed, fine-scaled version of the time series.
 
 
 \subsection{Parameters of local history forecast}
-For the time series~$\bs$ construct the Hankel matrix with a~period~$k$ and shift~$p$, so~that for~$\bs = [s_1,\dots,s_T]$ the matrix
+For the time series~$\bs$ construct the Hankel matrix~\cite{Motrenko2016} with a~period~$k$ and shift~$p$, so~that for~$\bs = [s_1,\dots,s_T]$ the matrix
 \[
 \bH^* =
 \left[ \begin{array}{c|cc}
@@ -220,16 +232,16 @@ s_k & \dots & s_1 \\
 \text{~where~} 1\geqslant p \geqslant k .
 \]
 Reconstruct the regression to the first column of the matrix~$\bH^*=[\bh, \bH]$ and denote its least square parameters as the feature vector
-\[
+\begin{equation}\label{eq:SSA}
 \boldsymbol{\phi}^{(q)} = \arg\min \| \bh-\bH \boldsymbol{\phi}\|_2^2.
-\]
+\end{equation}
 For the time series~$\bs^{(q)}$, $q=1,\dots, Q$ use the parameters $\boldsymbol{\phi}^{(q)}$ as the features.
 
-\subsection{Distances to centroids of local clusters}
+\subsection{Distances to centroids of local clusters}\label{sc:centroids}
 This procedure applies the kernel trick to the time series. For given local history time series~$\bx_i^{(q)}$, $q=1,\dots, Q$ compute $k$-means centroids~$\bc_p^{(q)}$, $p = 1, \dots, P$.  With the selected $k$-means distance function~$\rho$ construct the feature vector
-\[
+\begin{equation}\label{eq:centroids}
 \vf_i^{(q)} = [\rho(\bc_1^{(q)},\bs_i^{(q)}),\dots,\rho(\bc^{(q)}_P,\bs_i^{(q)})] \in \R_+^P.
-\]
+\end{equation}
 This $k$-means of another clustering procedure may use internal parameters, so that there are no parameters to be included to the feature vector or to the forecasting model.
 
 \begin{algorithm}[!h]
@@ -249,8 +261,8 @@ This $k$-means of another clustering procedure may use internal parameters, so t
   \caption{Initial train-test splitting procedure.}\label{alg:train_test}
 \end{algorithm}
 
-\section{Testing procedure}
-The algorithm below describes the procedure used to evaluate the forecasting errors within the proposed framework given the model $\fx$,  data matrix $\bX^{*} \in \mathbb{R}^{m\times(n+r)}$ and fixed parameters train to test ratio $\alpha$, minimal sample (test) size $m_{\min}$. This procedure involves creation of design matrix~\eqref{eq:design_matrix}, generation of augmented feature description $\vf$ and, since it is likely to be redundant, dimensionality reduction. Here we use principal component analysis (PCA) and nonlinear PCA~\cite{}.
+\section{Testing procedure}\label{sc:testing}
+The algorithm below describes the procedure used to evaluate the forecasting errors within the proposed framework given the model $\fx$,  data matrix $\bX^{*} \in \mathbb{R}^{m\times(n+r)}$ and fixed parameters train to test ratio $\alpha$, minimal sample (test) size $m_{\min}$. This procedure involves creation of design matrix~\eqref{eq:design_matrix}, generation of augmented feature description $\vf$ and, since it is likely to be redundant, dimensionality reduction. Here we use principal component analysis (PCA) and nonlinear PCA~\cite{MatthiasScholz2007}.
 \begin{enumerate}[1)]
 \item Create design matrix $\bX^{*}$ according to~\eqref{eq:design_matrix} from $\fD$.
 \item Split matrix $\bX^{*}$ into train and test matrices $\bX^{*}_{\text{train}}$ and $\bX^{*}_{\text{test}}$
@@ -288,19 +300,18 @@ The models that we use are listed in the table~\ref{tb:regr_mdl} along with the 
 
 
 \section{Computational experiment}
-The goal of the experiment is to study the performance of multivariate regression approach to the problem of
-time series forecasting.
-
-This section presents the results of computational comparison of the forecasting models presented above. To test each model, we used several datasets, described below.
+This section presents the results of computational validation of the proposed framework.
 \begin{table}\caption{Regression models.}\label{tb:regr_mdl}
 \begin{tabular}{|p{4cm}|p{4cm}|}
 \hline
 Model name & Hyper parameters \\
 \hline
- multivariate linear regression (MVR) with $l_2$-regularization & regularization coefficient \\
+Baseline method: $\hat{s}_i = s_{i-1}$ & None \\
+\hline
+ Multivariate linear regression (MLR) with $l_2$-regularization & Regularization coefficient: 2 \\
  \hline
 %\[f(\bx, \bW) = \bx\bW , ~~ \hat{\bW} = \argmin_{\bW} S(\bW) + \lambda||\bW||_2^2, \]
-support vector regression (SVR) & parameters $C$, $\lambda$, $\varepsilon$ \\
+Support vector regression with multiple output (MSVR) & Kernel type: RBF, $p_1$: 2, $p_2$: 0, $\gamma$: 0.5, $\lambda$: 4 \\
 %where the regression function also has the linear form $f(\bX, \{\bW, \bb\}) = \bx\bW + \bb$, but the optimization problem is more complex:
 %    \[ \hat{\bW} = \argmin_{\bW,\;\vx,\;\vx^{*}} \frac{1}{2}||\bW||_2^2 + C
 %    \sum_{i, j}(\xi_{ij} + \xi_{ij}^{*}), \text{~subject to~}\]
@@ -308,152 +319,172 @@ support vector regression (SVR) & parameters $C$, $\lambda$, $\varepsilon$ \\
 %     \xi_{ij}\xi^{*}_{ij} > 0.
 %    \end{cases}\]
 \hline
-artificial neural network (ANN) &  number of hidden layers, hidden layers size \\
-\hline random forest (RF) & number of trees, number of variables per tree\\
+Artificial neural network (ANN). Feed-forward ANN with single hidden layer  &  Hidden layers size: 25 \\
+\hline Random forest (RF) & Number of trees: 25 , number of variables for each decision split: 48\\
 \hline
 \end{tabular}
 \end{table}
 \subsection{Datasets}
-\begin{itemize}
-\item Energy-Weather dataset. The dataset consists of the Polish electricity load time series~\cite{EnergyWeatherData} and weather time series in Warsaw (Longtitude: 21.25, Latitude: 52.30, Elevation: 94). Energy time series contain hourly records (total of 52512 observations), while weather time series were measured daily and contain 2188 observations. The multiscale time series correspond to the period of 1999 to 2004.
+The computational experiments demonstrated in this section are based on the Energy-Weather data set~\cite{EnergyWeatherData}. The dataset consists of the Polish electricity load time series and weather time series in Warsaw (Longtitude: 21.25, Latitude: 52.30, Elevation: 94). Energy time series contain hourly records (total of 52512 observations), while weather time series were measured daily and contain 2188 observations. The multiscale time series correspond to the period of 1999 to 2004. The results observed on this data set  are illustrative of the proposed framework since the data set contains the time series that are both multiscale and have various nature.
 
-\item  The Energy-Weather dataset was used to generate several artificial datasets.
+The Energy-Weather data set was used to generate several data sets with artificial inserted missing values. The ratios of missing data are 0.01, 0.03, 0.05 and 0.1.
 
-\item Accelerometry dataset. This dataset consists of accelerometry time series from the Human Activity Sensing Consortium~\cite{HASCdata}. Each time series in the datasets is a sequence of acceleration records. The time series were recorded for 120 seconds while a subject performed a sequence of activities: stay, walk, jog, skip, stair up or stair down. The sampling rate varies between 10 and 100Hz, but stays constant for each time series.
-\item Financial dataset~\cite{NNcompetition}.  The dataset A (final, complete) from the 2006/07 Forecasting Competition for Neural Networks \& Computational Intelligence. The dataset contains 111 monthly time series drawn from homogeneous population of empirical business time series.
-\end{itemize}
+%\item Accelerometry dataset. This dataset consists of accelerometry time series from the Human Activity Sensing Consortium~\cite{HASCdata}. Each time series in the datasets is a sequence of acceleration records. The time series were recorded for 120 seconds while a subject performed a sequence of activities: stay, walk, jog, skip, stair up or stair down. The sampling rate varies between 10 and 100Hz, but stays constant for each time series.
+%\item Financial dataset~\cite{NNcompetition}.  The dataset A (final, complete) from the 2006/07 Forecasting Competition for Neural Networks \& Computational Intelligence. The dataset contains 111 monthly time series drawn from homogeneous population of empirical business time series.
+
 
 \subsection{Experimental results}
-Each time series from the datasets was converted to the design matrix~\eqref{eq:design_matrix} and used as input data to train regression models according to~\eqref{eq:regression_problem}.
 
-Table~\ref{fg:feature_selection_res_HASC1} lists forecasting errors for the proposed feature generation strategies applied to the test time series from the HASC dataset.
+Fig.~\ref{fg:target_data} displays a range of target variables $\by$ generated for the Energy-Weather data set.
 
-Fig.~\ref{fg:target_data} displays an example of target time series HASC1001 and the results of forecasting a single segment of this time series with the baseline models.
+Fig.~\ref{fg:pca_frc} demonstrate the examples of forecasts of individual time series, obtained within the proposed framework. Here the design matrix was augmented with the generated features and PCA was applied to select a subset of features.
 
-Fig.~\ref{fg:feature_gen_frc} illustrates the results of regression built on the design matrix, augmented with the particular data generation method.
+Table~\ref{fg:feature_selection_res} lists forecasting errors for the proposed feature generation strategies applied to time series from the original Energy-Weather data set. The errors were computed following the testing procedure, detailed in the section~\ref{sc:testing}. After the multiple forecasts were obtained, $SMAPE$ was computed for each time series separately. Multirows labeled ``Features'' unite results of each model for the particular feature set. The tested options are:
+\begin{itemize}
+\item ``History'' corresponds to the standard regression-based forecast with no additional features.
+\item Each multirow from ``SSA'' to ``NW''  corresponds to a particular feature set added to historical features separately from other generated features. Here ``SSA'' stands for parameters of local approximation~\eqref{eq:SSA}, ``Cubic'' stands for coefficients of cubic spline approximation, ``Conv''~--- for multiscale features and statistics listed in section~\label{sc:Conv} and ``Centroids''~--- for the feature set defined by~\eqref{eq:centroids}.
+\item ``All'' stands for all feature generation strategies applied to the dataset, with no feature selection.
+\item  ``PCA'' and ``NPCA'' present the results of applying PCA and NPCA after all generation strategies were used.
+\end{itemize}
+The top row of Table~\ref{fg:feature_selection_res} lists results of the baseline method: for each time series the next forecasted value is predicted with the most recent observed value. As can be seen from the table, the forecasting quality generally improves for all the time series, even though the weather data is unlikely to depend on the energy consumption and the multiple all-on-all regression could lead to increased errors. The errors of the data sets with missing values increase as the ratio of missing data gets higher but the general pattern does not change.  According to our results the feature sets differ very slightly among feature generation strategies and generally demonstrate poorer performance than the historical features, though this is not always the case. We also note that there is no single best or worst combination of model, feature generation and feature selection strategy for all the time series. This motivates us to direct our further research to ensembles of learners.
 
-Fig.~\ref{fg:pca_frc} demonstrates the forecasts, obtained by each model in the proposed framework. Here the design matrix was augmented with the generated features and PCA was applied to select a subset of features.
-
-
-
-\begin{table}
-\begin{tabular}{|c|c|c|c|c|}
+\begin{table*}
+\begin{tabular}{|p{0.8cm}|p{0.8cm}||c|c||c|c|c|c|c|c|c|c|c|c|c|c|}
 \hline
-Feature set & Models &MAPE test & MAPE train & AIC\\
+SMAPE & Data & \multicolumn{2}{c||}{Energy} & \multicolumn{2}{c|}{Max T.} & \multicolumn{2}{c|}{Min T.}  & \multicolumn{2}{c|}{Precipitation}  & \multicolumn{2}{c|}{Wind} &  \multicolumn{2}{c|}{Humidity} &  \multicolumn{2}{c|}{Solar} \\
 \hline
-\multirow{4}{*}{History} &VAR &   7.215 &    0.067 &    1427.927\\
-\cline{2-5}
- &SVR &   0.718 &    0.320 &    1396.463\\
-\cline{2-5}
- &Random Forest &   0.463 &    0.206 &    1388.668\\
-\cline{2-5}
- &Neural network &   0.624 &    0.407 &    1389.319\\
-\cline{2-5}
+Features & Models & test & train & test &  train & test &  train & test &  train & test &  train & test &  train & test &  train\\
 \hline
-\multirow{4}{*}{SSA} &VAR &   0.755 &    0.402 &    1375.959\\
-\cline{2-5}
- &SVR &   1.348 &    0.434 &    1401.053\\
-\cline{2-5}
- &Random Forest &   0.746 &    0.335 &    1413.181\\
-\cline{2-5}
- &Neural network &   0.544 &    0.387 &    1379.299\\
-\cline{2-5}
 \hline
-\multirow{4}{*}{Cubic} &VAR &   0.562 &    0.382 &    1371.387\\
-\cline{2-5}
- &SVR &   0.779 &    0.418 &    1373.299\\
-\cline{2-5}
- &Random Forest &   0.647 &    0.320 &    1412.390\\
-\cline{2-5}
- &Neural network &   0.795 &    0.387 &    1371.354\\
-\cline{2-5}
+History & Baseline & 0.1948  &  0.2095 &   0.1040  &  0.1351 & 0.1047  &  0.1141  &  1.2034  &  1.2908 & 0.4581  &  0.4600  &  0.1803  &  0.1918 & 0.4641  &  0.5184\\
 \hline
-\multirow{4}{*}{Conv} &VAR &   2.182 &    2.180 &    2252.866\\
-\cline{2-5}
- &SVR &   2.986 &    0.537 &    1413.103\\
-\cline{2-5}
- &Random Forest &   0.583 &    0.323 &    1408.932\\
-\cline{2-5}
- &Neural network &   0.743 &    0.406 &    1373.955\\
-\cline{2-5}
 \hline
-\multirow{4}{*}{NW} &VAR &   2.021 &    0.041 &    1605.095\\
-\cline{2-5}
- &SVR &   0.714 &    0.323 &    1398.156\\
-\cline{2-5}
- &Random Forest &   0.427 &    0.195 &    1381.996\\
-\cline{2-5}
- &Neural network &   0.815 &    0.425 &    1389.418\\
-\cline{2-5}
+\multirow{4}{*}{History} &MLR &   0.130 &    0.143 &    0.090 &    1.265 &    0.395 &    0.239 &    0.673 &    0.108 &    0.079 &    0.057 &    1.164 &    0.358 &    0.168 &    1.247\\
+\cline{2-16}
+ &MSVR &   0.280 &    0.377 &    0.227 &    1.243 &    0.415 &    0.369 &    0.780 &    0.025 &    0.055 &    0.033 &    1.013 &    0.114 &    0.059 &    0.318\\
+\cline{2-16}
+ &RF &   0.137 &    0.180 &    0.111 &    1.306 &    0.417 &    0.257 &    0.473 &    0.047 &    0.043 &    0.030 &    1.031 &    0.214 &    0.102 &    0.283\\
+\cline{2-16}
+ &ANN &   0.157 &    0.180 &    0.102 &    2.050 &    0.596 &    0.281 &    1.526 &    0.089 &    0.102 &    0.076 &    1.418 &    0.358 &    0.146 &    0.661\\
+\cline{2-16}
 \hline
-\multirow{4}{*}{All} &VAR &   2.000 &    2.000 &    9910.259\\
-\cline{2-5}
- &SVR &   0.751 &    0.324 &    1395.951\\
-\cline{2-5}
- &Random Forest &   0.415 &    0.194 &    1381.906\\
-\cline{2-5}
- &Neural network &   1.254 &    0.399 &    1381.405\\
-\cline{2-5}
 \hline
-\multirow{4}{*}{PCA} &VAR &   0.712 &    0.310 &    1388.756\\
-\cline{2-5}
- &SVR &   0.748 &    0.323 &    1395.828\\
-\cline{2-5}
- &Random Forest &   0.504 &    0.214 &    1378.500\\
-\cline{2-5}
- &Neural network &   0.563 &    0.392 &    1377.608\\
-\cline{2-5}
+\multirow{4}{*}{SSA} &MLR &   0.130 &    0.144 &    0.090 &    1.349 &    0.394 &    0.239 &    0.929 &    0.108 &    0.079 &    0.057 &    1.161 &    0.358 &    0.169 &    1.117\\
+\cline{2-16}
+ &MSVR &   0.317 &    0.413 &    0.242 &    1.237 &    0.422 &    0.397 &    0.837 &    0.029 &    0.067 &    0.040 &    1.016 &    0.113 &    0.060 &    0.351\\
+\cline{2-16}
+ &RF &   0.137 &    0.181 &    0.112 &    1.298 &    0.438 &    0.250 &    0.465 &    0.047 &    0.044 &    0.031 &    1.013 &    0.212 &    0.102 &    0.280\\
+\cline{2-16}
+ &ANN &   0.171 &    0.209 &    0.163 &    4.207 &    0.464 &    0.257 &    1.077 &    0.120 &    0.100 &    0.087 &    2.289 &    0.380 &    0.190 &    0.546\\
+\cline{2-16}
+\hline
+\hline
+\multirow{4}{*}{Cubic} &MLR &   0.130 &    0.143 &    0.090 &    1.316 &    0.395 &    0.239 &    0.657 &    0.108 &    0.079 &    0.057 &    1.164 &    0.358 &    0.168 &    0.668\\
+\cline{2-16}
+ &MSVR &   0.280 &    0.378 &    0.227 &    1.243 &    0.415 &    0.369 &    0.781 &    0.025 &    0.055 &    0.033 &    1.015 &    0.114 &    0.059 &    0.318\\
+\cline{2-16}
+ &RF &   0.137 &    0.188 &    0.112 &    1.289 &    0.427 &    0.259 &    0.489 &    0.047 &    0.045 &    0.031 &    1.017 &    0.216 &    0.105 &    0.288\\
+\cline{2-16}
+ &ANN &   0.162 &    0.232 &    0.125 &    2.905 &    0.599 &    0.337 &    1.171 &    0.103 &    0.094 &    0.062 &    6.119 &    0.416 &    0.146 &    0.523\\
+\cline{2-16}
+\hline
+\hline
+\multirow{4}{*}{Conv} &MLR &   0.126 &    0.146 &    0.090 &    1.457 &    0.397 &    0.241 &    0.762 &    0.103 &    0.078 &    0.057 &    1.162 &    0.355 &    0.168 &    0.637\\
+\cline{2-16}
+ &MSVR &   0.298 &    0.395 &    0.234 &    1.242 &    0.417 &    0.383 &    0.811 &    0.026 &    0.058 &    0.035 &    1.068 &    0.113 &    0.060 &    0.331\\
+\cline{2-16}
+ &RF &   0.139 &    0.211 &    0.124 &    1.303 &    0.432 &    0.265 &    0.480 &    0.049 &    0.045 &    0.032 &    1.013 &    0.219 &    0.106 &    0.274\\
+\cline{2-16}
+ &ANN &   0.183 &    0.205 &    0.205 &    2.353 &    0.562 &    0.303 &    1.586 &    0.114 &    0.110 &    0.107 &    1.646 &    0.382 &    0.168 &    1.507\\
+\cline{2-16}
+\hline
+\hline
+\multirow{4}{*}{Centroids} &MLR &   0.136 &    0.164 &    0.108 &    1.356 &    0.420 &    0.260 &    0.652 &    0.097 &    0.075 &    0.052 &    1.213 &    0.346 &    0.163 &    0.892\\
+\cline{2-16}
+ &MSVR &   0.327 &    0.424 &    0.247 &    1.236 &    0.424 &    0.408 &    0.849 &    0.030 &    0.069 &    0.042 &    0.974 &    0.113 &    0.061 &    0.356\\
+\cline{2-16}
+ &RF &   0.137 &    0.181 &    0.109 &    1.295 &    0.424 &    0.261 &    0.498 &    0.047 &    0.043 &    0.030 &    1.021 &    0.210 &    0.105 &    0.285\\
+\cline{2-16}
+ &ANN &   0.189 &    0.277 &    0.118 &    2.960 &    0.464 &    0.306 &    0.930 &    0.122 &    0.090 &    0.079 &    1.551 &    0.356 &    0.187 &    0.481\\
+\cline{2-16}
+\hline
+\hline
+\multirow{4}{*}{NW} &MLR &   0.130 &    0.149 &    0.094 &    1.322 &    0.411 &    0.238 &    0.672 &    0.114 &    0.084 &    0.063 &    1.194 &    0.377 &    0.184 &    0.619\\
+\cline{2-16}
+ &MSVR &   0.293 &    0.383 &    0.228 &    1.247 &    0.419 &    0.375 &    0.796 &    0.022 &    0.048 &    0.030 &    0.929 &    0.130 &    0.069 &    0.293\\
+\cline{2-16}
+ &RF &   0.140 &    0.207 &    0.129 &    1.304 &    0.431 &    0.275 &    0.483 &    0.048 &    0.044 &    0.032 &    1.026 &    0.219 &    0.106 &    0.285\\
+\cline{2-16}
+ &ANN &   0.186 &    0.193 &    0.115 &    6.417 &    0.494 &    0.275 &    1.033 &    0.124 &    0.097 &    0.074 &    1.358 &    0.427 &    0.194 &    1.264\\
+\cline{2-16}
+\hline
+\hline
+\multirow{4}{*}{All} &MLR &   0.132 &    0.140 &    0.100 &    1.410 &    0.418 &    0.244 &    1.514 &    0.105 &    0.082 &    0.062 &    1.192 &    0.369 &    0.182 &    0.768\\
+\cline{2-16}
+ &MSVR &   0.323 &    0.415 &    0.242 &    1.238 &    0.424 &    0.399 &    0.845 &    0.027 &    0.064 &    0.038 &    1.013 &    0.117 &    0.061 &    0.346\\
+\cline{2-16}
+ &RF &   0.139 &    0.220 &    0.134 &    1.292 &    0.439 &    0.294 &    0.495 &    0.048 &    0.046 &    0.033 &    1.016 &    0.221 &    0.106 &    0.270\\
+\cline{2-16}
+ &ANN &   0.208 &    0.251 &    0.233 &    5.489 &    0.511 &    0.323 &    1.063 &    0.145 &    0.110 &    0.108 &    2.916 &    0.359 &    0.176 &    2.007\\
+\cline{2-16}
+\hline
+\hline
+\multirow{4}{*}{PCA} &MLR &   0.133 &    0.159 &    0.110 &    1.272 &    0.422 &    0.242 &    4.674 &    0.115 &    0.091 &    0.068 &    1.234 &    0.383 &    0.189 &    0.692\\
+\cline{2-16}
+ &MSVR &   0.321 &    0.412 &    0.241 &    1.238 &    0.423 &    0.397 &    0.841 &    0.027 &    0.063 &    0.037 &    1.030 &    0.118 &    0.061 &    0.345\\
+\cline{2-16}
+ &RF &   0.185 &    0.236 &    0.155 &    1.298 &    0.453 &    0.311 &    0.603 &    0.062 &    0.053 &    0.038 &    1.022 &    0.225 &    0.113 &    0.299\\
+\cline{2-16}
+ &ANN &   0.220 &    0.256 &    0.169 &    10.457 &    0.506 &    0.357 &    2.979 &    0.150 &    0.155 &    0.108 &    1.468 &    0.414 &    0.220 &    2.433\\
+\cline{2-16}
+\hline
+\hline
+\multirow{4}{*}{NPCA} &MLR &   0.133 &    0.159 &    0.110 &    1.272 &    0.422 &    0.242 &    4.674 &    0.115 &    0.091 &    0.068 &    1.234 &    0.383 &    0.189 &    0.692\\
+\cline{2-16}
+ &MSVR &   0.321 &    0.412 &    0.241 &    1.238 &    0.423 &    0.397 &    0.841 &    0.027 &    0.063 &    0.037 &    1.030 &    0.118 &    0.061 &    0.345\\
+\cline{2-16}
+ &RF &   0.184 &    0.233 &    0.153 &    1.300 &    0.452 &    0.298 &    0.610 &    0.063 &    0.054 &    0.040 &    1.018 &    0.219 &    0.110 &    0.296\\
+\cline{2-16}
+ &ANN &   0.218 &    0.174 &    0.172 &    1.574 &    0.571 &    0.367 &    77.616 &    0.124 &    0.104 &    0.103 &    1.695 &    0.407 &    0.210 &    8.119\\
+\cline{2-16}
 \hline
 \end{tabular}
 \caption{Forecasting errors measured as symmetric MAPE.}
-\label{fg:feature_selection_res_HASC1}
-\end{table}
+\label{fg:feature_selection_res}
+\end{table*}
 
 
 \begin{figure}
 \centering
-%\subfloat[]{\includegraphics[width=0.18\textwidth]{fig/feature_selection/HascData/data_HASC1001.png}}
-\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/feature_selection/HascData/data_segms_HASC1001.png}}
-\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001.png}}
-\caption{Accelerometry time series from HASC project.
-(a) Target segments of the time series HASC1001. (b) Forecasting results for	HASC1001 (VAR, SVR, Random Forest, Neural network).}\label{fg:target_data}
+%\subfloat[]{\includegraphics[width=0.18\textwidth]{fig/feature_selection/HascData/data_EnergyWeather1001.png}}
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/feature_selection/EnergyWeather/data_segms_orig_train.png}}
+%\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/feature_selection/EnergyWeather/res_orig_train.png}}
+\caption{(a) Target variables of the design matrix composed of the time series from the  Energy-Weather data set.
+ (b) Forecasting results for	Energy-Weather.}\label{fg:target_data}
 \end{figure}
 
 
+
+
+
+%
 \begin{figure}
 \centering
-\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001VAR.png}}
-\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001_fs_VAR.png}} \\
-\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001SVR.png}}
-\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip,width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001_fs_SVR.png}}\\
-\subfloat[Random forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001Random_Forest.png}}
-\subfloat[Random forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001_fs_Random_Forest.png}} \\
-\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001Neural_network.png}}
-\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/frc_analysis/HascData/stats_HASC1001_fs_Neural_network.png}}\\
-\caption{Mean residual by number of forecasted point for historical data only and all generation strategies with PCA.}
+\subfloat[MLR, Energy]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/EnergyWeather/res_orig_train_target_VAR_fs_pca.png}}
+\subfloat[MSVR, Precipitation]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/EnergyWeather/res_orig_train_Precipitation_MSVR_fs_pca.png}}\\
+\subfloat[RF, Humidity]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/EnergyWeather/res_orig_train_Relative_Humidity_Random_Forest_fs_NW.png}}
+\subfloat[ANN, Solar]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/EnergyWeather/res_orig_train_Solar_Neural_network.png}}\\
+\subfloat[RF, Wind]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/EnergyWeather/res_orig_train_Wind_Random_Forest_fs_all.png}}
+\subfloat[MLR, Min. T]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/EnergyWeather/res_orig_train_Min_Temperature_VAR_fs_pca.png}}\\
+
+\caption{ Forecasting results for original Energy-Weather data set with all feature generation strategies applied and PCA feature selection.}\label{fg:pca_frc}
 \end{figure}
 
 
-\begin{figure}
-\centering
-\subfloat[SSA]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_SSA.png}}
-\subfloat[Cubic]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_Cubic.png}} \\
-\subfloat[Conv]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_Conv.png}}
-\subfloat[NW]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_NW.png}} \\
-\subfloat[All]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_all.png}}
-\subfloat[PCA]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_fs_pca.png}} \\
-\caption{Forecasting results for various feature generation strategies, HASC1001.}\label{fg:feature_gen_frc}
-\end{figure}
+\section{Discussion and conclusion}
+In this paper we have suggested a framework for multiscale time series forecast. The proposed framework employs regression-based approach combined with feature generation. We have found that even for such naive approach the results are still better then those of the baseline method. Though the results are somewhat discouraging, we expect further improvement
+associated with application of mixtures of experts~\cite{Yuksel2015}, ensembles of weak learners, where each learner is relevant to some subspace of the feature space. For this reason we introduce such feature generation strategies, based on local approximation parameters and distances to centroids: these kinds of features have proven efficient in time series classification problems~\cite{Ignatov2015}.
 
-
-\begin{figure}
-\centering
-\subfloat[VAR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_VAR_fs_pca.png}}
-\subfloat[SVR]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_SVR_fs_pca.png}}\\
-\subfloat[Random Forest]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_Random_Forest_fs_pca.png}}
-\subfloat[ANN]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.25\textwidth]{fig/feature_selection/HascData/res_HASC1001_Neural_network_fs_pca.png}}\\
-\caption{ Forecasting results for HASC1001 with all feature generation strategies applied and PCA feature selection.}\label{fg:pca_frc}
-\end{figure}
 
 \nocite{*}
 \bibliographystyle{IEEEtran}%{unsrt}
