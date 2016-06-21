@@ -32,6 +32,12 @@ Xold = ts.X(:, 1:sum(ts.deltaTp)); % FIXIT this way only historical points are u
 xBlocks = [0, cumsum(ts.deltaTp)];
 X = [];
 
+idxNW = strcmp({generators().name}, {'NW'});
+if ~generators(idxNW).replace
+    warning('genFeatsReplace:id', 'Smoothing generator "NW" is used with replace set to false.');
+end
+
+
 % generate new features separately for all submatrices of different time
 % series:
 [Xnew, generators] = genSubMatrix(generators, Xold, idxTrain, idxTest); 
