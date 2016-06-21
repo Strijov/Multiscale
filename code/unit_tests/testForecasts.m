@@ -48,6 +48,7 @@ verifyEqual(testCase, model.trainError, zeros(1, numel(ts.x)));
 
 end
 
+
 function testMdlOutput(testCase)
 
 % checks that testForeacasts returned by the model are the same as
@@ -93,4 +94,48 @@ for i = 1:numel(model)
     verifyEqual(testCase, modelTestFrc, transformTestFrc);
 end
 
+end
+
+
+
+function testTrainTestIdx(testCase)
+
+% check that the code produces warningss if idxTrain and idxTest intersect or idxTest preceeds idxTrain
+
+% use random data and identity forecast
+ts = createRandomDataStruct();
+ts = CreateRegMatrix(ts);
+ts.X = ts.Y;
+ts.deltaTp = ts.deltaTr;
+
+model = struct('handle', @IdentityForecast, 'name', 'Identity', 'params', [], 'transform', [],...
+    'trainError', [], 'testError', [], 'unopt_flag', false, 'forecasted_y', [],...
+    'intercept', []);
+[idxTrain, idxTest, idxVal] = MultipleSplit(size(ts.Y, 1), size(ts.Y, 1), [0.75, 0.25]); 
+
+
+% pass unsorted tested indicess, this should proceed w/o warnings:
+noWarningFunc = @() computeForecastingResiduals(ts, model, idxTrain, [idxTest, idxVal]);
+verifyWarningFree(testCase,  noWarningFunc);
+
+% pass idxTest and idxTrain in the wrong order:  
+noWarningFunc = @() computeForecastingResiduals(ts, model, [idxVal, idxTest], idxTrain);
+verifyWarning(testCase, noWarningFunc, ...
+                        'idxTrainTest:id');
+                    
+                    
+% check that forecasts do not depend on the order of indices incide train
+% and test:
+idxTest = [idxVal, idxTest];
+[testRes, trainRes, model] = computeForecastingResiduals(ts, model, ...
+                                idxTrain, idxTest);
+idxShuffle = randperm(numel(idxTrain));
+idxTrain = idxTrain(idxShuffle);
+idxShuffle = randperm(numel(idxTest));
+idxTest = idxTest(idxShuffle);
+[testResShuffled, trainResShuffled, modelShuffled] = ...
+            computeForecastingResiduals(ts, model, idxTrain, idxTest);  
+verifyEqual(testCase, testRes, testResShuffled);
+verifyEqual(testCase, trainRes, trainResShuffled);
+verifyEqual(testCase, model.forecasted_y, modelShuffled.forecasted_y);
 end
