@@ -12,9 +12,8 @@ idxNW = strcmp({generators().name}, {'NW'});
 generators(idxNW).replace = true;
 
 % Be ready to reset models
-reset_transform = cell(1, numel(model));
-
-
+nModels = numel(model);
+reset_transform = cell(1, nModels);
 
 % Feature selection models are defined later
 
@@ -75,10 +74,6 @@ results(:, 1) = {testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE', 
 [testMeanRes, trainMeanRes, testStdRes, trainStdRes, model] = calcErrorsByModel(StructTS, model, idxTrain, idxTest);
 testMAPE = reshape([model().testError], [], numel(model));
 trainMAPE = reshape([model().trainError], [], numel(model));
-%testMeanMAPE = mean(reshape([model().testError], [], numel(model)), 1);
-%trainMeanMAPE = mean(reshape([model().trainError], [], numel(model)), 1);
-%testStdMAPE = std(reshape([model().testError], [], numel(model)), 0, 1);
-%trainStdMAPE = std(reshape([model().trainError], [], numel(model)), 0, 1);
 results(:, 2) = {testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE', trainMAPE'};
 
 disp('Results with original features:')
@@ -89,7 +84,11 @@ disp([testMAPE, trainMAPE])
                                                    FOLDER, '');
 figs(2).names = fname;
 figs(2).captions = caption;
-report_struct.res{1} = struct('data', 'History', 'errors', [testMAPE', trainMAPE']);
+
+% reshape res to 4 x 7(test\train) format
+reshaped_res = reshape([testMAPE(:), trainMAPE(:)]', 1, []);
+reshaped_res = reshape(reshaped_res, [], nModels)';
+report_struct.res{1} = struct('data', 'History', 'errors', reshaped_res);
 report_struct.res{1}.figs = figs;
 
 %--------------------------------------------------------------------------
@@ -115,7 +114,7 @@ for n_gen = 1:nGenerators
     figs = struct('names', cell(1), 'captions', cell(1));
     figs(1).names = {gen_fname, fname};
     figs(1).captions = {gen_caption, caption};
-    report_struct.res{1 + n_gen} = struct('data', generators(n_gen).name, 'errors', [testMAPE', trainMAPE']);
+    report_struct.res{1 + n_gen} = struct('data', generators(n_gen).name, 'errors', reshaped_res);
     report_struct.res{1 + n_gen}.figs = figs;                               
     
 end
@@ -142,7 +141,10 @@ disp([testMAPE, trainMAPE])
 figs = struct('names', cell(1), 'captions', cell(1));
 figs(1).names = {gen_fname, fname};
 figs(1).captions = {gen_caption, caption};
-report_struct.res{2 + nGenerators} = struct('data', 'All', 'errors', [testMAPE', trainMAPE']);
+
+reshaped_res = reshape([testMAPE(:), trainMAPE(:)]', 1, []);
+reshaped_res = reshape(reshaped_res, [], nModels)';
+report_struct.res{2 + nGenerators} = struct('data', 'All', 'errors', reshaped_res);
 report_struct.res{2 + nGenerators}.figs = figs;
 
 
@@ -177,8 +179,10 @@ disp([testMAPE, trainMAPE])
                                                         FOLDER, '_fs_pca');
 figs(2).names = fname;
 figs(2).captions = caption;
-report_struct.res{3 + nGenerators} = struct('data', 'PCA', 'errors', ...
-                                            [testMAPE', trainMAPE']);
+
+reshaped_res = reshape([testMAPE(:), trainMAPE(:)]', 1, []);
+reshaped_res = reshape(reshaped_res, [], nModels)';
+report_struct.res{3 + nGenerators} = struct('data', 'PCA', 'errors', reshaped_res);
 report_struct.res{3 + nGenerators}.figs = figs;
 %--------------------------------------------------------------------------
 % nonlinear PCA:
@@ -210,8 +214,11 @@ disp([testMAPE, trainMAPE])
                                                         FOLDER, '_fs_npca');
 figs(2).names = fname;
 figs(2).captions = caption;
+
+reshaped_res = reshape([testMAPE(:), trainMAPE(:)]', 1, []);
+reshaped_res = reshape(reshaped_res, [], nModels)';
 report_struct.res{4 + nGenerators} = struct('data', 'NPCA', 'errors', ...
-                                            [testMAPE', trainMAPE']);
+                                            reshaped_res);
 report_struct.res{4 + nGenerators}.figs = figs;
 
 %--------------------------------------------------------------------------

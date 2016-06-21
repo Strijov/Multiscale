@@ -93,8 +93,8 @@ end
 function [Y, X, timeY] = create_matrix_from_target(s, normalized_ts)
 
 % reverse time series, so that the top row is always to be forecasted
-ts = flip(normalized_ts);
-time = flip(s.time);
+ts = flipud(normalized_ts);
+time = flipud(s.time);
 
 idx_rows = 1:s.deltaTr:numel(ts) - s.deltaTr - s.deltaTp + 1;
 idx = bsxfun(@plus, idx_rows', 0:s.deltaTr + s.deltaTp - 1);
@@ -109,7 +109,7 @@ if numel(idx_rows) == 1
 end
 % test: uravel Y and plot it against original timeseries
 % this should be an identity plot
-% plot(reshape(flip(Y)', 1, numel(Y)), normalized_ts(s.deltaTp+1:end))
+% plot(reshape(flipud(Y)', 1, numel(Y)), normalized_ts(s.deltaTp+1:end))
 end
 
 function ts = trimTimeSeries(ts)
