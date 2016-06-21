@@ -18,6 +18,18 @@ verifyLessThan(testCase, max(ts.X, [], 2), min(ts.Y, [], 2));
 
 end
 
+function testInputNans(testCase)
+
+% checks that warning is raised if the inputs of time series are all nans
+ts = createRandomDataStruct();
+ts(1).x = ts(1).x*NaN;
+
+warningFunc = @() CreateRegMatrix(ts);
+verifyWarning(testCase, warningFunc, 'regMatrixAllNans:id');
+
+
+end
+
 
 function testNumTimeSeries(testCase)
 

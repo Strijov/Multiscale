@@ -1,4 +1,4 @@
-function [idxTrain, idxTest, idxVal] = TrainTestSplit(nSamples, trainTestValRatio)
+function [idxTrain, idxTest, idxVal] = TrainTestSplit(nSamples, trainTestRatio)
 % Splits nSamples into train, test & validation indices.
 %
 % Input:
@@ -10,20 +10,28 @@ function [idxTrain, idxTest, idxVal] = TrainTestSplit(nSamples, trainTestValRati
 % idxTest       [1 x M2] indices of the test set
 % idxVal        [1 x 1] constant ...
 
-if numel(trainTestValRatio) == 1 && trainTestValRatio <= 1
-    trainTestValRatio = [trainTestValRatio, 1-trainTestValRatio];
-    trainTestValRatio = floor(trainTestValRatio*(nSamples - 1));
-elseif numel(trainTestValRatio) == 2
-    trainTestValRatio = trainTestValRatio/sum(trainTestValRatio); 
-    trainTestValRatio = floor(trainTestValRatio*(nSamples - 1));
+if numel(trainTestRatio) == 1 && trainTestRatio < 1
+    trainTestRatio = [trainTestRatio, 1-trainTestRatio];
+    trainTestRatio = floor(trainTestRatio*(nSamples - 1));
+elseif numel(trainTestRatio) == 2
+    positiveFlag = all(trainTestRatio > 0);
+    trainTestRatio = trainTestRatio/sum(trainTestRatio); 
+    trainTestRatio = floor(trainTestRatio*(nSamples - 1));
+    if positiveFlag && sum(trainTestRatio) == 1
+       warning('emptyTrainTest:id', 'idxTrain or idxTest is empty, though trainTestRatio is positive'); 
+    elseif positiveFlag && trainTestRatio(1) == 0
+        trainTestRatio = trainTestRatio + [1, -1];
+    elseif positiveFlag && trainTestRatio(2) == 0
+        trainTestRatio = trainTestRatio + [-1, 1];
+    end
 else
-    trainTestValRatio = [trainTestValRatio, nSamples - trainTestValRatio - 1];
+    trainTestRatio = [trainTestRatio, nSamples - trainTestRatio - 1];
 end
 
 
-test_size = trainTestValRatio(2);
+train_size = trainTestRatio(1);
 idxVal = 1;
-idxTest = 2:1 + test_size;
-idxTrain = 2 + test_size:nSamples;
+idxTest = 2:nSamples - train_size;
+idxTrain = nSamples - train_size + 1:nSamples;
  
 end
