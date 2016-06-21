@@ -1,5 +1,11 @@
 function tests = testRegressionMatrix
 
+% Test forecasting methods includes the following testing scenarios:
+% - testTimeFlow: checks that matrix inputs are consistent in time
+% - testInputNans: checks that a warning is raised when all inputs are Nans
+% - testNumTimeSeries: checks that shapes and dimensions are consistent
+% - testUnravelForecasts: checks that the Y matrix unravels into the original time series
+
 tests  = functiontests(localfunctions);
 
 end

@@ -1,5 +1,12 @@
 function tests = testForecasts
 
+% Test forecasting methods includes the following testing scenarios:
+% - testIdentity: checks that forcasts and residues are assigned correctly 
+% - testMdlOutput: checks that results on the test set are equivalent to 
+%                  application of .transform 
+% - testTrainTestIdx: checks that various train\test inputs are handled
+%                     correctly
+
 tests  = functiontests(localfunctions);
 
 end
@@ -100,7 +107,7 @@ end
 
 function testTrainTestIdx(testCase)
 
-% check that the code produces warningss if idxTrain and idxTest intersect or idxTest preceeds idxTrain
+% check that the code produces warnings if idxTrain and idxTest intersect or idxTest preceeds idxTrain
 
 % use random data and identity forecast
 ts = createRandomDataStruct();

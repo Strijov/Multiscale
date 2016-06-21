@@ -1,5 +1,9 @@
 function tests = testMiscellaneous
 
+% Test forecasting methods includes the following testing scenarios:
+% - testTrainTestSplits: checks behaviour of trainTestSplit.m 
+
+
 tests  = functiontests(localfunctions);
 
 end

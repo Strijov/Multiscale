@@ -1,5 +1,8 @@
 function tests = testFeatureGeneration
 
+% Test forecasting methods includes the following testing scenarios:
+% - testNWreplace: checks that replace=false in NwGnerator leads to a warning
+
 tests  = functiontests(localfunctions);
 
 end
