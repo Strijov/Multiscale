@@ -1,4 +1,4 @@
-% this scrip runs all unit tests
+% this script runs all unit tests
 
 addpath(genpath(cd));
 
