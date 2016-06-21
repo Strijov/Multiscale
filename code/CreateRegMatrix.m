@@ -56,7 +56,7 @@ for i = 1:nTs
     norm_div(i) = 1;
     norm_subt(i) = 0;
     if err
-    disp(['CreateRegMatrix: normalizeTS failed, since ' , s(i).name, s(i).legend...
+    warning('regMatrixAllNans:id', ['CreateRegMatrix: normalizeTS failed, since ' , s(i).name, s(i).legend...
                         ' ts contains only nans']) 
     end
     [Y(:, yBlocks(i) +  1:yBlocks(i+1)), ...
@@ -65,7 +65,7 @@ for i = 1:nTs
 end
 
 if ~ckeckTimeIsRight(timeY)
-    disp('CreateRegMatrix: Time entries might be inconsistent');
+    warning('regMatrixTimes:id', 'CreateRegMatrix: Time entries might be inconsistent');
 end
 
 
@@ -84,7 +84,7 @@ s.norm_div = norm_div;
 s = trimTimeSeries(s);
     
 if ~checkTsTrimming(s)
-    disp('CreateRegMatrix: Time series trimming went wrong');
+    warning('regMatrixTsTrimming:id', 'CreateRegMatrix: Time series trimming went wrong');
 end
 
 

@@ -47,11 +47,15 @@ end
 nPredictions = size(ts.Y, 2)/sum(ts.deltaTr);
 [model.forecasted_y, idxTrain] = addFrcToModel(model.forecasted_y, matTrainForecastY, idxTrain, ts, nPredictions);                         
 [model.forecasted_y, idxTest] = addFrcToModel(model.forecasted_y, forecastY, idxTest, ts, nPredictions);                         
+
 if ~checkTrainTestIdx(idxTrain, idxTest)
-    disp('compFrc: idxTrain and idxTest intersect')
+    warning('idxTrainTest:id', 'idxTrain and idxTest intersect');
+    %disp('compFrc: idxTrain and idxTest intersect')
 end
+
 % compute frc residuals for each time series (cell array [1 x nTimeSeries])
 residuals = calcResidualsByTs(model.forecasted_y, ts.x, ts.deltaTp);
+
 %{
 if isempty(model.intercept)
     trainRes = cellfun(@(x, y) x(y), residuals, idxTrain, 'UniformOutput', false);
@@ -60,29 +64,17 @@ end
 model.forecasted_y = cellfun(@(x, y) x + y, model.forecasted_y, model.intercept, 'UniformOutput', false);
 residuals = cellfun(@(x, y) x - y, residuals, model.intercept, 'UniformOutput', false);
 %}
+
+
 testRes = cellfun(@(x, y) x(y), residuals, idxTest, 'UniformOutput', false);
 trainRes = cellfun(@(x, y) x(y), residuals, idxTrain, 'UniformOutput', false);
-
-
 
 testFrc = cellfun(@(x, y) x(y), model.forecasted_y, idxTest, 'UniformOutput', false);
 trainFrc = cellfun(@(x, y) x(y), model.forecasted_y, idxTrain, 'UniformOutput', false);
 
 testY = cellfun(@(x, y) x(y), ts.x, idxTest, 'UniformOutput', false);
 trainY = cellfun(@(x, y) x(y), ts.x, idxTrain, 'UniformOutput', false);
-
-% split them into 2 arrays of residuals, each of size [1 x nTimeSeries]
-
-%{
-[testRes, trainRes] = splitForecastsByTs(residuals, idxTrain, idxTest, ...
-                                                  ts.deltaTr*nPredictions);
-[testFrc, trainFrc] = splitForecastsByTs(model.forecasted_y, idxTrain, idxTest, ...
-                                                  ts.deltaTr*nPredictions);                                              
-
-
-[testY, trainY] = splitForecastsByTs(ts.x, idxTrain, idxTest, ...
-                                                  ts.deltaTr*nPredictions);  
-%}                                            
+                                            
 model.testError = cellfun(@calcSymMAPE, testY, testFrc);
 model.trainError = cellfun(@calcSymMAPE, trainY, trainFrc);
 
@@ -92,7 +84,9 @@ end
 
 function checkRes = checkTrainTestIdx(idxTrain, idxTest)
 
-checkRes = ~any(cell2mat(cellfun(@(x, y) ismember(x, y), idxTrain, idxTest,...
+checkRes = all(cell2mat(cellfun(@(x, y) max(x) < min(y), idxTrain, idxTest,...
+                            'UniformOutput', false)));
+checkRes = checkRes & ~any(cell2mat(cellfun(@(x, y) ismember(x, y), idxTrain, idxTest,...
                             'UniformOutput', false)));
 
 end
