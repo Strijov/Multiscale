@@ -1,4 +1,4 @@
-function s = CreateRegMatrix(s, nPredictions) 
+function s = CreateRegMatrix(s, nPredictions, normalFlag) 
 % This function creates a design matrix from the input time series structure
 % and and returns a single updated the structure 
 %
@@ -27,7 +27,9 @@ function s = CreateRegMatrix(s, nPredictions)
 if nargin < 2
     nPredictions = 1;
 end
-
+if nargin < 3
+    normalFlag = true;
+end
 
 nTs = numel(s);
 
@@ -49,16 +51,15 @@ timeY = zeros(nRows, nTs); % for testing purposes, delete later
 % normalize time series before adding them to design matrix 
 for i = 1:nTs
     s(i).deltaTr = s(i).deltaTr*nPredictions;
-    [normalizedTs, norm_div(i), norm_subt(i), err] = NormalizeTS(s(i));
-    % FIXIT For now, replace original ts with normalized ts, set normalizing 
-    % constants to 1 and 0 
-    s(i).x = normalizedTs;
-    norm_div(i) = 1;
-    norm_subt(i) = 0;
-    if err
-    warning('regMatrixAllNans:id', ['CreateRegMatrix: normalizeTS failed, since ' , s(i).name, s(i).legend...
-                        ' ts contains only nans']) 
+    if normalFlag
+        [normalizedTs, norm_div(i), norm_subt(i)] = NormalizeTS(s(i).x);
+    % s(i).x = normalizedTs;
+    else
+        normalizedTs = s(i).x;
+        norm_div(i) = 1;
+        norm_subt(i) = 0;
     end
+    
     [Y(:, yBlocks(i) +  1:yBlocks(i+1)), ...
      X(:, xBlocks(i) + 1:xBlocks(i+1)), ...
      timeY(:, i)] = create_matrix_from_target(s(i), normalizedTs);
@@ -82,11 +83,10 @@ s.norm_subt = norm_subt;
 s.norm_div = norm_div;
 
 s = trimTimeSeries(s);
-    
-if ~checkTsTrimming(s)
+   
+if normalFlag && ~checkTsTrimming(s)
     warning('regMatrixTsTrimming:id', 'CreateRegMatrix: Time series trimming went wrong');
 end
-
 
 end
 
@@ -131,31 +131,10 @@ checkRes =  ~any(max(timeY(2:end, :), [], 2) > min(timeY(1:end-1, :), [], 2));
 end
 
 function checkRes = checkTsTrimming(ts)
-
+TOL = 10^(-10);
 y2ts = unravel_target_var(ts.Y, ts.deltaTr, ts.norm_div, ts.norm_subt);
-checkRes = all(cell2mat(cellfun(@(x, y) all(x == y), y2ts, ts.x,...
+%y2ts = denormalize(y2ts, ts.norm_div, ts.norm_subt);
+checkRes = all(cell2mat(cellfun(@(x, y) all(abs(x - y) < TOL), y2ts, ts.x,...
                             'UniformOutput', false)));
-
-end
-
-
-function [ts, div, subt, err] = NormalizeTS(s)
-err = false;
-x = s.x;
-if numel(unique(x)) == 1
-    ts = ones(size(s));
-    div = 1;
-    subt = 0;
-    return
-end
-subt = min(x);
-tmp = x - subt;
-div = max(tmp);
-ts = tmp/div;
-
-ts = ReplaceNans(ts); % Fills Nans with median; FIXIT do something more sensible
-if any(isnan(ts))
-    err = true;
-end
 
 end
