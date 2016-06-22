@@ -1,16 +1,25 @@
-function demoCompareForecasts(tsStructArray, model, generators, feature_selection_mdl)
+function model = demoCompareForecasts(tsStructArray, model, generators, feature_selection_mdl)
 % Script demoCompareForecasts runs one forecasting experiment.
 % It applies several competitive models to single dataset. 
 
-% models
-nameModel = {model().name};
-handleModel = {model().handle};
-generator_names = {generators().name};
 
+% Check arguments:
+if nargin < 2 || isempty(generators)
+generators = struct('handle', @IdentityGenerator, 'name', 'Identity', ...
+                                          'replace', true, 'transform', []);
+end
+if nargin < 3 || isempty(feature_selection_mdl)
+feature_selection_mdl = struct('handle', @IdentityGenerator, 'params', []);    
+end
 
 % Experiment settings. 
-alphaCoeff = 0; % Test to train ratio. 
+trainTestRatio = [0.75, 0.25];
 
+% Shotcuts
+nameModel = {model().name};
+generator_names = {generators().name};
+nModels = numel(model);
+reset_transform = cell(1, nModels);
 
 % Load and prepare dataset.
 numDataSets = numel(tsStructArray);
@@ -33,58 +42,61 @@ testMAPE = zeros(numDataSets, numel(model));
 trainMAPE = zeros(numDataSets, numel(model)); 
 
 for nDataSet = 1:numDataSets    
-StructTS = tsStructArray{nDataSet};
+ts = tsStructArray{nDataSet};
 
 % Add regression matrix to the main structure:
-StructTS = CreateRegMatrix(StructTS);    
+ts = CreateRegMatrix(ts);    
 
 % Plot time series and a range of segments to forecast
-[fname, caption] = plot_ts(StructTS);
+[fname, caption] = plot_ts(ts);
 figs(1).names = fname;
 figs(1).captions = caption;
 
 
-[idxTrain, ~, idxTest] = TrainTestSplit(size(StructTS.Y, 1), 0);
+[idxTrain, idxTest, idxVal] = TrainTestSplit(size(ts.Y, 1), trainTestRatio);
+idxTest = [idxVal, idxTest];
 
 % Generate additional features:
-StructTS = GenerateFeatures(StructTS, generators, idxTrain, idxTest);
-disp(['Generation finished. Total number of features: ', num2str(size(StructTS.X, 2))]);
-[gen_fname, gen_caption] = plot_generated_feature_matrix(StructTS, ...
+ts = GenerateFeatures(ts, generators, idxTrain, idxTest);
+disp(['Generation finished. Total number of features: ', num2str(size(ts.X, 2))]);
+[gen_fname, gen_caption] = plot_generated_feature_matrix(ts, ...
                                                          generator_names);
 
 % Select or transform features:
-[StructTS, feature_selection_mdl] = FeatureSelection(StructTS, feature_selection_mdl,...
+[ts, feature_selection_mdl] = FeatureSelection(ts, feature_selection_mdl,...
                                                         idxTrain, idxTest);
-[fs_fname, fs_caption] = feval(feature_selection_mdl.params.plot, feature_selection_mdl.res, ...
-                                                            generator_names,...
-                                                            StructTS); 
+if isfield(feature_selection_mdl.params, 'plot')
+    [fs_fname, fs_caption] = feval(feature_selection_mdl.params.plot, ...
+                                    feature_selection_mdl.res, ...
+                                    generator_names, ts); 
+else
+    fs_fname = '';
+    fs_caption = '';
+end
 figs(2).names = [gen_fname, fs_fname];
 figs(2).captions = [gen_caption, fs_caption];
                                                         
                                                         
 % Reinit models:
-model = struct('handle', handleModel, 'name', nameModel, 'params', [], 'transform', [],...
-    'trainError', [], 'testError', [], 'unopt_flag', true, 'forecasted_y', []);
-
-[~, ~, ~, ~, model] = calcErrorsByModel(StructTS, model, ...
-                                                        idxTrain, idxTest);
+[model.transform] = deal(reset_transform{:});
+[~, ~, ~, ~, model] = calcErrorsByModel(ts, model, idxTrain, idxTest);
 testMAPE(nDataSet, :) = mean(reshape([model().testError], [], numel(model)), 1);
 trainMAPE(nDataSet, :) = mean(reshape([model().trainError], [], numel(model)), 1);
 
 % plot idx_target forecasts of real_y if the error does not exceed 1e3
-[fname, caption, fname_by_models, caption_by_models] = plot_forecasting_results(StructTS, model, 5, 10);
+[fname, caption, fname_by_models, caption_by_models] = plot_forecasting_results(ts, model, 5, 10);
 figs(3).names = fname;
 figs(3).captions = caption;
 figs(4).names = fname_by_models;
 figs(4).captions = caption_by_models;
 
-report_struct.res{nDataSet} = struct('data', StructTS.name, 'errors', [testMAPE', trainMAPE']);
+report_struct.res{nDataSet} = struct('data', ts.name, 'errors', [testMAPE', trainMAPE']);
 report_struct.res{nDataSet}.figs = figs;
 
 end
-save('MAPE_EW.mat', 'testMAPE', 'trainMAPE');
-save('report_struct_EW.mat', 'report_struct');
-generate_tex_report(report_struct, 'CompareModels_EW.tex');
+%save('MAPE_EW.mat', 'testMAPE', 'trainMAPE');
+%save('report_struct_EW.mat', 'report_struct');
+%generate_tex_report(report_struct, 'CompareModels_EW.tex');
 
 end
 
