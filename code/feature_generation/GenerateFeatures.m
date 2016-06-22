@@ -29,11 +29,9 @@ end
 
 % Only use the original feature matrix to generate new features: 
 Xold = ts.X(:, 1:sum(ts.deltaTp)); % FIXIT this way only historical points are used
-xBlocks = [0, cumsum(ts.deltaTp)];
-X = [];
 
 idxNW = strcmp({generators().name}, {'NW'});
-if ~generators(idxNW).replace
+if any(idxNW) && ~generators(idxNW).replace
     warning('genFeatsReplace:id', 'Smoothing generator "NW" is used with replace set to false.');
 end
 
@@ -41,14 +39,13 @@ end
 % generate new features separately for all submatrices of different time
 % series:
 [Xnew, generators] = genSubMatrix(generators, Xold, idxTrain, idxTest); 
-X = [X, Xnew];
 
 if ~any([generators().replace])
-   Xnew = [Xold, X]; 
+   Xnew = [Xold, Xnew]; 
 end
 
 % no matter what, add a constant:
-Xnew = [Xnew, ones(size(X, 1), 1)];
+Xnew = [Xnew, ones(size(Xnew, 1), 1)];
 ts.X = Xnew;
     
 end    
