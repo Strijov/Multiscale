@@ -52,16 +52,17 @@ feature_selection_mdl = struct('handle', @DimReducePCA, 'params', pars);
 % Validation of the models: run frc comparison with test data with no additional 
 % features. Make sure that the results are adequate, try various noise levels.
 %--------------------------------------------------------------------------
-% NUM_TS = 10;
-% demoFrcSimpleData(model, NUM_TS);
+ NUM_TS = 10;
+ demoFrcSimpleData(model, NUM_TS);
 % #based on demoCompareForecasts({ts}, model, [], []);
 
 %--------------------------------------------------------------------------
 % Feature selection experiment. Run feature selection demo for each ts from 
 % the dataset
 %--------------------------------------------------------------------------
+trainedModel = cell(1, numel(tsStructArray));
 for i = 1:numel(tsStructArray)
-    demoFeatureSelection(tsStructArray{i}, model, generators);
+    trainedModel{i} = demoFeatureSelection(tsStructArray{i}, model, generators);
 end
 
 %--------------------------------------------------------------------------

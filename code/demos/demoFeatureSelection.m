@@ -1,4 +1,4 @@
-function demoFeatureSelection(StructTS, model, generators)
+function model = demoFeatureSelection(StructTS, model, generators)
 
 N_PREDICTIONS = 1;
 TRAIN_TEST_VAL_RATIO = [0.75, 0.25]; %FIXED TRAIN_TEST_VAL_RATIO, train 
