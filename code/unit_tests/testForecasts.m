@@ -28,7 +28,7 @@ ts.deltaTp = ts.deltaTr;
 
 model = struct('handle', @IdentityForecast, 'name', 'Identity', 'params', [], 'transform', [],...
     'trainError', [], 'testError', [], 'unopt_flag', false, 'forecasted_y', [],...
-    'intercept', []);
+    'bias', []);
 
 [idxTrain, idxTest, idxVal] = MultipleSplit(size(ts.Y, 1), size(ts.Y, 1), [0.75, 0.25]); 
 
@@ -79,7 +79,7 @@ pars{3} = struct('nTrees', 25, 'nVars', 48);
 pars{4} = struct('nHiddenLayers', 25);
 model = struct('handle', handleModel, 'name', nameModel, 'params', pars, 'transform', [],...
     'trainError', [], 'testError', [], 'unopt_flag', false, 'forecasted_y', [],...
-    'intercept', []);
+    'bias', []);
 
 % Generate test data:
 ts = createRandomDataStruct(3, 500);
