@@ -20,14 +20,16 @@ function [testRes, trainRes, model] = computeForecastingResiduals(ts, ...
 % idxTest   - test (validation) indices of test objects. FIXIT Validation set is used as test
 %        set...
 
+ERROR_HANDLE = @calcMASE;
+%ERROR_HANDLE = @calcSymMAPE;
 
 if nargin == 2
     idxTrain = 1:size(ts.X, 1);
     idxTest = [];
 end
 if nargin == 3
-    trainTestValRatio = idxTrain;
-    [idxTrain, idxTest, ~] = TrainTestSplit(size(ts.X, 1), trainTestValRatio);
+    trainTestRatio = idxTrain;
+    [idxTrain, idxTest, ~] = TrainTestSplit(size(ts.X, 1), trainTestRatio);
 end
 idxTrain = sort(idxTrain);
 idxTest = sort(idxTest);
@@ -56,14 +58,14 @@ end
 % compute frc residuals for each time series (cell array [1 x nTimeSeries])
 residuals = calcResidualsByTs(model.forecasted_y, ts.x, ts.deltaTp);
 
-%{
+
 if isempty(model.intercept)
     trainRes = cellfun(@(x, y) x(y), residuals, idxTrain, 'UniformOutput', false);
     model.intercept = cellfun(@(x) mean(x), trainRes, 'UniformOutput', false);
 end
-model.forecasted_y = cellfun(@(x, y) x + y, model.forecasted_y, model.intercept, 'UniformOutput', false);
-residuals = cellfun(@(x, y) x - y, residuals, model.intercept, 'UniformOutput', false);
-%}
+%model.forecasted_y = cellfun(@(x, y) x + y, model.forecasted_y, model.intercept, 'UniformOutput', false);
+%residuals = cellfun(@(x, y) x - y, residuals, model.intercept, 'UniformOutput', false);
+
 
 
 testRes = cellfun(@(x, y) x(y), residuals, idxTest, 'UniformOutput', false);
@@ -75,8 +77,8 @@ trainFrc = cellfun(@(x, y) x(y), model.forecasted_y, idxTrain, 'UniformOutput', 
 testY = cellfun(@(x, y) x(y), ts.x, idxTest, 'UniformOutput', false);
 trainY = cellfun(@(x, y) x(y), ts.x, idxTrain, 'UniformOutput', false);
                                             
-model.testError = cellfun(@calcSymMAPE, testY, testFrc);
-model.trainError = cellfun(@calcSymMAPE, trainY, trainFrc);
+model.testError = cellfun(ERROR_HANDLE, testY, testFrc);
+model.trainError = cellfun(ERROR_HANDLE, trainY, trainFrc);
 
 
 end

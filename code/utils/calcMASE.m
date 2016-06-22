@@ -1,4 +1,4 @@
-function mase = calcMASE(forecasts, y)
+function mase = calcMASE(y, forecasts)
 
 
 forecasts = forecasts(:);
