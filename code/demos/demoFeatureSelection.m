@@ -59,7 +59,7 @@ figs(1).captions = caption;
 % Define baseline model:
 pars = struct('deltaTr', StructTS.deltaTr, 'deltaTp', StructTS.deltaTp);
 baselineModel = struct('handle', @MartingalForecast, 'name', 'Marginal', 'params', pars, 'transform', [],...
-    'trainError', [], 'testError', [], 'unopt_flag', false, 'forecasted_y', []);
+    'trainError', [], 'testError', [], 'unopt_flag', false, 'forecasted_y', [], 'bias', []);
 
 
 [testMeanRes, trainMeanRes, testStdRes, trainStdRes, baselineModel] = ...

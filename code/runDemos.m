@@ -26,7 +26,7 @@ tsStructArray  = LoadTimeSeries(DATASET, NAME_PATTERN);
 ts = tsStructArray(1:2); % FIXIT 
 %--------------------------------------------------------------------------
 % Models
-nameModel = {'VAR', 'MSVR', 'Random Forest', 'Neural network'};   % Set of models. 
+nameModel = {'MLR', 'MSVR', 'RF', 'ANN'};   % Set of models. 
 handleModel = {@VarForecast, @MLSSVRMethod, @TreeBaggerForecast, @NnForecast};
 pars = cell(1, numel(nameModel));
 pars{1} = struct('regCoeff', 2);
@@ -35,7 +35,7 @@ pars{3} = struct('nTrees', 25, 'nVars', 48);
 pars{4} = struct('nHiddenLayers', 25);
 model = struct('handle', handleModel, 'name', nameModel, 'params', pars, 'transform', [],...
     'trainError', [], 'testError', [], 'unopt_flag', false, 'forecasted_y', [],...
-    'intercept', []);
+    'bias', []);
 %--------------------------------------------------------------------------
 % Generating extra features:
 generator_names = {'SSA', 'Cubic', 'Conv', 'Centroids', 'NW'}; %{'Identity'};
@@ -52,9 +52,9 @@ feature_selection_mdl = struct('handle', @DimReducePCA, 'params', pars);
 % Validation of the models: run frc comparison with test data with no additional 
 % features. Make sure that the results are adequate, try various noise levels.
 %--------------------------------------------------------------------------
-NUM_TS = 10;
-demoFrcSimpleData(model, NUM_TS);
-%demoCompareForecasts({ts}, model, generators, feature_selection_mdl);
+% NUM_TS = 10;
+% demoFrcSimpleData(model, NUM_TS);
+% #based on demoCompareForecasts({ts}, model, [], []);
 
 %--------------------------------------------------------------------------
 % Feature selection experiment. Run feature selection demo for each ts from 

@@ -91,7 +91,7 @@ end
 [~, ~, ~, ~, model] = calcErrorsByModel(ts, model, idxTrain, idxTest);
 testError(nDataSet, :) = mean(reshape([model().testError], [], nModels), 1);
 trainError(nDataSet, :) = mean(reshape([model().trainError], [], nModels), 1);
-bias(nDataSet, :) = mean(reshape([model().intercept], [], nModels), 1);
+bias(nDataSet, :) = mean(reshape([model().bias], [], nModels), 1);
 
 % plot N_PREDICTIONS forecasts of real_y if the error does not exceed
 % MAX_ERROR
