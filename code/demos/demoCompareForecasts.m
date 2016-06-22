@@ -1,4 +1,4 @@
-function model = demoCompareForecasts(tsStructArray, model, generators, feature_selection_mdl)
+function model = demoCompareForecasts(tsStructArray, model, generators, feature_selection_mdl, verbose)
 % Script demoCompareForecasts runs one forecasting experiment.
 % It applies several competitive models to single dataset. 
 
@@ -11,9 +11,14 @@ end
 if nargin < 3 || isempty(feature_selection_mdl)
 feature_selection_mdl = struct('handle', @IdentityGenerator, 'params', []);    
 end
+if nargin < 4
+    verbose = true;
+end
 
 % Experiment settings. 
 trainTestRatio = [0.75, 0.25];
+N_PREDICTIONS = 5; % plotting pars
+MAX_ERROR = 5; % plotting pars
 
 % Shotcuts
 nameModel = {model().name};
@@ -48,10 +53,11 @@ ts = tsStructArray{nDataSet};
 ts = CreateRegMatrix(ts);    
 
 % Plot time series and a range of segments to forecast
+if verbose
 [fname, caption] = plot_ts(ts);
 figs(1).names = fname;
 figs(1).captions = caption;
-
+end
 
 [idxTrain, idxTest, idxVal] = TrainTestSplit(size(ts.Y, 1), trainTestRatio);
 idxTest = [idxVal, idxTest];
@@ -65,17 +71,18 @@ disp(['Generation finished. Total number of features: ', num2str(size(ts.X, 2))]
 % Select or transform features:
 [ts, feature_selection_mdl] = FeatureSelection(ts, feature_selection_mdl,...
                                                         idxTrain, idxTest);
-if isfield(feature_selection_mdl.params, 'plot')
+if verbose  
+    if isfield(feature_selection_mdl.params, 'plot')
     [fs_fname, fs_caption] = feval(feature_selection_mdl.params.plot, ...
                                     feature_selection_mdl.res, ...
                                     generator_names, ts); 
-else
-    fs_fname = '';
-    fs_caption = '';
-end
+    else
+        fs_fname = '';
+        fs_caption = '';
+    end
 figs(2).names = [gen_fname, fs_fname];
 figs(2).captions = [gen_caption, fs_caption];
-                                                        
+end                                                        
                                                         
 % Reinit models:
 [model.transform] = deal(reset_transform{:});
@@ -83,8 +90,11 @@ figs(2).captions = [gen_caption, fs_caption];
 testMAPE(nDataSet, :) = mean(reshape([model().testError], [], numel(model)), 1);
 trainMAPE(nDataSet, :) = mean(reshape([model().trainError], [], numel(model)), 1);
 
-% plot idx_target forecasts of real_y if the error does not exceed 1e3
-[fname, caption, fname_by_models, caption_by_models] = plot_forecasting_results(ts, model, 5, 10);
+% plot N_PREDICTIONS forecasts of real_y if the error does not exceed
+% MAX_ERROR
+if verbose
+[fname, caption, fname_by_models, caption_by_models] = plot_forecasting_results(...
+                                            ts, model, N_PREDICTIONS, MAX_ERROR);
 figs(3).names = fname;
 figs(3).captions = caption;
 figs(4).names = fname_by_models;
@@ -92,11 +102,17 @@ figs(4).captions = caption_by_models;
 
 report_struct.res{nDataSet} = struct('data', ts.name, 'errors', [testMAPE', trainMAPE']);
 report_struct.res{nDataSet}.figs = figs;
+end
 
 end
-%save('MAPE_EW.mat', 'testMAPE', 'trainMAPE');
-%save('report_struct_EW.mat', 'report_struct');
-%generate_tex_report(report_struct, 'CompareModels_EW.tex');
+save('MAPE_EW.mat', 'testMAPE', 'trainMAPE');
+
+% Generating report:
+if verbose
+save(['report_struct_', ts.dataset,'.mat'], 'report_struct');
+generate_tex_report(report_struct, ['CompareModels_', ts.dataset,'.tex']);
+end
+
 
 end
 

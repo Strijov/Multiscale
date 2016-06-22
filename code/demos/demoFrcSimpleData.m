@@ -1,13 +1,15 @@
 function demoFrcSimpleData(model, numTs)
 
-FOLDER = 'fig\';
+FOLDER = 'fig\'; % dir to store figures
+VERBOSE = true; % change to false after first run of the main loop
+
 
 if nargin < 2
     numTs = 1;
 end
 
 % Experiment settings:
-NOISE = 0.1:1;
+NOISE = 0:0.1:1;
 N_HIST_POINTS = 2;
 SEGM_LEN = 10;
 
@@ -19,11 +21,12 @@ testError = zeros(numel(NOISE), nModels);
 trainError = zeros(numel(NOISE), nModels);
 for i = 1:numel(NOISE)
     ts = createSimpleDataStruct(@linearSegm, NOISE(i), SEGM_LEN, N_HIST_POINTS);
-    trainedModels = demoCompareForecasts({ts}, model, [], []);
+    trainedModels = demoCompareForecasts({ts}, model, [], [], VERBOSE);
     intercepts(i, :) = intercepts(i, :) + cell2mat([trainedModels().intercept]);
     testError(i, :) = testError(i, :) + [trainedModels().testError];
     trainError(i, :) = trainError(i, :) + [trainedModels().trainError];
 end
+VERBOSE = false;
 end
 
 intercepts = intercepts/numTs;
