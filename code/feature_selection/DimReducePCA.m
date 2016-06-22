@@ -28,8 +28,16 @@ if ~isfield(mdl.params, 'plot')
 end
 
 
-
+X = ReplaceNans(X); % FIXIT
 [wcoeff,~,variance,~,var_ratio] = pca(X, 'algorithm', 'svd');
+if isempty(wcoeff)
+    warning('emptyCoefPCA:id', 'The output of PCA is empty');
+    newX = X(:, 1);
+    mdl.transform = @(X) X(:, 2);
+    mdl.nComps = 1;
+    return
+end
+
 if isfield(mdl.params, 'nComps')
     nComps = mdl.params.nComps;
     nComps = min([nComps, mdl.params.maxComps, size(wcoeff, 2)]);
