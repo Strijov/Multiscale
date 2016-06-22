@@ -6,12 +6,19 @@ function tests = testForecasts
 %                  application of .transform 
 % - testTrainTestIdx: checks that various train\test inputs are handled
 %                     correctly
+% - testDenormalization: checks that the time series are normalized and denormalized properly
+
 
 tests  = functiontests(localfunctions);
 
 end
 
 function testIdentity(testCase)
+
+% Will need to use approximate equality tests:
+import matlab.unittest.constraints.IsEqualTo
+import matlab.unittest.constraints.AbsoluteTolerance
+TOL = AbsoluteTolerance(10^(-10));
 
 data = createRandomDataStruct();
 ts = CreateRegMatrix(data);
@@ -26,13 +33,14 @@ model = struct('handle', @IdentityForecast, 'name', 'Identity', 'params', [], 't
 [idxTrain, idxTest, idxVal] = MultipleSplit(size(ts.Y, 1), size(ts.Y, 1), [0.75, 0.25]); 
 
 % First, ensure that Identity does work:
-% pass taret variables as X to identity Frc:
+% pass target variables as X to identity Frc:
 [testFrc, trainFrc, model] = IdentityForecast(ts.Y(idxTest, :), model, ts.Y(idxTrain, :));
 valFrc = feval(model.transform, ts.Y(idxVal, :));
 
 verifyEqual(testCase, trainFrc, ts.Y(idxTrain, :));
 verifyEqual(testCase, testFrc, ts.Y(idxTest, :));
 verifyEqual(testCase, valFrc, ts.Y(idxVal, :));
+
 
 % Now see if it works with frcResiduals:
 [testRes, trainRes, model] = computeForecastingResiduals(ts, model, ...
@@ -42,15 +50,15 @@ expectedTrainRes = arrayfun(@(x) zeros(x*numel(idxTrain), 1), ts.deltaTr, 'Unifo
 expectedTestRes = arrayfun(@(x) zeros(x*numel([idxVal, idxTest]), 1), ts.deltaTr, 'UniformOutput', 0); 
 
 % check that residues are all zero:
-verifyEqual(testCase, trainRes, expectedTrainRes);
-verifyEqual(testCase, testRes, expectedTestRes);
+verifyThat(testCase, trainRes, IsEqualTo(expectedTrainRes, 'Within', TOL));
+verifyThat(testCase, testRes, IsEqualTo(expectedTestRes, 'Within', TOL));
 
-% check that forecasts equal the original time  series:
-verifyEqual(testCase, model.forecasted_y, ts.x);
+% check that forecasts equal to the original time  series:
+verifyThat(testCase, model.forecasted_y, IsEqualTo(ts.x, 'Within', TOL));
 
 % check that errors are zero:
-verifyEqual(testCase, model.testError, zeros(1, numel(ts.x)));
-verifyEqual(testCase, model.trainError, zeros(1, numel(ts.x)));
+verifyThat(testCase, model.testError, IsEqualTo(zeros(1, numel(ts.x)), 'Within', TOL));
+verifyThat(testCase, model.trainError, IsEqualTo(zeros(1, numel(ts.x)), 'Within', TOL));
 
 
 end
@@ -103,7 +111,56 @@ end
 
 end
 
+function testDenormalization(testCase)
 
+% check that the time series are normalized and denormalized properly
+
+% Will need to use approximate equality tests:
+import matlab.unittest.constraints.IsEqualTo
+import matlab.unittest.constraints.AbsoluteTolerance
+TOL = AbsoluteTolerance(10^(-10));
+
+% Generate test data:
+ts = createRandomDataStruct(3, 200);
+tsN = CreateRegMatrix(ts, 1, true); % with normalization
+  
+% apply the same normalization to ts.x and make another design matrix
+tsUN = ts; 
+ts_x = renormalize({ts.x}, tsN.norm_div, tsN.norm_subt);
+[tsUN.x] = deal(ts_x{:});
+tsUN = CreateRegMatrix(tsUN, 1, false); % w/o normalization
+
+
+% Init models to test:
+nameModel = {'MLR', 'MSVR', 'RF', 'ANN'};   % Set of models. 
+handleModel = {@VarForecast, @MLSSVRMethod, @TreeBaggerForecast, @NnForecast};
+pars = cell(1, numel(nameModel));
+pars{1} = struct('regCoeff', 2);
+pars{2} = struct('kernel_type', 'rbf', 'p1', 2, 'p2', 0, 'gamma', 0.5, 'lambda', 4);
+pars{3} = struct('nTrees', 25, 'nVars', 48);
+pars{4} = struct('nHiddenLayers', 25);
+model = struct('handle', handleModel, 'name', nameModel, 'params', pars, 'transform', [],...
+    'trainError', [], 'testError', [], 'unopt_flag', false, 'forecasted_y', [],...
+    'intercept', []);
+
+[idxTrain, idxTest, ~] = MultipleSplit(size(tsN.Y, 1), size(tsN.Y, 1), [0.75, 0.25]); 
+
+for i = 1:numel(model)
+    [~, ~, modelN] = computeForecastingResiduals(tsN, model(i), idxTrain, idxTest);
+    [~, ~, modelUN] = computeForecastingResiduals(tsUN, model(i), idxTrain, idxTest);
+    % denormalize forecasts of modelUN:
+    verifyEqual(testCase, modelUN.trainError, modelUN.trainError);
+    verifyEqual(testCase, modelN.testError, modelN.testError);
+    
+    verifyThat(testCase, modelN.bias, IsEqualTo(modelUN.bias.*tsN.norm_div, 'Within', TOL));
+    renFrc = renormalize(modelN.forecasted_y, tsN.norm_div, tsN.norm_subt);
+    denFrc = denormalize(modelUN.forecasted_y, tsN.norm_div, tsN.norm_subt);
+    verifyThat(testCase, modelUN.forecasted_y, IsEqualTo(renFrc, 'Within', TOL));
+    verifyThat(testCase, modelN.forecasted_y, IsEqualTo(denFrc, 'Within', TOL));
+end
+
+
+end
 
 function testTrainTestIdx(testCase)
 

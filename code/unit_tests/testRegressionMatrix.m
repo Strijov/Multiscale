@@ -56,11 +56,17 @@ end
 
 function testUnravelForecasts(testCase)
 
+% Will need to use approximate equality tests:
+import matlab.unittest.constraints.IsEqualTo
+import matlab.unittest.constraints.AbsoluteTolerance
+import matlab.unittest.constraints.Tolerance
+TOL = AbsoluteTolerance(10^(-15));
+
 % checks that the Y matrix unravels into the original time series
 data = createRandomDataStruct();
 ts = CreateRegMatrix(data);
 
 Y = unravel_target_var(ts.Y, ts.deltaTr, ts.norm_div, ts.norm_subt);
-verifyEqual(testCase, Y, ts.x);
+verifyThat(testCase, Y, IsEqualTo(ts.x, 'Within', TOL));
 
 end
