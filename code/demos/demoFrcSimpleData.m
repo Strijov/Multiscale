@@ -7,7 +7,7 @@ if nargin < 2
 end
 
 % Experiment settings:
-NOISE = 0:1;%0.1:1;
+NOISE = 0.1:1;
 N_HIST_POINTS = 2;
 SEGM_LEN = 10;
 
