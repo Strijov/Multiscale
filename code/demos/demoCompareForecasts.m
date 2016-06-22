@@ -1,17 +1,17 @@
-function model = demoCompareForecasts(tsStructArray, model, generators, feature_selection_mdl, verbose)
+function [testError, trainError, bias, model] = demoCompareForecasts(tsStructArray, model, generators, feature_selection_mdl, verbose)
 % Script demoCompareForecasts runs one forecasting experiment.
 % It applies several competitive models to single dataset. 
 
 
 % Check arguments:
-if nargin < 2 || isempty(generators)
+if nargin < 3 || isempty(generators)
 generators = struct('handle', @IdentityGenerator, 'name', 'Identity', ...
                                           'replace', true, 'transform', []);
 end
-if nargin < 3 || isempty(feature_selection_mdl)
+if nargin < 4 || isempty(feature_selection_mdl)
 feature_selection_mdl = struct('handle', @IdentityGenerator, 'params', []);    
 end
-if nargin < 4
+if nargin < 5
     verbose = true;
 end
 
@@ -43,8 +43,10 @@ if ~exist(FOLDER, 'dir')
     mkdir(FOLDER);
 end
 
-testMAPE = zeros(numDataSets, numel(model));
-trainMAPE = zeros(numDataSets, numel(model)); 
+testError = zeros(numDataSets, nModels);
+trainError = zeros(numDataSets, nModels); 
+bias = zeros(numDataSets, nModels); 
+
 
 for nDataSet = 1:numDataSets    
 ts = tsStructArray{nDataSet};
@@ -87,8 +89,9 @@ end
 % Reinit models:
 [model.transform] = deal(reset_transform{:});
 [~, ~, ~, ~, model] = calcErrorsByModel(ts, model, idxTrain, idxTest);
-testMAPE(nDataSet, :) = mean(reshape([model().testError], [], numel(model)), 1);
-trainMAPE(nDataSet, :) = mean(reshape([model().trainError], [], numel(model)), 1);
+testError(nDataSet, :) = mean(reshape([model().testError], [], nModels), 1);
+trainError(nDataSet, :) = mean(reshape([model().trainError], [], nModels), 1);
+bias(nDataSet, :) = mean(reshape([model().intercept], [], nModels), 1);
 
 % plot N_PREDICTIONS forecasts of real_y if the error does not exceed
 % MAX_ERROR
@@ -100,15 +103,15 @@ figs(3).captions = caption;
 figs(4).names = fname_by_models;
 figs(4).captions = caption_by_models;
 
-report_struct.res{nDataSet} = struct('data', ts.name, 'errors', [testMAPE', trainMAPE']);
+report_struct.res{nDataSet} = struct('data', ts.name, 'errors', [testError', trainError']);
 report_struct.res{nDataSet}.figs = figs;
 end
 
 end
-save('MAPE_EW.mat', 'testMAPE', 'trainMAPE');
 
 % Generating report:
 if verbose
+save(['Errors_', ts.dataset,'.mat'], 'testError', 'trainError');   
 save(['report_struct_', ts.dataset,'.mat'], 'report_struct');
 generate_tex_report(report_struct, ['CompareModels_', ts.dataset,'.tex']);
 end

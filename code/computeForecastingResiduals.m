@@ -61,7 +61,7 @@ residuals = calcResidualsByTs(model.forecasted_y, ts.x, ts.deltaTp);
 
 if isempty(model.intercept)
     trainRes = cellfun(@(x, y) x(y), residuals, idxTrain, 'UniformOutput', false);
-    model.intercept = cellfun(@(x) mean(x), trainRes, 'UniformOutput', false);
+    model.intercept = cell2mat(cellfun(@(x) mean(x), trainRes, 'UniformOutput', false));
 end
 %model.forecasted_y = cellfun(@(x, y) x + y, model.forecasted_y, model.intercept, 'UniformOutput', false);
 %residuals = cellfun(@(x, y) x - y, residuals, model.intercept, 'UniformOutput', false);

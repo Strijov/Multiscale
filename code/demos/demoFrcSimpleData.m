@@ -15,17 +15,19 @@ SEGM_LEN = 10;
 
 nModels = numel(model);
 
+ts = cell(1, numTs);
 for nTs = 1:numTs
 intercepts = zeros(numel(NOISE), nModels);
 testError = zeros(numel(NOISE), nModels);
 trainError = zeros(numel(NOISE), nModels);
 for i = 1:numel(NOISE)
-    ts = createSimpleDataStruct(@linearSegm, NOISE(i), SEGM_LEN, N_HIST_POINTS);
-    trainedModels = demoCompareForecasts({ts}, model, [], [], VERBOSE);
-    intercepts(i, :) = intercepts(i, :) + cell2mat([trainedModels().intercept]);
-    testError(i, :) = testError(i, :) + [trainedModels().testError];
-    trainError(i, :) = trainError(i, :) + [trainedModels().trainError];
-end
+    ts{i} = createSimpleDataStruct(@linearSegm, NOISE(i), SEGM_LEN, N_HIST_POINTS);
+end    
+[test, train, bias] = demoCompareForecasts(ts, model, [], [], VERBOSE);
+intercepts = intercepts + bias;
+testError = testError + test;
+trainError = trainError + train;
+
 VERBOSE = false;
 end
 
@@ -40,6 +42,7 @@ legend(['Data', {model().name}], 'Location', 'SouthWest');
 xlabel('Noise level', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
 ylabel('Mean residues', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
 set(gca, 'FontSize', 16, 'FontName', 'Times')
+axis tight;
 
 fig2 = figure;
 h1 = plot(testError, 'linewidth', 2);
@@ -54,11 +57,12 @@ set(gca, 'Xtick', 1:numel(NOISE), 'XTickLabel', NOISE);
 xlabel('Noise level', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
 ylabel('Foreasting error', 'FontSize', 20, 'FontName', 'Times', 'Interpreter','latex');
 set(gca, 'FontSize', 16, 'FontName', 'Times')
+axis tight;
 
-fname = fullfile(FOLDER, ts.dataset, strcat('bias_', ts.name, '.eps'));
+fname = fullfile(FOLDER, ts{1}.dataset, strcat('bias_', ts{1}.name, '.eps'));
 saveas(fig1, fname, 'epsc');
 
-fname = fullfile(FOLDER, ts.dataset, strcat('MASE_', ts.name, '.eps'));
+fname = fullfile(FOLDER, ts{1}.dataset, strcat('MASE_', ts{1}.name, '.eps'));
 saveas(fig2, fname, 'epsc');
 
 close(fig1);
