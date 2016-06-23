@@ -88,6 +88,7 @@ end
                                                         
 % Reinit models:
 [model.transform] = deal(reset_transform{:});
+[model.bias] = deal(reset_transform{:});
 [~, ~, ~, ~, model] = calcErrorsByModel(ts, model, idxTrain, idxTest);
 testError(nDataSet, :) = mean(reshape([model().testError], [], nModels), 1);
 trainError(nDataSet, :) = mean(reshape([model().trainError], [], nModels), 1);
