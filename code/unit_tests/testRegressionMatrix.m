@@ -59,8 +59,7 @@ function testUnravelForecasts(testCase)
 % Will need to use approximate equality tests:
 import matlab.unittest.constraints.IsEqualTo
 import matlab.unittest.constraints.AbsoluteTolerance
-import matlab.unittest.constraints.Tolerance
-TOL = AbsoluteTolerance(10^(-15));
+TOL = AbsoluteTolerance(10^(-10));
 
 % checks that the Y matrix unravels into the original time series
 data = createRandomDataStruct();

@@ -64,6 +64,36 @@ verifyThat(testCase, model.trainError, IsEqualTo(zeros(1, numel(ts.x)), 'Within'
 end
 
 
+function testEmptyInput(testCase)
+
+% Init models to test:
+nameModel = {'VAR', 'MSVR', 'Random Forest', 'Neural network'};   % Set of models. 
+handleModel = {@VarForecast, @MLSSVRMethod, @TreeBaggerForecast, @NnForecast};
+pars = cell(1, numel(nameModel));
+pars{1} = struct('regCoeff', 2);
+pars{2} = struct('kernel_type', 'rbf', 'p1', 2, 'p2', 0, 'gamma', 0.5, 'lambda', 4);
+pars{3} = struct('nTrees', 25, 'nVars', 48);
+pars{4} = struct('nHiddenLayers', 25);
+model = struct('handle', handleModel, 'name', nameModel, 'params', pars, 'transform', [],...
+    'trainError', [], 'testError', [], 'unopt_flag', false, 'forecasted_y', [],...
+    'bias', []);
+
+% Generate test data:
+ts = createRandomDataStruct(3, 500);
+ts = CreateRegMatrix(ts);
+
+for i = 1:numel(model)
+    [~, ~, model(i)] = computeForecastingResiduals(ts, model(i));
+    
+    % check that test errors have the same size but contain only nans:
+    verifyEqual(testCase, size(model(i).testError), size(model(i).trainError));
+    verifyTrue(testCase, all(isnan(model(i).testError)));
+    % extract test frc from model.forecasted_y:
+    
+end
+
+end
+
 function testMdlOutput(testCase)
 
 % checks that testForeacasts returned by the model are the same as
@@ -110,6 +140,7 @@ for i = 1:numel(model)
 end
 
 end
+
 
 function testDenormalization(testCase)
 

@@ -86,6 +86,10 @@ end
 
 function checkRes = checkTrainTestIdx(idxTrain, idxTest)
 
+if isempty(idxTrain) || isempty(idxTest)
+    checkRes = true;
+    return
+end
 checkRes = all(cell2mat(cellfun(@(x, y) max(x) < min(y), idxTrain, idxTest,...
                             'UniformOutput', false)));
 checkRes = checkRes & ~any(cell2mat(cellfun(@(x, y) ismember(x, y), idxTrain, idxTest,...
@@ -95,6 +99,10 @@ end
 
 function [modelFrc, idxFrc] = addFrcToModel(modelFrc, newFrc, idxFrc, ts, nPred)
 
+if isempty(idxFrc)
+    idxFrc = cell(size(modelFrc));
+    return
+end
 forecasted_y = unravel_target_var(newFrc, ...
                                     ts.deltaTr, ts.norm_div, ts.norm_subt);
 idxFrc = arrayfun(@(x) (idxFrc(1) - 1)*x + 1:(idxFrc(1) - 1)*x + numel(idxFrc)*x, ...
