@@ -13,6 +13,7 @@ tests  = functiontests(localfunctions);
 
 end
 
+
 function testIdentity(testCase)
 
 % Will need to use approximate equality tests:
@@ -141,7 +142,6 @@ end
 
 end
 
-
 function testDenormalization(testCase)
 
 % check that the time series are normalized and denormalized properly
@@ -162,33 +162,29 @@ ts_x = renormalize({ts.x}, tsN.norm_div, tsN.norm_subt);
 tsUN = CreateRegMatrix(tsUN, 1, false); % w/o normalization
 
 
-% Init models to test:
-nameModel = {'MLR', 'MSVR', 'RF', 'ANN'};   % Set of models. 
-handleModel = {@VarForecast, @MLSSVRMethod, @TreeBaggerForecast, @NnForecast};
-pars = cell(1, numel(nameModel));
-pars{1} = struct('regCoeff', 2);
-pars{2} = struct('kernel_type', 'rbf', 'p1', 2, 'p2', 0, 'gamma', 0.5, 'lambda', 4);
-pars{3} = struct('nTrees', 25, 'nVars', 48);
-pars{4} = struct('nHiddenLayers', 25);
-model = struct('handle', handleModel, 'name', nameModel, 'params', pars, 'transform', [],...
+% Set up identity model, replace X with Y: 
+model = struct('handle', @IdentityForecast, 'name', 'Identity', 'params', [], 'transform', [],...
     'trainError', [], 'testError', [], 'unopt_flag', false, 'forecasted_y', [],...
-    'intercept', []);
+    'bias', []);
+tsN.X = tsN.Y;
+tsN.deltaTp = tsN.deltaTr;
+tsUN.X = tsUN.Y;
+tsUN.deltaTp = tsUN.deltaTr;
 
-[idxTrain, idxTest, ~] = MultipleSplit(size(tsN.Y, 1), size(tsN.Y, 1), [0.75, 0.25]); 
 
-for i = 1:numel(model)
-    [~, ~, modelN] = computeForecastingResiduals(tsN, model(i), idxTrain, idxTest);
-    [~, ~, modelUN] = computeForecastingResiduals(tsUN, model(i), idxTrain, idxTest);
-    % denormalize forecasts of modelUN:
-    verifyEqual(testCase, modelUN.trainError, modelUN.trainError);
-    verifyEqual(testCase, modelN.testError, modelN.testError);
-    
-    verifyThat(testCase, modelN.bias, IsEqualTo(modelUN.bias.*tsN.norm_div, 'Within', TOL));
-    renFrc = renormalize(modelN.forecasted_y, tsN.norm_div, tsN.norm_subt);
-    denFrc = denormalize(modelUN.forecasted_y, tsN.norm_div, tsN.norm_subt);
-    verifyThat(testCase, modelUN.forecasted_y, IsEqualTo(renFrc, 'Within', TOL));
-    verifyThat(testCase, modelN.forecasted_y, IsEqualTo(denFrc, 'Within', TOL));
-end
+[~, ~, modelN] = computeForecastingResiduals(tsN, model);
+[~, ~, modelUN] = computeForecastingResiduals(tsUN, model);
+% errors must be the same
+verifyEqual(testCase, modelUN.trainError, modelUN.trainError);
+% biases must differ precisely to the multiplying constant
+verifyThat(testCase, modelN.bias, IsEqualTo(modelUN.bias.*tsN.norm_div, 'Within', TOL));
+
+% denormalize/renormalize forecasts and compare results:
+renFrc = renormalize(modelN.forecasted_y, tsN.norm_div, tsN.norm_subt);
+denFrc = denormalize(modelUN.forecasted_y, tsN.norm_div, tsN.norm_subt);
+verifyThat(testCase, modelUN.forecasted_y, IsEqualTo(renFrc, 'Within', TOL));
+verifyThat(testCase, modelN.forecasted_y, IsEqualTo(denFrc, 'Within', TOL));
+
 
 
 end
