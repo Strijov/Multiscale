@@ -1,0 +1,38 @@
+\documentclass[12pt]{article}
+\extrafloats{100}
+\usepackage{a4wide}
+\usepackage{multicol, multirow}
+\usepackage[cp1251]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath, amsfonts, amssymb, amsthm, amscd}
+\usepackage{graphicx, epsfig, subfig, epstopdf}
+\usepackage{longtable}
+\graphicspath{ {../fig/} {../} }
+\begin{document}
+
+\begin{table}
+\begin{tabular}{|p{2cm}|c|c|c|c|c|c|c|c|}
+\hline
+Data &Energy & Max T. & Min T. & Precipitation & Wind & Humidity & Solar\\ 
+\hline
+\multirow{1}{*}{orig} &   0.001 &    0.000 &    0.000 &    0.001 &    0.002 &    0.001 &    0.000\\ 
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.01} &   0.000 &    0.005 &    0.001 &    0.003 &    0.000 &    0.000 &    0.009\\ 
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.03} &   0.001 &    0.004 &    0.002 &    0.001 &    0.001 &    0.000 &    0.001\\ 
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.05} &   0.001 &    0.004 &    0.000 &    0.000 &    0.001 &    0.001 &    0.018\\ 
+\cline{1-7}
+\hline
+\multirow{1}{*}{0.1} &   0.001 &    0.002 &    0.000 &    0.004 &    0.000 &    0.001 &    0.001\\ 
+\cline{1-7}
+\hline
+\multirow{1}{*}{varying} &   0.001 &    0.001 &    0.001 &    0.004 &    0.003 &    0.000 &    0.001\\ 
+\cline{1-7}
+\hline
+\end{tabular}
+\end{table}
+\end{document}
