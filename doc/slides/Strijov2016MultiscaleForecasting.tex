@@ -71,7 +71,7 @@
 %-----------------------------------------------------------------------------------------------------
 \begin{frame}{Multiscale data}
 
-Consider a large set of time series~$\fD=\{\bs^{(q)}| \; q = 1\dots, {Q}\}$. 
+Consider a large set of time series~$\fD=\{\bs^{(q)}| \; q = 1\dots, {Q}\}$.
 
 \smallskip
 Each real-valued time series~$\bs$ \[ \bs = [s_1, \dots, s_i, \dots, s_{T}], ~~ s_i = s(t_i),\quad 0 \leq t_i \leq t_{\max}\]
@@ -79,10 +79,10 @@ is a sequence of observations  of some real-valued signal $s(t)$.
 
 
 \smallskip
-Each time series $\bs^{(q)}$ has its own sampling rate $\tau^{(q)}$. 
+Each time series $\bs^{(q)}$ has its own sampling rate $\tau^{(q)}$.
 
-\includegraphics[width=0.55\textwidth]{data_example_100days.eps} 
-\includegraphics[width=0.5\textwidth]{data_sampling_100days.eps} 
+\includegraphics[width=0.55\textwidth]{data_example_100days.eps}
+\includegraphics[width=0.5\textwidth]{data_sampling_100days.eps}
 
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
@@ -164,7 +164,7 @@ absolute error
 \vspace{-1em}
 \[ MAPE = \frac{1}{r}\sum_{j = 1}^{r} \frac{|\varepsilon_j|}{|y_j|}, \quad sMAPE = \frac{1}{r}\sum_{j = 1}^{r} \frac{2|{\varepsilon}_j|}{|\hat{y}_j + y_j|}, \]
 \vspace{-1em}
-\item relative-error metrics (to residues $\veps^{*}$ of a benchmark method): 
+\item relative-error metrics (to residues $\veps^{*}$ of a benchmark method):
 \vspace{-1em}
  \[ MRAE = \frac{1}{r}\sum_{j = 1}^{r} \frac{|{\varepsilon}_j|}{{\varepsilon}^{*}_j},\]
  \vspace{-1em}
@@ -199,7 +199,7 @@ scale-free error metrics:
  \dots & \dots \\
  \end{array}\right], \Big{\uparrow}_{k}
  \]
-\item optimize model parameters~$\bw$ using~$\bX_{\text{train}, k}, \bY_{\text{train}, k}$, 
+\item optimize model parameters~$\bw$ using~$\bX_{\text{train}, k}, \bY_{\text{train}, k}$,
 \item compute residues~$\veps_k = \by_{\text{val}, k} - \fx(\bx_{\text{val}_k}, \bw)$ and $\text{MAPE}$,
 \item increment $k$ and repeat.
 \end{enumerate}
@@ -222,7 +222,7 @@ To augment feature description, consider the following types of features:
 \item transformations (non-parametric and parametric) of local history,
 \item parameters of the local models,
 \item distances to the centroids of local clusters.
-\end{enumerate} 
+\end{enumerate}
 
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
@@ -263,7 +263,7 @@ $	\sqrt{x}	$	&	1		\\ \hline
 $	x\sqrt{x}	$	&	1		\\ \hline
 $	\arctan{x}	$	&	1		\\ \hline
 $	\ln{x}	$	&	1	\\ \hline
-$	x\ln{x}	$	&	1	\\ 
+$	x\ln{x}	$	&	1	\\
 \end{tabular}
 
 \medskip
@@ -274,7 +274,7 @@ Minus	&	$	x_1 - x_2	$	\\ \hline
 Product	&	$	x_1 \cdot x_2	$	\\ \hline
 Division	&	$	\frac{x_1}{x_2}	$	\\ \hline
 	&	$	x_1\sqrt{x_2}	$	\\ \hline
-	&	$	x_1\ln{x_2}	$	\\ 
+	&	$	x_1\ln{x_2}	$	\\
 \end{tabular}
 
 \end{itemize}
@@ -289,7 +289,7 @@ Nonparametric transformations include basic data statistics:
 \[ \vf_i = \sum_{j = 1}^{n} x_{ij}, \text{~or~} \vf'_i = \frac{1}{n}\sum_{j=1}^{n} x_{ij}. \]
 
 \item Min and max values: $ \vf_i = \min_{j} x_{ij}$, $\vf'_i = \max_{j} x_{ij} $.
-\item Standard deviation: \[\vf_i = \frac{1}{n-1}\sqrt{\sum_{j=1}^{n}(x_{ij} - \text{mean}(\bx_i))^2}.\] 
+\item Standard deviation: \[\vf_i = \frac{1}{n-1}\sqrt{\sum_{j=1}^{n}(x_{ij} - \text{mean}(\bx_i))^2}.\]
 \item Data quantiles: $ \vf_{i}  = [X_1, \dots, X_K], $
 where \[\sum_{j=1}^{n} [X_{k-1} < x_{ij} \leq X_k ] = \frac{1}{K}, \text{~for~} k = 1,\dots, K. \]
 \end{itemize}
@@ -321,7 +321,7 @@ To obtain coarse-graining and fine-graining of the input feature vector $\bx_i$,
 \begin{itemize}
 \item data averaging step \[\vf_{i,j}^{(k)} =  \frac{\vf_{i, 2j-1}^{(k-1)} + \vf_{i, 2j}^{(k-1)}}{2}, \quad j=1, \dots, \frac{n}{2^k}, \]
 \item and data differencing step \[\vf_{i,j}'^{(k)} =  \frac{\vf_{i, 2j}'^{(k-1)} - \vf_{i, 2j-1}'^{(k-1)}}{2}, \quad j=1, \dots, \frac{n}{2^k}. \]
-    
+
 
 \end{itemize}
 The resulting multiscale feature vectors are~$\vf_i = [\vf_i^{(1)}, \dots, \vf_i^{(K)}]$ and
@@ -332,7 +332,7 @@ $\vf'_i = [\vf_i'^{(1)}, \dots, \vf_i'^{(K)}]$.
 %-----------------------------------------------------------------------------------------------------
 \begin{frame}{Parametric transformations}
 
-Optimization of the transformation function parameters~$\bb$ is iterative: 
+Optimization of the transformation function parameters~$\bb$ is iterative:
 
 \begin{enumerate}
 \item Fix the vector~$\hat\bb$, collected over all the primitive functions~$\{g\}$, which generate features~$\vf$:
@@ -402,7 +402,7 @@ Hiberbolic tangent	&	$	\tanh(x)	$	&	 	\\ \hline
 % &   $-1,\text{~for~} x < -1$ &		&		&		&		\\
 %hardtan &  $0, \text{~if~} -1\leq x\leq 1, $ &	1	&	1	&	0	&		\\
 % &  $1,\text{~for~} x > 1$ &		&		&		&		\\ \hline
-softsign & $\frac{|x|}{1+|x|}$	&	\\ 
+softsign & $\frac{|x|}{1+|x|}$	&	\\
 \end{tabular}
 \end{itemize}
 }
@@ -444,7 +444,7 @@ For the orignal feature vector~$\bx = [\bx^{(1)}, \bx^{(Q)}]$ use the parameters
 %-----------------------------------------------------------------------------------------------------
 \begin{frame}{Metric features: distances to the centroids of local clusters}
 
-Apply kernel trick to the time series. 
+Apply kernel trick to the time series.
 
 \begin{enumerate}
 \item For given local feature vector~$\bx_i^{(q)}$, $q=1,\dots, Q$ compute $k$-means centroids~$\bc_p^{(m)}$, $p = 1, \dots, P$.
@@ -512,9 +512,9 @@ and $\bB = \beta \bI_m$ is the covariance matrix for~$\by$.
 \begin{frame}{Parameter estimation}
 
 \Wider[2em]{
-To find maximum likelihood estimates of $\hat{\bth}$ 
+To find maximum likelihood estimates of $\hat{\bth}$
 \[
-\hat{\bth} = \argmax_{\bth}\ln p(\by|\bth), 
+\hat{\bth} = \argmax_{\bth}\ln p(\by|\bth),
 %~\ln p(\by|\bth) = \sum_{i=1}^{m}\ln\left( \sum_{k=1}^K  \pi_k\mathcal{N}(\by|\w\T_{k}\x_i,\beta) \right).
 \]
 
@@ -535,17 +535,17 @@ Then the loglikelihood function $p(\by, Z|X, \bth)$ takes the form
 %-----------------------------------------------------------------------------------------------------
 \begin{frame}{Expectation step}
 \Wider[3em]{
-Expectation-Maximization algorithm maximizes $\mathsf{E}_{Z} [p(\y, Z|X, \bth)]$, updating parameters estimates $\bth^{(r)}$ in two iterative steps.
+Expectation-Maximization algorithm maximizes $\mathsf{E}_{Z} [p(\y, Z|X, \bth)]$, updating parameters estimates $\textcolor{red}{\bth^{(r+1)}}$ in two iterative steps with $\textcolor{blue}{\bth^{(r)}}$ fixed.
 
-\vspace{3em}
+\vspace{2em}
 
-{\bf E-step}: obtain $\mathsf{E}(Z) = \Gamma=[\gamma_{ik}]$. Using Bayesian rule, obtain:
+{\bf E-step}: obtain $\mathsf{E}(Z) = [\gamma_{ik}]$. Using Bayesian rule, obtain:
 \[
-\gamma_{ik}^{(r+1)} = \mathsf{E}(z_{ik}) = p(k|\x_i, \bth^{(r)}) =
+\textcolor{red}{\gamma_{ik}^{(r+1)}} = \mathsf{E}(z_{ik}) = p(k|\x_i, \textcolor{blue}{\bth^{(r)}}) =
     \frac{
-        \pi_k\mathcal{N}(y_i|\x_i\T\w^{(r)}_{k}, \beta^{(r)})
+        \textcolor{blue}{\pi_k}\mathcal{N}(y_i|\x_i\T\textcolor{blue}{\w^{(r)}_{k}}, \textcolor{blue}{\beta^{(r)}})
         }{
-        \sum_{k'=1}^{K}\pi_{k'}\mathcal{N}(y_i|\x_i\T\w^{(r)}_{k}, \beta^{(r)}).
+        \sum_{k'=1}^{K}\textcolor{blue}{\pi_{k'}}\mathcal{N}(y_i|\x_i\T\textcolor{blue}{\w^{(r)}_{k'}}, \textcolor{blue}{\beta^{(r)}}).
         } \]
 
 Define expectations of joint loglikelihood $\ln p(\y, Z|X, \bth)$ with respect to the posteriors distribution~$p(Z|\y,\bth)$
@@ -561,27 +561,56 @@ Q^{(r)}(\bth) = \mathsf{E}_Z(\ln p(\y, Z|\bth)) = \sum_{i=1}^m\sum_{k=1}^K\gamma
 \begin{frame}{Maximization step}
 
 \Wider[2em]{
-Expectation-Maximization algorithm maximizes $\mathsf{E}_{Z} [p(\y, Z|X, \bth)]$, updating parameters estimates $\bth^{(r)}$ in two iterative steps.
+Expectation-Maximization algorithm maximizes $\mathsf{E}_{Z} [p(\y, Z|X, \bth)]$, updating parameters estimates $\textcolor{red}{\bth^{(r+1)}}$ in two iterative steps with $\textcolor{blue}{\bth^{(r)}}$ fixed.
 
-\vspace{3em}
+\vspace{2em}
 
 
-{\bf M-step:} update parameters $\bth$, maximizing $Q^{(r)}(\bth)$. Maximize function~$Q^{(r)}(\bth)$ with respect to~$\bth$ with~$\Gamma^{(r+1)}$ fixed:
+{\bf M-step:} update parameters $\bth$, maximizing $Q^{(r)}(\bth) = \mathsf{E}_Z(\ln p(\y, Z|\bth))$ with respect to~$\bth$ with~$\textcolor{blue}{\gamma^{(r+1)}}$ fixed:
+
+\[
+\textcolor{red}{\pi^{(r+1)}_k} = \frac{1}{n}\sum_{i=1}^m { \textcolor{blue}{\gamma_{ik}^{(r+1)}}}.
+\]
+
+\[
+\textcolor{red}{\w^{(r+1)}_k} = \argmax_{\w_k}\sum_{i=1}^m -\textcolor{blue}{\gamma^{(r+1)}_{ik}}
+    \left(
+        y_i-\w_k\T\x_i
+    \right)^2,
+\]
+\[
+\beta^{(r+1)}_k = \argmax_{\beta}\sum_{i=1}^m\gamma^{(r+1)}_{ik}
+    \left(n\ln\beta
+        -\frac{1}{\beta}(y_i-\x_i\T\w^{(r+1)}_k)^2
+    \right).
+\]
+}
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Maximization step}
+
+\Wider[2em]{
+Expectation-Maximization algorithm maximizes $\mathsf{E}_{Z} [p(\y, Z|X, \bth)]$, updating parameters estimates $\textcolor{red}{\bth^{(r+1)}}$ in two iterative steps with $\textcolor{blue}{\bth^{(r)}}$ fixed.
+
+\vspace{2em}
+
+
+{\bf M-step:} update parameters $\bth$, maximizing $Q^{(r)}(\bth) = \mathsf{E}_Z(\ln p(\y, Z|\bth))$ with respect to~$\bth$ with~$\textcolor{blue}{\gamma^{(r+1)}}$ fixed:
 
 \[
 \pi^{(r+1)}_k = \frac{1}{n}\sum_{i=1}^m { \gamma_{ik}^{(r+1)}}.
 \]
 
 \[
-\w^{(r+1)}_k = \argmax_{\w_k}\sum_{i=1}^m -\gamma^{(r+1)}_{ik}
+\textcolor{blue}{\w^{(r+1)}_k} = \argmax_{\w_k}\sum_{i=1}^m -\gamma^{(r+1)}_{ik}
     \left(
         y_i-\w_k\T\x_i
     \right)^2,
 \]
 \[
-\beta^{(r)}_k = \argmax_{\beta}\sum_{i=1}^m\gamma^{(r+1)}_{ik}
+\textcolor{red}{\beta^{(r+1)}_k} = \argmax_{\beta}\sum_{i=1}^m\textcolor{blue}{\gamma^{(r+1)}_{ik}}
     \left(n\ln\beta
-        -\frac{1}{\beta}(y_i-\x_i\T\w^{(r+1)}_k)^2
+        -\frac{1}{\beta}(y_i-\x_i\T\textcolor{blue}{\w^{(r+1)}_k})^2
     \right).
 \]
 }
@@ -601,13 +630,65 @@ Expectation-Maximization algorithm maximizes $\mathsf{E}_{Z} [p(\y, Z|X, \bth)]$
 Suppose that each model $f(\x, \w_k)$ generates a sample $(\x, y)$ with some probability $p(k|\x, \w)$. Then
 the following factorization holds
 \begin{equation*}\label{eq:mixture_of_experts} p(y|\x, \bth) = \sum_{k=1}^{K} p(y, k| \x, \bth) = \sum_{k=1}^{K} p(k|\x, \bth)p(y|k, \x, \bth)\end{equation*}
- for $p(y|\x, \bth)$. 
- 
+ for $p(y|\x, \bth)$.
+
  \bigskip
- 
+
  Here $p(k|\x, \bth)$ correspond to weight parameters $\pi_k$ in mixture models dependent on the inputs $\x$:
 \[\pi_k(\x, \bv_k) = \frac{\exp(\bv_k\T\x)}{\sum_{k'=1}^K \exp(\bv_{k'}\T\x)}.\]
 
+\medskip
+
+Parameter's estimation via EM differs only in M-step.
+
+
+
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{EM for Mixture of experts} 
+
+\Wider[1em]{
+
+\textbf{E-step}: compute hidden variables $\textcolor{blue}{\gamma^{(r+1)}_{ik}}$, the expectation of the indicator
+variables, as previously shown.
+
+\medskip
+
+\textbf{M-step}: find new parameter estimates
+   \[ \textcolor{red}{\bv^{(r+1)}_k }= \argmax_{\bv} \sum_{i=1}^m \textcolor{blue}{\gamma_{ik}^{(r+1)}}\ln\pi_k(\x_i, \bv), \quad\quad \]
+   
+  \[   \textcolor{red}{\w^{(r+1)}_k} = \argmax_{\w_k} \left[- \sum_{i=1}^m\textcolor{blue}{\gamma^{(r+1)}_{ik}}
+    \left(
+        y_i-\w_k\T\x_i
+    \right)^2 \right], \] 
+    
+  \[ \beta^{(r+1)}_k = \argmax_{\beta} \left[ n\ln\beta
+        -\frac{1}{\beta}\left(y_i-\x_i\T\w^{(r+1)}_k\right)^2 \right]. \]
+
+}
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{EM for Mixture of experts}
+
+\Wider[1em]{
+
+\textbf{E-step}: compute hidden variables $\textcolor{blue}{{\gamma^{(r+1)}_{ik}}}$, the expectation of the indicator
+variables, as previously shown.
+
+\medskip
+
+\textbf{M-step}: find new parameter estimates
+   \[ \bv^{(r+1)}_k = \argmax_{\bv} \sum_{i=1}^m \gamma_{ik}^{(r+1)}\ln\pi_k(\x_i, \bv), \quad\quad \]
+
+  \[   \textcolor{blue}{\w^{(r+1)}_k} = \argmax_{\w_k} \left[- \sum_{i=1}^m\gamma^{(r+1)}_{ik}
+    \left(
+        y_i-\w_k\T\x_i
+    \right)^2 \right], \]
+
+  \[ \textcolor{red}{\beta^{(r+1)}_k} = \argmax_{\beta} \left[ n\ln\beta
+        -\frac{1}{\beta}\left(y_i-\x_i\T\textcolor{blue}{\w^{(r+1)}_k}\right)^2 \right]. \]
+
+}
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
 \begin{frame}
@@ -668,4 +749,4 @@ Piece-wise constant approximation of missing values:
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
 
-\end{document}
+\end{document} 
