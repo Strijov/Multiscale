@@ -1,6 +1,7 @@
 function model = demoFeatureSelection(StructTS, model, generators)
 
 N_PREDICTIONS = 1;
+N_PRED_PLOT = 10;
 TRAIN_TEST_VAL_RATIO = [0.75, 0.25]; %FIXED TRAIN_TEST_VAL_RATIO, train 
                                         %ratio was 0
 
@@ -41,7 +42,7 @@ end
 
 %--------------------------------------------------------------------------
 % Add regression matrix to the main structure:
-StructTS = CreateRegMatrix(StructTS);
+StructTS = CreateRegMatrix(StructTS, N_PREDICTIONS);
 
 % Plot time series and a range of segments to forecast
 [fname, caption] = plot_ts(StructTS, FOLDER);
@@ -52,8 +53,9 @@ figs(1).captions = caption;
 %ts = MergeDataset(tsStructArray, N_PREDICTIONS);
 
 % Split data into train and test:
-[idxTest, idxTrain, ~] = MultipleSplit(size(StructTS.X, 1), size(StructTS.X, 1), ...
+[idxTest, idxTrain, idxVal] = MultipleSplit(size(StructTS.X, 1), size(StructTS.X, 1), ...
                                         TRAIN_TEST_VAL_RATIO);
+idxTrain = [idxVal, idxTrain];
                                             
 %--------------------------------------------------------------------------
 % Define baseline model:
@@ -80,7 +82,7 @@ disp('Results with original features:')
 disp([testMAPE, trainMAPE])  
     
 % plot frc results:
-[fname, caption, ~, ~] = plot_forecasting_results(StructTS, model, N_PREDICTIONS, 10, ...
+[fname, caption, ~, ~] = plot_forecasting_results(StructTS, model, N_PRED_PLOT, 10, ...
                                                    FOLDER, '');
 figs(2).names = fname;
 figs(2).captions = caption;
@@ -109,7 +111,7 @@ for n_gen = 1:nGenerators
     disp([testMAPE, trainMAPE])  
     results(:, 2 + n_gen) = {testMeanRes, trainMeanRes, testStdRes, trainStdRes, testMAPE', trainMAPE'};
 
-    [fname, caption, ~, ~] = plot_forecasting_results(newStructTS, model, N_PREDICTIONS, 10,...
+    [fname, caption, ~, ~] = plot_forecasting_results(newStructTS, model, N_PRED_PLOT, 10,...
                                                        FOLDER, ['_fs_',generators(n_gen).name]);
     figs = struct('names', cell(1), 'captions', cell(1));
     figs(1).names = {gen_fname, fname};
@@ -136,7 +138,7 @@ results(:, 3 + nGenerators) = {testMeanRes, trainMeanRes, testStdRes, trainStdRe
 disp('Results with all generators:')
 disp([testMAPE, trainMAPE])  
 
-[fname, caption, ~, ~] = plot_forecasting_results(StructTS, model, N_PREDICTIONS, ...
+[fname, caption, ~, ~] = plot_forecasting_results(StructTS, model, N_PRED_PLOT, ...
                                                    10, FOLDER, '_fs_all');
 figs = struct('names', cell(1), 'captions', cell(1));
 figs(1).names = {gen_fname, fname};
@@ -175,7 +177,7 @@ results(:, 4 + nGenerators) = {testMeanRes, trainMeanRes, testStdRes, trainStdRe
 disp('Results with PCA applied to all generators:')
 disp([testMAPE, trainMAPE])  
 % plot frc results:
-[~, ~, fname, caption] = plot_forecasting_results(pcaStructTS, model, N_PREDICTIONS, 10, ...
+[~, ~, fname, caption] = plot_forecasting_results(pcaStructTS, model, N_PRED_PLOT, 10, ...
                                                         FOLDER, '_fs_pca');
 figs(2).names = fname;
 figs(2).captions = caption;
@@ -210,7 +212,7 @@ results(:, 5 + nGenerators) = {testMeanRes, trainMeanRes, testStdRes, trainStdRe
 disp('Results with NPCA applied to all generators:')
 disp([testMAPE, trainMAPE])  
 % plot frc results:
-[~, ~, fname, caption] = plot_forecasting_results(StructTS, model, N_PREDICTIONS, 10, ...
+[~, ~, fname, caption] = plot_forecasting_results(StructTS, model, N_PRED_PLOT, 10, ...
                                                         FOLDER, '_fs_npca');
 figs(2).names = fname;
 figs(2).captions = caption;
