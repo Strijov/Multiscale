@@ -36,7 +36,7 @@
 }
 \newcommand{\argmax}{\mathop{\rm arg\,max}\limits}
 
-\graphicspath{ {../../code/} {../fig/} }
+\graphicspath{ {../../code/} {../fig/} {fig/}}
 
 %-----------------------------------------------------------------------------------------------------
 \title[\hbox to 56mm{Multiscale forecasting\hfill\insertframenumber\,/\,\inserttotalframenumber}]{Feature generation for multiscale time series forecasting}
@@ -655,7 +655,7 @@ Parameter's estimation via EM differs only in M-step.
 
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
-\begin{frame}{EM for Mixture of experts} 
+\begin{frame}{EM for Mixture of experts}
 
 \Wider[1em]{
 
@@ -666,12 +666,12 @@ variables, as previously shown.
 
 \textbf{M-step}: find new parameter estimates
    \[ \textcolor{red}{\bv^{(r+1)}_k }= \argmax_{\bv} \sum_{i=1}^m \textcolor{blue}{\gamma_{ik}^{(r+1)}}\ln\pi_k(\x_i, \bv), \quad\quad \]
-   
+
   \[   \textcolor{red}{\w^{(r+1)}_k} = \argmax_{\w_k} \left[- \sum_{i=1}^m\textcolor{blue}{\gamma^{(r+1)}_{ik}}
     \left(
         y_i-\w_k\T\x_i
-    \right)^2 \right], \] 
-    
+    \right)^2 \right], \]
+
   \[ \beta^{(r+1)}_k = \argmax_{\beta} \left[ n\ln\beta
         -\frac{1}{\beta}\left(y_i-\x_i\T\w^{(r+1)}_k\right)^2 \right]. \]
 
@@ -767,7 +767,7 @@ Precipitation, Wind, Relative Humidity, Solar.
 \textbf{Feature combinations:}
 \begin{itemize}
 \item History: the standard regression-based forecast with no additional features.
-\item SSA, Cubic, Conv, Centroids, NW: history + a particular feature. 
+\item SSA, Cubic, Conv, Centroids, NW: history + a particular feature.
 %: parameters of local SSA approximation, ``Cubic'': coefficients of cubic polynomial approximation, ``Conv'': for multiscale features and sample statistics, ``Centroids'':  metric distances to centroids.
 \item All: all of the above, with no feature selection.
 \item  PCA and NPCA: all generation strategies with feature selection.
@@ -866,10 +866,10 @@ Suppose that the observations $s_i = s(t_i)$ of the signal $s(t)$ are sampled un
 
 To obtain evenly spaced observations:
 \begin{enumerate}[1)]
-\item select a new sampling rate $\trs$, 
-\item form the new grid 
-\[\Grs = \{t_1, \dots, \Trs \}, \quad t_i  = t_1 + (i-1)\cdot\trs \]  
-\item and approximate 
+\item select a new sampling rate $\trs$,
+\item form the new grid
+\[\Grs = \{t_1, \dots, \Trs \}, \quad t_i  = t_1 + (i-1)\cdot\trs \]
+\item and approximate
 unobserved evenly-spaced values $\hat{s_i} = s(t_i)$, $t_i \in \Grs$ using the sampled observations $s_i = s(t_i)$, $t_i \in \Gs$.
 \end{enumerate}
 
