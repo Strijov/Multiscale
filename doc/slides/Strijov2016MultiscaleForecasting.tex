@@ -945,10 +945,10 @@ $\Rightarrow$ the time series have to be low-pass filtered to satisfy the Nyquis
 
 Let $\Grs$ be the desired grid, $G \subseteq \Grs$. To obtain $s(\Grs)$:
 \begin{enumerate}
-\item Upsample time series using piecewise linear approximation.
+\item Approximate $s(\Grs\setminus G)$ using piecewise linear approximation.
 %\item Lowpass filter $\bs$, so that $\bs$ is bendlimited with $\fb$. \\
 \item Find $\bs$'s FFT coefficients $a_j,\; b_j$ for  $j = 1, \dots, 2^{\lfloor\log_2T\rfloor}$.
-\item Set $a_j = 0,\; b_j=0$, for  $j > 2^{\lfloor\log_2T\rfloor} - 1$.
+\item Set $a_j = 0,\; b_j=0$, for  $j > 2^{{\lfloor\log_2T\rfloor} - 1}$.
 \item Reconstruct the time series, using inverse FFT.
 
 \end{enumerate}
