@@ -288,7 +288,7 @@ For $k$ in $\{1, \dots,  m_{\text{test}} - m_{\min}\}$ repeat:
  \]
 \item apply feature transformation to $\bX^{*}_{\text{train}, i}$, $\bX^{*}_{\text{val}, i}$\;
 \item  train forecasting model $\fx(\x, \hat{\w}_i)$, using $\bX^{*}_{\text{train}, i}$\;
-\item  obtain vector of residuals $\veps  = \by_{\text{val}, i} - \fx(\bx_{\text{val}, i}, \hat{\w}_i)$\;
+\item  obtain vector of residues $\veps  = \by_{\text{val}, i} - \fx(\bx_{\text{val}, i}, \hat{\w}_i)$\;
 \item  compute forecasting quality:
   \[ {SMAPE}(i)  = \frac{1}{r} \sum_{t=1}^{r} \frac{2|\varepsilon_{t}|}{|2(y_{\text{val}, i})_t - \varepsilon_{t}|};\]
 \end{itemize}
@@ -506,7 +506,7 @@ associated with application of mixtures of experts~\cite{Yuksel2015}, ensembles 
 % define $\bX^{*}_{\text{train}, i}$ as $(i+1)$-th to $(i+ m_{\min} + 1)$-th rows of $\bX^{*}_{\text{test}}$ \;
 % define $\bx^{*}_{\text{val}, i}$ as the $i$-th row of $\bX^{*}_{\text{test}}$ \;
 %  train forecasting model $\fx(\x, \hat{\w}_i, \hat{\beta})$, using $\bX^{*}_{\text{train}, i}$ and \;
-%  obtain vector of residuals $\veps  = \by_{\text{val}, i} - \fx(\bx_{\text{val}, i}, \hat{\w}_i, \hat{\beta})$ \;
+%  obtain vector of residues $\veps  = \by_{\text{val}, i} - \fx(\bx_{\text{val}, i}, \hat{\w}_i, \hat{\beta})$ \;
 %  compute forecasting quality:
 %  \[ {SMAPE}(i)  = \frac{1}{r} \sum_{t=1}^{r} \frac{2|\varepsilon_{t}|}{|2(y_{\text{val}, i})_t - \varepsilon_{t}|};\]
 %  }

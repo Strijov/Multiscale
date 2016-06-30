@@ -27,6 +27,9 @@ strend =    '\\end{document}';
 fid = fopen(tex_filename,'w+');
 fprintf(fid,strbeg);
 
+if ~iscell(report_struct.handles)
+   report_struct.handles = {report_struct.handles}; 
+end
 
 for i = 1:numel(report_struct.handles)
    fid = feval(report_struct.handles{i}, fid, report_struct);    

@@ -1,0 +1,298 @@
+\documentclass[12pt]{article}
+\extrafloats{100}
+\usepackage{a4wide}
+\usepackage{multicol, multirow}
+\usepackage[cp1251]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath, amsfonts, amssymb, amsthm, amscd}
+\usepackage{graphicx, epsfig, subfig, epstopdf}
+\usepackage{longtable}
+\graphicspath{ {../fig/} {../} }
+\begin{document}
+
+Results for toy data with various noise levels.
+ 
+\begin{figure}
+\centering
+\subfloat[bias]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/bias_linear_segments_0.png}}
+\subfloat[MASE]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/MASE_linear_segments_0.png}}
+\caption{(a) Bias by noise magnitude.		(b)		MASE (ratio of MAE to martingal MAE) by noise magnitude.	}
+\end{figure}
+
+{\tiny
+\begin{longtable}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+ Models &test & train  &test & train  &test & train  &test & train  &test & train  &test & train  &test & train  &test & train  &test & train  &test & train  &test & train\\
+\hline
+MLR &   0.009 &    0.359 &    0.498 &    0.586 &    0.649 &    0.624 &    0.669 &    0.717 &    0.684 &    0.736 &    0.671 &    0.009 &    0.337 &    0.497 &    0.546 &    0.600 &    0.608 &    0.600 &    0.618 &    0.631 &    0.641 &    0.678\\
+\hline
+ MSVR &   0.000 &    0.372 &    0.518 &    0.606 &    0.670 &    0.635 &    0.701 &    0.703 &    0.672 &    0.745 &    0.666 &    0.000 &    0.284 &    0.366 &    0.373 &    0.418 &    0.411 &    0.359 &    0.375 &    0.369 &    0.370 &    0.393\\
+\hline
+ RF &   0.000 &    0.364 &    0.513 &    0.617 &    0.661 &    0.646 &    0.692 &    0.724 &    0.680 &    0.769 &    0.699 &    0.000 &    0.182 &    0.279 &    0.308 &    0.333 &    0.348 &    0.353 &    0.364 &    0.367 &    0.373 &    0.389\\
+\hline
+ ANN &   0.000 &    0.525 &    0.696 &    0.885 &    1.036 &    0.854 &    0.966 &    1.106 &    0.996 &    1.197 &    1.005 &    0.000 &    0.322 &    0.470 &    0.512 &    0.777 &    0.571 &    0.786 &    0.824 &    0.839 &    0.553 &    0.862\\
+
+\hline
+\end{longtable}
+}
+
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_linear_segments_0.png}}
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_segms_linear_segments_0.png}}
+\caption{(a)	randomly generated data	Target time series	linear.segments.0.		(b)		Target segments of the time series	linear.segments.0.		}
+\end{figure}
+
+
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_01_.png}
+%\caption{Forecasting results for	linear.segments.0.	MLR, MSVR, RF, ANN}
+%\end{figure}
+%
+%
+%\begin{figure}
+%\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_0_1_ANN.png}
+\caption{Forecasting results for	linear.segments.0,	ANN.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_linear_segments_0_1.png}}
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_segms_linear_segments_0_1.png}}
+\caption{(a)	randomly generated data	Target time series	linear.segments.0.1.		(b)		Target segments of the time series	linear.segments.0.1.		}
+\end{figure}
+
+
+
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_0_11_.png}
+\caption{Forecasting results for	linear.segments.0.1.	MLR, MSVR, RF, ANN}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_0_1_1_ANN.png}
+\caption{Forecasting results for	linear.segments.0.1,	ANN.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_linear_segments_0_2.png}}
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_segms_linear_segments_0_2.png}}
+\caption{(a)	randomly generated data	Target time series	linear.segments.0.2.		(b)		Target segments of the time series	linear.segments.0.2.		}
+\end{figure}
+
+
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_0_21_.png}
+\caption{Forecasting results for	linear.segments.0.2.	MLR, MSVR, RF, ANN}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_0_2_1_ANN.png}
+\caption{Forecasting results for	linear.segments.0.2,	ANN.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_linear_segments_0_3.png}}
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_segms_linear_segments_0_3.png}}
+\caption{(a)	randomly generated data	Target time series	linear.segments.0.3.		(b)		Target segments of the time series	linear.segments.0.3.		}
+\end{figure}
+
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_0_31_.png}
+\caption{Forecasting results for	linear.segments.0.3.	MLR, MSVR, RF, ANN}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_0_3_1_ANN.png}
+\caption{Forecasting results for	linear.segments.0.3,	ANN.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_linear_segments_0_4.png}}
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_segms_linear_segments_0_4.png}}
+\caption{(a)	randomly generated data	Target time series	linear.segments.0.4.		(b)		Target segments of the time series	linear.segments.0.4.		}
+\end{figure}
+
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_0_41_.png}
+\caption{Forecasting results for	linear.segments.0.4.	MLR, MSVR, RF, ANN}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_0_4_1_ANN.png}
+\caption{Forecasting results for	linear.segments.0.4,	ANN.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_linear_segments_0_5.png}}
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_segms_linear_segments_0_5.png}}
+\caption{(a)	randomly generated data	Target time series	linear.segments.0.5.		(b)		Target segments of the time series	linear.segments.0.5.		}
+\end{figure}
+
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_0_51_.png}
+\caption{Forecasting results for	linear.segments.0.5.	MLR, MSVR, RF, ANN}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_0_5_1_ANN.png}
+\caption{Forecasting results for	linear.segments.0.5,	ANN.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_linear_segments_0_6.png}}
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_segms_linear_segments_0_6.png}}
+\caption{(a)	randomly generated data	Target time series	linear.segments.0.6.		(b)		Target segments of the time series	linear.segments.0.6.		}
+\end{figure}
+
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_0_61_.png}
+\caption{Forecasting results for	linear.segments.0.6.	MLR, MSVR, RF, ANN}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_0_6_1_ANN.png}
+\caption{Forecasting results for	linear.segments.0.6,	ANN.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_linear_segments_0_7.png}}
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_segms_linear_segments_0_7.png}}
+\caption{(a)	randomly generated data	Target time series	linear.segments.0.7.		(b)		Target segments of the time series	linear.segments.0.7.		}
+\end{figure}
+
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_0_71_.png}
+\caption{Forecasting results for	linear.segments.0.7.	MLR, MSVR, RF, ANN}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_0_7_1_ANN.png}
+\caption{Forecasting results for	linear.segments.0.7,	ANN.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_linear_segments_0_8.png}}
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_segms_linear_segments_0_8.png}}
+\caption{(a)	randomly generated data	Target time series	linear.segments.0.8.		(b)		Target segments of the time series	linear.segments.0.8.		}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_0_81_.png}
+\caption{Forecasting results for	linear.segments.0.8.	MLR, MSVR, RF, ANN}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_0_8_1_ANN.png}
+\caption{Forecasting results for	linear.segments.0.8,	ANN.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_linear_segments_0_9.png}}
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_segms_linear_segments_0_9.png}}
+\caption{(a)	randomly generated data	Target time series	linear.segments.0.9.		(b)		Target segments of the time series	linear.segments.0.9.		}
+\end{figure}
+
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_0_91_.png}
+\caption{Forecasting results for	linear.segments.0.9.	MLR, MSVR, RF, ANN}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_0_9_1_ANN.png}
+\caption{Forecasting results for	linear.segments.0.9,	ANN.	}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_linear_segments_1.png}}
+\subfloat[]{\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/data_segms_linear_segments_1.png}}
+\caption{(a)	randomly generated data	Target time series	linear.segments.1.		(b)		Target segments of the time series	linear.segments.1.		}
+\end{figure}
+
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_11_.png}
+\caption{Forecasting results for	linear.segments.1.	MLR, MSVR, RF, ANN}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[trim= 2cm 0 0 15cm,clip, width=0.45\textwidth]{fig/ExampleData/res_linear_segments_1_1_ANN.png}
+\caption{Forecasting results for	linear.segments.1,	ANN.	}
+\end{figure}
+
+
+
+\end{document} 
