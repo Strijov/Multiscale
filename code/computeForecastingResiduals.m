@@ -20,8 +20,8 @@ function [testRes, trainRes, model] = computeForecastingResiduals(ts, ...
 % idxTest   - test (validation) indices of test objects. FIXIT Validation set is used as test
 %        set...
 
-ERROR_HANDLE = @calcMASE;
-%ERROR_HANDLE = @calcSymMAPE;
+ERROR_HANDLE = @calcMAPE;
+%ERROR_HANDLE = @calcSymMAPE; @calcMASE;
 
 if nargin == 2
     idxTrain = 1:size(ts.X, 1);
@@ -46,6 +46,8 @@ if isempty(model.forecasted_y)
     model.forecasted_y = cell(1, numel(ts.x));
     model.forecasted_y = cellfun(@(x) zeros(numel(x), 1), ts.x, 'UniformOutput', false);
 end
+
+% addFrc unravels forecasts and denormalizes them:
 nPredictions = size(ts.Y, 2)/sum(ts.deltaTr);
 [model.forecasted_y, idxTrain] = addFrcToModel(model.forecasted_y, matTrainForecastY, idxTrain, ts, nPredictions);                         
 [model.forecasted_y, idxTest] = addFrcToModel(model.forecasted_y, forecastY, idxTest, ts, nPredictions);                         
