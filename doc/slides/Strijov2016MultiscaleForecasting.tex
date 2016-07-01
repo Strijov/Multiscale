@@ -72,6 +72,278 @@
 \vfill
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+\begin{frame}{Energy consumption one-week forecast for each hour}%, hierarchical algorithms}
+
+\includegraphics[width=\textwidth]{fig/fig9.eps}
+\end{frame}
+
+\begin{frame}[t]{The periodic components of the multivariate time series}
+
+\vfill
+\begin{columns}[c]
+\column{1.5in}
+   The time series:
+
+   \bigskip
+   \begin{itemize}
+       \item energy price,
+       \item consumption,
+       \item daytime,
+       \item temperature,
+       \item humidity,
+       \item wind force,
+       \item holiday schedule.
+   \end{itemize}
+\column{1.5in}
+   Periods:
+
+   \bigskip
+   \begin{itemize}
+       \item one year seasons (temperature, daytime),
+       \item one week,
+       \item one day (working day, week-end),
+       \item a holiday,
+       \item aperiodic events.
+   \end{itemize}
+
+\column{1.5in}
+   \includegraphics[width=2in]{fig/fig0.png}
+\end{columns}
+\vfill
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}[t]{The autoregressive matrix, five week-ends}
+
+\begin{center}
+{\includegraphics[width=0.75\textwidth]{fig/Weeks5.eps}}
+\end{center}
+
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{The autoregressive matrix and the linear model}
+$$
+\underset{(m+1)\times(n+1)}{\mathbf{X}^*}  =
+\left(%
+\begin{array}{l|lll}
+s_T                 & s_{T-1}           & \ldots & s_{T-\kappa +1}      \\
+\hline                                                                  \\
+s_{(m-1)\kappa }    & s_{(m-1)\kappa -1}& \ldots & s_{(m-2)\kappa +1}   \\
+\ldots              & \ldots            & \ldots & \ldots               \\
+s_{n\kappa }        & s_{n\kappa -1}    & \ldots & s_{n(\kappa -1)+1}   \\
+\ldots              & \ldots            & \ldots & \ldots               \\
+s_\kappa            & s_{\kappa -1}     & \ldots & s_1                  \\
+\end{array}%
+\right).
+$$
+
+\bigskip
+In a nutshell,
+$$
+\mathbf{X}^*=\left[
+\begin{array}{c|c}
+ \underset{1{\times}1}{s_T} & \underset{1{\times}n}{\x_{m+1}} \\
+ \hline
+ \underset{m{\times}1}{\mathbf{y}} & \underset{m{\times}n}{\mathbf{X}} \\
+\end{array}
+\right].
+$$
+
+In terms of linear regression:
+$$
+\mathbf{y} = \mathbf{X}\mathbf{w},
+$$
+$$
+y_{m+1} = s_T = \w\T\x_{m+1}\T.
+$$
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Model generation}
+%
+Introduce a set of the primitive functions $\mathfrak{G}=\{g_1,\ldots,g_r\}$, \par
+for example $g_1=1$, $g_2=\sqrt{x}$, $g_3=x$, $g_4=x\sqrt{x}$, etc.
+
+\vspace{0.7cm}
+The generated set of features $\mathbf{X}=$
+{\footnotesize
+$$
+\left(%
+\begin{array}{lll|l|lll}%
+g_1\circ s_{T-1}    & \ldots & g_r\circ s_{T-1}        & \ldots & g_1\circ s_{T-\kappa +1} & \ldots   & g_r\circ s_{T-\kappa +1}\\
+\hline
+g_1\circ s_{(m-1)\kappa -1}& \ldots & g_r\circ s_{(m-1)\kappa -1}   & \ldots & g_1\circ s_{(m-2)\kappa +1} & \ldots & g_r\circ s_{(m-2)\kappa +1} \\
+\ldots      & \ldots & \ldots        & \ldots & \ldots  & \ldots      & \ldots\\
+g_1\circ s_{n\kappa -1}    & \ldots & g_r\circ s_{n\kappa -1}       & \ldots & g_1\circ s_{n(\kappa -1)+1} & \ldots & g_r\circ s_{n(\kappa -1)+1}\\
+\ldots      & \ldots & \ldots        & \ldots & \ldots  & \ldots      & \ldots\\
+g_1\circ s_{\kappa -1}     & \ldots & g_r\circ s_{\kappa -1}        & \ldots & g_1\circ s_1  & \ldots         & g_r\circ s_1\\
+\end{array}%
+\right).
+$$
+}
+
+Kolmogorov-Gabor polynomial as a variant for model generation
+$$
+y=w_0+\sum_{i=1}^{UV}w_ix_i + \sum_{i=1}^{n}\sum_{j=1}^{n}w_{ij}x_ix_j +\dots + \sum_{i=1}^{n}\ldots\sum_{z=1}^{n}w_{i\ldots z}x_i\ldots x_z,
+$$
+where the coefficients
+$$
+\mathbf{w}= (w_0,w_i,w_{ij},\ldots,w_{i\ldots z})_{i,j,\ldots,z=1,\ldots,n}.
+$$
+
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}[t]{The one-day forecast (an example)}
+
+{\hfill\includegraphics[angle=0,width=0.75\textwidth]{fig/Forecast1.eps}\hfill}
+
+The function $y  =  f(\mathbf{x}, \mathbf{w})$ could be a linear model, neural network, deep NN, SVN, ...
+
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Ill-conditioned matrix, or curse of dimensionality}
+
+Assume we have hourly data on price/consumption for three years.
+
+Then the matrix~$\underset{(m+1)\times(n+1)}{\mathbf{X}^*}$  is
+\begin{center}
+$156 \times 168$, in details: $52\mbox{w} \cdot 3\mbox{y} \times 24\mbox{h}\cdot 7\mbox{d}$;
+\end{center}
+
+\begin{itemize}
+\item for 6 time series the matrix $\mathbf{X}$ is $156 \times 1008$,
+\item for 4 primitive functions it is $156 \times 4032$,
+\end{itemize}
+$$
+m<<n.
+$$
+
+The autoregressive matrix could be considered as \emph{ill-conditioned} and \emph{multi-correlated}.
+The model selection procedure is required.
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}[t]{How many parameters must be used to forecast?}
+The color shows the value of a parameter for each hour.
+
+{\hfill{\includegraphics[angle=0,width=0.6\textwidth]{fig/FlatParameters.eps}}\hfill}
+
+Estimate parameters~$\mathbf{w}(\tau)=(\mathbf{X}\T \mathbf{X})^{-1}\mathbf{X}\T\mathbf{y}$,
+then calculate the sample $s(\tau) = \w\T (\tau) \mathbf{x}_{m+1}$ for each~$\tau$ of the next ($m+1$-th) period.
+%
+%\begin{itemize}
+%\item $\mathbf{w}=(X^TX)^{-1}X^T\mathbf{y}$
+%\item $s(T) = \langle{\mathbf{x}_m, w}\rangle$
+%\item for each~$j$ of the next period.
+%\end{itemize}
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}[t]{Ways to model selection: brief list of algorithms}
+Exhaustive search and modifications
+\begin{enumerate}
+\item Exhaustive search of $2^P$ models
+%\item Method of group data handling, $K \cdot C_P^2$ models
+\item Genetic algorithms
+\item Add/Del (append/delete a feature), $P(P-1)/2$ models
+\item Add-del or stepwise regression, $\sim P^2$ models
+\end{enumerate}
+
+\vspace{0.7cm}
+Parameter space analysis
+\begin{enumerate}
+\item Least angle regression, Lasso, Stagewise, Elastic net
+\item Optimal brain damage/surgery
+\end{enumerate}
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}[t]{Exhaustive search and Add algorithms}
+\vspace{-.5cm}
+The initial model includes all independent variables
+$$
+f(\mathbf{w},\mathbf{x}) = \alpha_1 w_1 x_1 + \alpha_2 w_2 x_2 + \ldots +\alpha_n w_n x_n.
+$$
+The hyperparameter $\alpha\in\{0,1\}$ is included in the model. The {\bf exhaustive search} procedure counts
+$$
+\begin{array}{cccc}
+\alpha_1 & \alpha_2 & \ldots & \alpha_n \\
+\hline
+1 & 0 & \ldots & 0 \\
+0 & 1 & \ldots & 0 \\
+\ldots & \ldots & \ldots & \ldots \\
+1 & 1 & \ldots & 1 \\
+\end{array}.
+$$
+%\end{frame}
+%%-----------------------------------------------------------------------------------------------------
+%\begin{frame}[t]
+
+{\bf Add (append a feature)}
+
+\begin{enumerate}
+\item[Step~0.]
+The active set $\mathcal{A}_0=\emptyset$.
+\item[Step~~$k$]$=1,\ldots,n$.
+Select the next best feature index
+$$
+\hat{j}=\arg\min_{j\in \{1,\dots,n\}\setminus\mathcal{A}_k}\text{~}\min\limits_{\mathbf{w}\in\mathbb{R}^{|\mathcal{A}|}}\|[\mathbf{X}_{\mathcal{A}_{k}}\boldsymbol{\chi}_j]\mathbf{w}-\mathbf{y}\|_2^2,
+$$
+according to minimum of the error function $S(\mathbf{w})$; then
+$$
+\mathcal{A}_{k+1}=\mathcal{A}_k\cup\hat{j}.
+$$
+\end{enumerate}
+\end{frame}
+
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}[t]{Discrete genetic algorithm for feature selection (simple ver.)}
+\vfill
+\begin{enumerate}
+\item There are set of binary vectors $\{\mathbf{a}_1,\ldots,\mathbf{a}_P\}$, $\mathbf{a}\in\{0,1\}^n$;
+\item get two vectors $\mathbf{a}_p, \mathbf{a}_q$, $p,q\in\{1,\ldots,P\}$;
+\item chose random number $\nu\in \{1,\ldots,n-1\}$;
+\item split both vectors and change their parts:
+$$[a_{p,1},\ldots,a_{p,\nu},a_{q,\nu+1},\ldots,a_{q,n}]\to\mathbf{a'}_p,$$
+$$[a_{q,1},\ldots,a_{q,\nu},a_{p,\nu+1},\ldots,a_{p,n}]\to\mathbf{a'}_q;$$
+\item choose random numbers $\eta_1,\ldots,\eta_Q\in\{1,\ldots,n\}$;
+\item invert positions $\eta_1,\ldots,\eta_Q$ of the vectors $\mathbf{a'}_p,\mathbf{a'}_q$;
+\item repeat items 2-6 $P/2$ times;
+\item evaluate the obtained models.
+\end{enumerate}
+\vfill
+Repeat $R$~times; here $P,Q,R$ are the parameters of the algorithm and~$n$ is the number of the corresponding model features.
+\end{frame}
+
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}[c]{Selection of a stable set of features of restricted size}
+
+{\small
+The sample contains multicollinear~$\bchi_1, \bchi_2$ and noisy~$\bchi_5,\bchi_6$ features, columns of the design matrix~$\bX$. We want to select two features from six.}
+
+\begin{center}
+\includegraphics[width=0.5\textwidth]{exp3_1.eps}
+\end{center}
+
+\begin{block}{Stability and accuracy for a fixed complexity}
+The solution:~$\bchi_3,\bchi_4$is an orthogonal set of features minimizing the error function.
+\end{block}
+
+{\tiny Algorithms: GMDH, Stepwise, Ridge, Lasso, Stagewise, FOS, LARS, Genetics, ... }
+
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Model parameter values with regularization}
+Vector-function~$\fx =\fx(\w,\bX)=[f(\w,\x_1),\ldots,f(\w,\x_m)]\T \in \mathbb{Y}^m$.
+\begin{columns}[c]
+\column{0.5\textwidth}
+\centering \includegraphics[width=\textwidth]{ridgeparams.eps}  \par $S(\bw)= \|\fx(\bw,
+\bX)-\by\|^2 + \gamma^2\|\bw\|^2$
+\column{0.5\textwidth}
+\begin{center}
+\includegraphics[width=\textwidth]{lassoparams.eps} \par $S(\bw)= \|\fx(\bw,\bX)-\by\|^2$, $T(\bw)\leqslant\tau$
+%\includegraphics[angle=0,width=0.6\textwidth]{figs/3ch/larsparams.eps}
+\end{center}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------------------------------------------------------------
 \begin{frame}{Multiscale data}
 
 Consider a large set of time series~$\fD=\{\bs^{(q)}| \; q = 1\dots, {Q}\}$.
