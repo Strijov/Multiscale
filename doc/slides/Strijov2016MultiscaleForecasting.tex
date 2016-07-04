@@ -252,25 +252,6 @@ Parameter space analysis
 \item Optimal brain damage/surgery
 \end{enumerate}
 \end{frame}
-%-----------------------------------------------------------------------------------------------------
-\begin{frame}[t]{Discrete genetic algorithm for feature selection (simple ver.)}
-\vfill
-\begin{enumerate}
-\item There are set of binary vectors $\{\mathbf{a}_1,\ldots,\mathbf{a}_P\}$, $\mathbf{a}\in\{0,1\}^n$;
-\item get two vectors $\mathbf{a}_p, \mathbf{a}_q$, $p,q\in\{1,\ldots,P\}$;
-\item chose random number $\nu\in \{1,\ldots,n-1\}$;
-\item split both vectors and change their parts:
-$$[a_{p,1},\ldots,a_{p,\nu},a_{q,\nu+1},\ldots,a_{q,n}]\to\mathbf{a'}_p,$$
-$$[a_{q,1},\ldots,a_{q,\nu},a_{p,\nu+1},\ldots,a_{p,n}]\to\mathbf{a'}_q;$$
-\item choose random numbers $\eta_1,\ldots,\eta_Q\in\{1,\ldots,n\}$;
-\item invert positions $\eta_1,\ldots,\eta_Q$ of the vectors $\mathbf{a'}_p,\mathbf{a'}_q$;
-\item repeat items 2-6 $P/2$ times;
-\item evaluate the obtained models.
-\end{enumerate}
-\vfill
-Repeat $R$~times; here $P,Q,R$ are the parameters of the algorithm and~$n$ is the number of the corresponding model features.
-\end{frame}
-
 %----------------------------------------------------------------------------------------------------------
 \begin{frame}[c]{Selection of a stable set of features of restricted size}
 
