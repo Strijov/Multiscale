@@ -42,7 +42,7 @@
 \title[\hbox to 56mm{Multiscale forecasting\hfill\insertframenumber\,/\,\inserttotalframenumber}]{Feature generation for multiscale time series forecasting}
 \author[V. Strijov]{A. Motrenko, R. Neychev, R. Isachenko, M. Popova, V. Strijov}
 \institute{Moscow Institute of Physics and Technology}
-\date{2016}
+\date{EURO 2016}
 
 %-----------------------------------------------------------------------------------------------------
 \begin{document}
@@ -54,12 +54,11 @@
 
 
 \begin{itemize}
-\item Design matrix
+\item Problem statement
 \item Testing procedure
 \item Feature generation
-\item Feature selection
 \item Mixture models
-\item Resampling
+\item Computational experiments
 \end{itemize}
 
 \end{frame}
@@ -254,45 +253,6 @@ Parameter space analysis
 \end{enumerate}
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
-\begin{frame}[t]{Exhaustive search and Add algorithms}
-\vspace{-.5cm}
-The initial model includes all independent variables
-$$
-f(\mathbf{w},\mathbf{x}) = \alpha_1 w_1 x_1 + \alpha_2 w_2 x_2 + \ldots +\alpha_n w_n x_n.
-$$
-The hyperparameter $\alpha\in\{0,1\}$ is included in the model. The {\bf exhaustive search} procedure counts
-$$
-\begin{array}{cccc}
-\alpha_1 & \alpha_2 & \ldots & \alpha_n \\
-\hline
-1 & 0 & \ldots & 0 \\
-0 & 1 & \ldots & 0 \\
-\ldots & \ldots & \ldots & \ldots \\
-1 & 1 & \ldots & 1 \\
-\end{array}.
-$$
-%\end{frame}
-%%-----------------------------------------------------------------------------------------------------
-%\begin{frame}[t]
-
-{\bf Add (append a feature)}
-
-\begin{enumerate}
-\item[Step~0.]
-The active set $\mathcal{A}_0=\emptyset$.
-\item[Step~~$k$]$=1,\ldots,n$.
-Select the next best feature index
-$$
-\hat{j}=\arg\min_{j\in \{1,\dots,n\}\setminus\mathcal{A}_k}\text{~}\min\limits_{\mathbf{w}\in\mathbb{R}^{|\mathcal{A}|}}\|[\mathbf{X}_{\mathcal{A}_{k}}\boldsymbol{\chi}_j]\mathbf{w}-\mathbf{y}\|_2^2,
-$$
-according to minimum of the error function $S(\mathbf{w})$; then
-$$
-\mathcal{A}_{k+1}=\mathcal{A}_k\cup\hat{j}.
-$$
-\end{enumerate}
-\end{frame}
-
-%-----------------------------------------------------------------------------------------------------
 \begin{frame}[t]{Discrete genetic algorithm for feature selection (simple ver.)}
 \vfill
 \begin{enumerate}
@@ -358,6 +318,122 @@ Each time series $\bs^{(q)}$ has its own sampling rate $\tau^{(q)}$.
 \includegraphics[width=0.55\textwidth]{data_example_100days.eps}
 \includegraphics[width=0.5\textwidth]{data_sampling_100days.eps}
 
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}
+\vfill
+\begin{center}
+{\Large \bf Resampling time series}
+\end{center}
+\vfill
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Resampling time series}
+
+Suppose that the observations $s_i = s(t_i)$ of the signal $s(t)$ are sampled unevenly:
+\[\Gs = \{t_1, \dots, t_T\}, \quad t_i \neq i\cdot\frac{t_T - t_1}{T-1} \]
+
+\bigskip
+
+To obtain evenly spaced observations:
+\begin{enumerate}[1)]
+\item select a new sampling rate $\trs$,
+\item form the new grid
+\[\Grs = \{t_1, \dots, \Trs \}, \quad t_i  = t_1 + (i-1)\cdot\trs \]
+\item and approximate
+unobserved evenly-spaced values $\hat{s_i} = s(t_i)$, $t_i \in \Grs$ using the sampled observations $s_i = s(t_i)$, $t_i \in \Gs$.
+\end{enumerate}
+
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Resampling: special case}
+
+\begin{enumerate}
+\item The initial sampling rate is approximately even, but distortions are possible:
+\[ t_i = i\cdot\tau + \delta_i, |\delta_i| < \frac{\tau}{2}.\]
+In this case the number $\Ts$ of resampled observations equals the initial number of observations $T$.
+\end{enumerate}
+
+\centering{\includegraphics[width=0.6\textwidth]{data_resampling_distortions.eps}}
+
+
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Resampling: special case}
+
+\begin{enumerate}
+\item[2.] The sampling rate is even, but some values are missing:
+\[ |t_{i+1} - t_{i}| = n\tau, n \in \mathbb{N}.\]
+Here $\ts = \tau$ and missing values are the only ones that one needs to approximate.
+\end{enumerate}
+
+\centering{\includegraphics[width=0.7\textwidth]{data_resampling_missing_values.eps}}
+
+
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Resampling: special case}
+
+\Wider[3em]{
+\begin{enumerate}
+\item[3.] Time series $\bs$ comprises a finite number of intervals $\bs_k$, each sampled from $s(t)$ at fixed sampling rate:
+\[ \bs = \left[s(\tau_1), \dots, s(T_1\tau_1), s(T_1\tau_1 + \tau_2), \dots,  s\left(\sum_{k}T_k\tau_k\right)\right], \] where $\sum_k{T_k} = T.$
+Here we select the maximum sampling rate $\fs = \max_{k} \frac{1}{\tau_k}$ and upsample the rest time series, using piecewise constant approximation.
+\end{enumerate}
+
+\centering{\includegraphics[width=0.5\textwidth]{data_resampling_varying_rates.eps}}
+
+
+}
+
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Resampling details}
+
+Suppose that the signal $s(t)$ is bandlimited with frequency $\fb$.
+
+\bigskip
+
+\textbf{Nyquist–Shannon  sampling condition:} it is sufficient to sample the signal $s(t)$ with frequency
+\[ \frac{1}{\trs} = \fs > 2\fb\]
+to be able to fully reconstruct the signal from its discretely sampled observations $s(t_i) = s(i\ts)$.
+
+\bigskip
+
+%For $\fs > 2\fb$, Whittaker-Shannon interpolation
+%\[s(t) = \sum_{i = -\infty}^{\infty} s_i\text{sinc}\left(\frac{t-i\ts}{\ts}\right)\]
+%of the time series $\bs$ yields perfect reconstruction of the signal $s(t)$.
+%
+%\medskip
+
+Discrete signals are never bandlimited %Sampling with $\fs < 2\fb$ causes distortions known as aliasing
+$\Rightarrow$ the time series have to be low-pass filtered to satisfy the Nyquist condition.
+
+
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Upsampling procedure}
+
+Let $\Grs$ be the desired grid, $G \subseteq \Grs$. To obtain $s(\Grs)$:
+\begin{enumerate}
+\item Approximate $s(\Grs\setminus G)$ using piecewise linear approximation.
+%\item Lowpass filter $\bs$, so that $\bs$ is bendlimited with $\fb$. \\
+\item Find $\bs$'s FFT coefficients $a_j,\; b_j$ for  $j = 1, \dots, 2^{\lfloor\log_2T\rfloor}$.
+\item Set $a_j = 0,\; b_j=0$, for  $j > 2^{{\lfloor\log_2T\rfloor} - 1}$.
+\item Reconstruct the time series, using inverse FFT.
+
+\end{enumerate}
+\includegraphics[width=0.55\textwidth]{pw_linear_approximation.eps}
+\includegraphics[width=0.55\textwidth]{fft_rec_err_upsampling.eps}
+
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}
+\vfill
+\begin{center}
+{\Large \bf Testing procedure}
+\end{center}
+\vfill
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
 \begin{frame}{Time series forecasting}
@@ -741,22 +817,109 @@ Apply kernel trick to the time series.
 The procedure may be applied to each $\bx^{(q)}$ or directly to the $\bx = [\bx^{(1)}, \dots, \bx^{(Q)}]$, resulting in only $P$ additional features instead of $Q\cdot{P}$
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
-\begin{frame}
-\vfill
-\begin{center}
-{\Large \bf Feature selection}
-\end{center}
-\vfill
-\end{frame}
+%\begin{frame}
+%\vfill
+%\begin{center}
+%{\Large \bf Feature selection}
+%\end{center}
+%\vfill
+%\end{frame}
+%%-----------------------------------------------------------------------------------------------------
+%\begin{frame}[t]{Exhaustive search and Add algorithms}
+%\vspace{-.5cm}
+%The initial model includes all independent variables
+%$$
+%f(\mathbf{w},\mathbf{x}) = \alpha_1 w_1 x_1 + \alpha_2 w_2 x_2 + \ldots +\alpha_n w_n x_n.
+%$$
+%The hyperparameter $\alpha\in\{0,1\}$ is included in the model. The {\bf exhaustive search} procedure counts
+%$$
+%\begin{array}{cccc}
+%\alpha_1 & \alpha_2 & \ldots & \alpha_n \\
+%\hline
+%1 & 0 & \ldots & 0 \\
+%0 & 1 & \ldots & 0 \\
+%\ldots & \ldots & \ldots & \ldots \\
+%1 & 1 & \ldots & 1 \\
+%\end{array}.
+%$$
+%%\end{frame}
+%%%-----------------------------------------------------------------------------------------------------
+%%\begin{frame}[t]
+%
+%{\bf Add (append a feature)}
+%
+%\begin{enumerate}
+%\item[Step~0.]
+%The active set $\mathcal{A}_0=\emptyset$.
+%\item[Step~~$k$]$=1,\ldots,n$.
+%Select the next best feature index
+%$$
+%\hat{j}=\arg\min_{j\in \{1,\dots,n\}\setminus\mathcal{A}_k}\text{~}\min\limits_{\mathbf{w}\in\mathbb{R}^{|\mathcal{A}|}}\|[\mathbf{X}_{\mathcal{A}_{k}}\boldsymbol{\chi}_j]\mathbf{w}-\mathbf{y}\|_2^2,
+%$$
+%according to minimum of the error function $S(\mathbf{w})$; then
+%$$
+%\mathcal{A}_{k+1}=\mathcal{A}_k\cup\hat{j}.
+%$$
+%\end{enumerate}
+%\end{frame}
+
 %-----------------------------------------------------------------------------------------------------
 \begin{frame}
 \vfill
 \begin{center}
-{\Large \bf Mixture models}
+{\Large \bf Mixture of experts}
 \end{center}
 \vfill
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
+%\begin{frame}{Mixture models}
+%
+%Let $D = (X, \by)$ denote the data, where $X = [\bx_1\T, \dots, \bx_i, \dots, \bx_m\T]\T$,
+% denotes the inputs $\bx_i\in\R^{n}$, $\by$ denotes the targets $y_i \in Y$. The task is to estimate $y_i$, given $\bx_i$. Assuming linear model $f$ with gaussian noise
+% \[
+% y = f(\x, \w) + \varepsilon, ~ f(\x, \w) = \w\T\x, \; \varepsilon \sim \mathcal{N}(0,\beta) \Rightarrow y \sim \mathcal{N}(\w\T\x, \beta),
+% \]
+% obtain the maximum likelihood estimate
+% \[\hat{y} = \hat{\w}\T\x, ~ \hat{\w} = \argmax_{\w} \frac{1}{2\beta}\sum_{i=1}^{m}(y_i - \w\T \x_i)^2 \]
+% for the output.
+
+% Maximum likelihood estimation gives
+%\[ \hat{y} = \argmax_{y in Y} P(y|\bx, \w).\]
+%\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Gating function}
+Suppose that each linear model $f(\x, \w_k)$, $k=1,\dots, K$ generates a sample $(\x, y)$ with some probability $p(k|\x)$. \medskip
+
+\emph{Gating function}  $\pi(\bx, \bv)$ maps $X \mapsto [0, 1]$
+\[\pi(\x, \bv_k) = \frac{\exp(\bv_k\T\x)}{\sum_{k'=1}^K \exp(\bv_{k'}\T\x)}.\]
+
+\begin{figure}
+\center{
+\includegraphics[width = 0.5\linewidth]{fig/gating_function.eps}}
+\end{figure}
+
+\textbf{Mixture of Experts} is a mixture models with weights modeled through gating functions $\pi_k(\bx, \bv)$.
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}
+\vspace{-5ex}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.95\linewidth]{fig/TwoExperts.eps}
+\end{figure}
+\vspace{-2ex}
+\begin{minipage}[h]{0.49\linewidth}
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{fig/Loglikelihood_convergence.eps}
+\end{figure}
+\end{minipage}
+\hfill
+\begin{minipage}[h]{0.49\linewidth}
+Mixture of two experts (2nd degree polynoms), synthetic data.
+\end{minipage}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
 %\begin{frame}{Mixture models}
 %
 %Let $D = (X, \by)$ denote the data, where $X = [\bx_1\T, \dots, \bx_i, \dots, \bx_m\T]\T$,
@@ -772,130 +935,130 @@ The procedure may be applied to each $\bx^{(q)}$ or directly to the $\bx = [\bx^
 %%\[ \hat{y} = \argmax_{y in Y} P(y|\bx, \w).\]
 %\end{frame}
 %-----------------------------------------------------------------------------------------------------
-\begin{frame}{Linear mixture models}%{EM-algorithm for mixture models}
-Assume the target variable $\by$ is generated by one of~$K$ linear models $f_{k}(\x, \w_k)$. Let the distribution of the target variable~$\by$ be a mixture of normal distributions
-\[
-p(\by|\x, \bth) = \sum_{k=1}^{K}\pi_k\;\mathcal{N}(\by|\w_k\T\bx,\beta) = \]
-\[ \sum_{k=1}^K
-\frac{1}{(2\pi\beta_k)^{n/2}} \exp \left(
-( -\frac{1}{2\beta_k}(\by - \w_k\T X)^{\top}(\by - \w_k\T X) \right).
-\]
-Here~$\bth$ denotes the concatenated vector of parameters:
-\[
-\bth = [\w_1,\dots,\w_k,\boldsymbol{\pi},\beta]\T,
-\]
-where $\boldsymbol{\pi} = [\pi_1,\dots,\pi_k]$ are weights of the models,
-and $\bB = \beta \bI_m$ is the covariance matrix for~$\by$.
-
-
-\end{frame}
-%-----------------------------------------------------------------------------------------------------
-\begin{frame}{Parameter estimation}
-
-\Wider[2em]{
-To find maximum likelihood estimates of $\hat{\bth}$
-\[
-\hat{\bth} = \argmax_{\bth}\ln p(\by|\bth),
-%~\ln p(\by|\bth) = \sum_{i=1}^{m}\ln\left( \sum_{k=1}^K  \pi_k\mathcal{N}(\by|\w\T_{k}\x_i,\beta) \right).
-\]
-
-introduce hidden indicator variables~$Z = \left[\bz_1,\dots,\bz_m\right], \quad z_{ik}\in \{0,1\},$ such that
-\[z_{ik} = 1 \Leftrightarrow y_i\sim\mathcal{N}(\w_k\T\x_i, \beta).\]
-Then the loglikelihood function $p(\by, Z|X, \bth)$ takes the form
-\[p(\by|X, Z, \bth) = \sum_{i=1}^{m}\sum_{k=1}^{K} z_{ik} \left( \ln\pi_k + \ln\mathcal{N}(y_i|\w\T_{k}\x_i,\beta) \right). \]
-
-%\[=\sum_{i=1}^{m}\sum_{k=1}^{K} z_{ik} \left( \ln\pi_k - \frac{1}{2\beta}(y_i-\w\T_{k}\x_i)^2 + \frac{n\ln{\beta}}{2} + \text{const}\right).\]
-\bigskip
-
-\textbf{EM-algorithm:} instead of $p(\by|X, \bth)$ maximize the expected loglikelihood $\mathsf{E}_{Z} [p(\y, Z|X, \bth)]$ of the observed data.
-%\[\mathsf{E}_{Z} [p(\y, Z|X, \bth)] = \]
-%\[ \sum_{i=1}^{m}\sum_{k=1}^{K} \gamma_{ik} \Big( \ln\pi_k - \frac{1}{2\beta}(y_i-\w\T_{k}\x_i)^2 +
-%  \frac{n\ln{\beta}}{2}\Big),\] where $\gamma_{ik} = \mathsf{E}[z_{ik}|\y, X]$.
-}
-\end{frame}
-%-----------------------------------------------------------------------------------------------------
-\begin{frame}{Expectation step}
-\Wider[3em]{
-Expectation-Maximization algorithm maximizes $\mathsf{E}_{Z} [p(\y, Z|X, \bth)]$, updating parameters estimates $\textcolor{red}{\bth^{(r+1)}}$ in two iterative steps with $\textcolor{blue}{\bth^{(r)}}$ fixed.
-
-\vspace{2em}
-
-{\bf E-step}: obtain $\mathsf{E}(Z) = [\gamma_{ik}]$. Using Bayesian rule, obtain:
-\[
-\textcolor{red}{\gamma_{ik}^{(r+1)}} = \mathsf{E}(z_{ik}) = p(k|\x_i, \textcolor{blue}{\bth^{(r)}}) =
-    \frac{
-        \textcolor{blue}{\pi_k}\mathcal{N}(y_i|\x_i\T\textcolor{blue}{\w^{(r)}_{k}}, \textcolor{blue}{\beta^{(r)}})
-        }{
-        \sum_{k'=1}^{K}\textcolor{blue}{\pi_{k'}}\mathcal{N}(y_i|\x_i\T\textcolor{blue}{\w^{(r)}_{k'}}, \textcolor{blue}{\beta^{(r)}}).
-        } \]
-
-Define expectations of joint loglikelihood $\ln p(\y, Z|X, \bth)$ with respect to the posteriors distribution~$p(Z|\y,\bth)$
-\[
-Q^{(r)}(\bth) = \mathsf{E}_Z(\ln p(\y, Z|\bth)) = \sum_{i=1}^m\sum_{k=1}^K\gamma_{ik}^{(r+1)}\left(
-        \ln\pi^{(r)}_k+\ln\mathcal{N}(y_i|\x_i\T\w^{(r)}_{k},\beta^{(r)})
-    \right).
-\]
-}
-
-\end{frame}
-%-----------------------------------------------------------------------------------------------------
-\begin{frame}{Maximization step}
-
-\Wider[2em]{
-Expectation-Maximization algorithm maximizes $\mathsf{E}_{Z} [p(\y, Z|X, \bth)]$, updating parameters estimates $\textcolor{red}{\bth^{(r+1)}}$ in two iterative steps with $\textcolor{blue}{\bth^{(r)}}$ fixed.
-
-\vspace{2em}
-
-
-{\bf M-step:} update parameters $\bth$, maximizing $Q^{(r)}(\bth) = \mathsf{E}_Z(\ln p(\y, Z|\bth))$ with respect to~$\bth$ with~$\textcolor{blue}{\gamma^{(r+1)}}$ fixed:
-
-\[
-\textcolor{red}{\pi^{(r+1)}_k} = \frac{1}{n}\sum_{i=1}^m { \textcolor{blue}{\gamma_{ik}^{(r+1)}}}.
-\]
-
-\[
-\textcolor{red}{\w^{(r+1)}_k} = \argmax_{\w_k}\sum_{i=1}^m -\textcolor{blue}{\gamma^{(r+1)}_{ik}}
-    \left(
-        y_i-\w_k\T\x_i
-    \right)^2,
-\]
-\[
-\beta^{(r+1)}_k = \argmax_{\beta}\sum_{i=1}^m\gamma^{(r+1)}_{ik}
-    \left(n\ln\beta
-        -\frac{1}{\beta}(y_i-\x_i\T\w^{(r+1)}_k)^2
-    \right).
-\]
-}
-\end{frame}
-%-----------------------------------------------------------------------------------------------------
-\begin{frame}{Maximization step}
-
-\Wider[2em]{
-Expectation-Maximization algorithm maximizes $\mathsf{E}_{Z} [p(\y, Z|X, \bth)]$, updating parameters estimates $\textcolor{red}{\bth^{(r+1)}}$ in two iterative steps with $\textcolor{blue}{\bth^{(r)}}$ fixed.
-
-\vspace{2em}
-
-
-{\bf M-step:} update parameters $\bth$, maximizing $Q^{(r)}(\bth) = \mathsf{E}_Z(\ln p(\y, Z|\bth))$ with respect to~$\bth$ with~$\textcolor{blue}{\gamma^{(r+1)}}$ fixed:
-
-\[
-\pi^{(r+1)}_k = \frac{1}{n}\sum_{i=1}^m { \gamma_{ik}^{(r+1)}}.
-\]
-
-\[
-\textcolor{blue}{\w^{(r+1)}_k} = \argmax_{\w_k}\sum_{i=1}^m -\gamma^{(r+1)}_{ik}
-    \left(
-        y_i-\w_k\T\x_i
-    \right)^2,
-\]
-\[
-\textcolor{red}{\beta^{(r+1)}_k} = \argmax_{\beta}\sum_{i=1}^m\textcolor{blue}{\gamma^{(r+1)}_{ik}}
-    \left(n\ln\beta
-        -\frac{1}{\beta}(y_i-\x_i\T\textcolor{blue}{\w^{(r+1)}_k})^2
-    \right).
-\]
-}
-\end{frame}
+%\begin{frame}{Linear mixture models}%{EM-algorithm for mixture models}
+%Assume the target variable $\by$ is generated by one of~$K$ linear models $f_{k}(\x, \w_k)$. Let the distribution of the target variable~$\by$ be a mixture of normal distributions
+%\[
+%p(\by|\x, \bth) = \sum_{k=1}^{K}\pi_k\;\mathcal{N}(\by|\w_k\T\bx,\beta) = \]
+%\[ \sum_{k=1}^K
+%\frac{1}{(2\pi\beta_k)^{n/2}} \exp \left(
+%( -\frac{1}{2\beta_k}(\by - \w_k\T X)^{\top}(\by - \w_k\T X) \right).
+%\]
+%Here~$\bth$ denotes the concatenated vector of parameters:
+%\[
+%\bth = [\w_1,\dots,\w_k,\boldsymbol{\pi},\beta]\T,
+%\]
+%where $\boldsymbol{\pi} = [\pi_1,\dots,\pi_k]$ are weights of the models,
+%and $\bB = \beta \bI_m$ is the covariance matrix for~$\by$.
+%
+%
+%\end{frame}
+%%-----------------------------------------------------------------------------------------------------
+%\begin{frame}{Parameter estimation}
+%
+%\Wider[2em]{
+%To find maximum likelihood estimates of $\hat{\bth}$
+%\[
+%\hat{\bth} = \argmax_{\bth}\ln p(\by|\bth),
+%%~\ln p(\by|\bth) = \sum_{i=1}^{m}\ln\left( \sum_{k=1}^K  \pi_k\mathcal{N}(\by|\w\T_{k}\x_i,\beta) \right).
+%\]
+%
+%introduce hidden indicator variables~$Z = \left[\bz_1,\dots,\bz_m\right], \quad z_{ik}\in \{0,1\},$ such that
+%\[z_{ik} = 1 \Leftrightarrow y_i\sim\mathcal{N}(\w_k\T\x_i, \beta).\]
+%Then the loglikelihood function $p(\by, Z|X, \bth)$ takes the form
+%\[p(\by|X, Z, \bth) = \sum_{i=1}^{m}\sum_{k=1}^{K} z_{ik} \left( \ln\pi_k + \ln\mathcal{N}(y_i|\w\T_{k}\x_i,\beta) \right). \]
+%
+%%\[=\sum_{i=1}^{m}\sum_{k=1}^{K} z_{ik} \left( \ln\pi_k - \frac{1}{2\beta}(y_i-\w\T_{k}\x_i)^2 + \frac{n\ln{\beta}}{2} + \text{const}\right).\]
+%\bigskip
+%
+%\textbf{EM-algorithm:} instead of $p(\by|X, \bth)$ maximize the expected loglikelihood $\mathsf{E}_{Z} [p(\y, Z|X, \bth)]$ of the observed data.
+%%\[\mathsf{E}_{Z} [p(\y, Z|X, \bth)] = \]
+%%\[ \sum_{i=1}^{m}\sum_{k=1}^{K} \gamma_{ik} \Big( \ln\pi_k - \frac{1}{2\beta}(y_i-\w\T_{k}\x_i)^2 +
+%%  \frac{n\ln{\beta}}{2}\Big),\] where $\gamma_{ik} = \mathsf{E}[z_{ik}|\y, X]$.
+%}
+%\end{frame}
+%%-----------------------------------------------------------------------------------------------------
+%\begin{frame}{Expectation step}
+%\Wider[3em]{
+%Expectation-Maximization algorithm maximizes $\mathsf{E}_{Z} [p(\y, Z|X, \bth)]$, updating parameters estimates $\textcolor{red}{\bth^{(r+1)}}$ in two iterative steps with $\textcolor{blue}{\bth^{(r)}}$ fixed.
+%
+%\vspace{2em}
+%
+%{\bf E-step}: obtain $\mathsf{E}(Z) = [\gamma_{ik}]$. Using Bayesian rule, obtain:
+%\[
+%\textcolor{red}{\gamma_{ik}^{(r+1)}} = \mathsf{E}(z_{ik}) = p(k|\x_i, \textcolor{blue}{\bth^{(r)}}) =
+%    \frac{
+%        \textcolor{blue}{\pi_k}\mathcal{N}(y_i|\x_i\T\textcolor{blue}{\w^{(r)}_{k}}, \textcolor{blue}{\beta^{(r)}})
+%        }{
+%        \sum_{k'=1}^{K}\textcolor{blue}{\pi_{k'}}\mathcal{N}(y_i|\x_i\T\textcolor{blue}{\w^{(r)}_{k'}}, \textcolor{blue}{\beta^{(r)}}).
+%        } \]
+%
+%Define expectations of joint loglikelihood $\ln p(\y, Z|X, \bth)$ with respect to the posteriors distribution~$p(Z|\y,\bth)$
+%\[
+%Q^{(r)}(\bth) = \mathsf{E}_Z(\ln p(\y, Z|\bth)) = \sum_{i=1}^m\sum_{k=1}^K\gamma_{ik}^{(r+1)}\left(
+%        \ln\pi^{(r)}_k+\ln\mathcal{N}(y_i|\x_i\T\w^{(r)}_{k},\beta^{(r)})
+%    \right).
+%\]
+%}
+%
+%\end{frame}
+%%-----------------------------------------------------------------------------------------------------
+%\begin{frame}{Maximization step}
+%
+%\Wider[2em]{
+%Expectation-Maximization algorithm maximizes $\mathsf{E}_{Z} [p(\y, Z|X, \bth)]$, updating parameters estimates $\textcolor{red}{\bth^{(r+1)}}$ in two iterative steps with $\textcolor{blue}{\bth^{(r)}}$ fixed.
+%
+%\vspace{2em}
+%
+%
+%{\bf M-step:} update parameters $\bth$, maximizing $Q^{(r)}(\bth) = \mathsf{E}_Z(\ln p(\y, Z|\bth))$ with respect to~$\bth$ with~$\textcolor{blue}{\gamma^{(r+1)}}$ fixed:
+%
+%\[
+%\textcolor{red}{\pi^{(r+1)}_k} = \frac{1}{n}\sum_{i=1}^m { \textcolor{blue}{\gamma_{ik}^{(r+1)}}}.
+%\]
+%
+%\[
+%\textcolor{red}{\w^{(r+1)}_k} = \argmax_{\w_k}\sum_{i=1}^m -\textcolor{blue}{\gamma^{(r+1)}_{ik}}
+%    \left(
+%        y_i-\w_k\T\x_i
+%    \right)^2,
+%\]
+%\[
+%\beta^{(r+1)}_k = \argmax_{\beta}\sum_{i=1}^m\gamma^{(r+1)}_{ik}
+%    \left(n\ln\beta
+%        -\frac{1}{\beta}(y_i-\x_i\T\w^{(r+1)}_k)^2
+%    \right).
+%\]
+%}
+%\end{frame}
+%%-----------------------------------------------------------------------------------------------------
+%\begin{frame}{Maximization step}
+%
+%\Wider[2em]{
+%Expectation-Maximization algorithm maximizes $\mathsf{E}_{Z} [p(\y, Z|X, \bth)]$, updating parameters estimates $\textcolor{red}{\bth^{(r+1)}}$ in two iterative steps with $\textcolor{blue}{\bth^{(r)}}$ fixed.
+%
+%\vspace{2em}
+%
+%
+%{\bf M-step:} update parameters $\bth$, maximizing $Q^{(r)}(\bth) = \mathsf{E}_Z(\ln p(\y, Z|\bth))$ with respect to~$\bth$ with~$\textcolor{blue}{\gamma^{(r+1)}}$ fixed:
+%
+%\[
+%\pi^{(r+1)}_k = \frac{1}{n}\sum_{i=1}^m { \gamma_{ik}^{(r+1)}}.
+%\]
+%
+%\[
+%\textcolor{blue}{\w^{(r+1)}_k} = \argmax_{\w_k}\sum_{i=1}^m -\gamma^{(r+1)}_{ik}
+%    \left(
+%        y_i-\w_k\T\x_i
+%    \right)^2,
+%\]
+%\[
+%\textcolor{red}{\beta^{(r+1)}_k} = \argmax_{\beta}\sum_{i=1}^m\textcolor{blue}{\gamma^{(r+1)}_{ik}}
+%    \left(n\ln\beta
+%        -\frac{1}{\beta}(y_i-\x_i\T\textcolor{blue}{\w^{(r+1)}_k})^2
+%    \right).
+%\]
+%}
+%\end{frame}
 %-----------------------------------------------------------------------------------------------------
 %\begin{frame}
 %\vfill
@@ -908,69 +1071,126 @@ Expectation-Maximization algorithm maximizes $\mathsf{E}_{Z} [p(\y, Z|X, \bth)]$
 %-----------------------------------------------------------------------------------------------------
 \begin{frame}{Mixture of Experts}
 
-Suppose that each model $f(\x, \w_k)$ generates a sample $(\x, y)$ with some probability $p(k|\x, \w)$. Then
-the following factorization holds
-\begin{equation*}\label{eq:mixture_of_experts} p(y|\x, \bth) = \sum_{k=1}^{K} p(y, k| \x, \bth) = \sum_{k=1}^{K} p(k|\x, \bth)p(y|k, \x, \bth)\end{equation*}
- for $p(y|\x, \bth)$.
+Model likelihood $p(y|\x, \bth)$ is given by
 
- \bigskip
+\[ p(y|\x, \bth) = 
+%\sum_{k=1}^{K} p(y, k| \x, \bth) = 
+\sum_{k=1}^{K} p(k|\x, \bth)p(y|k, \x, \bth) = 
+\sum_{k=1}^{K} \pi(\x, \bv_k)\mathcal{N}(y|\w_k^{\T}\x, \bB),
+\]
 
- Here $p(k|\x, \bth)$ correspond to weight parameters $\pi_k$ in mixture models dependent on the inputs $\x$:
-\[\pi_k(\x, \bv_k) = \frac{\exp(\bv_k\T\x)}{\sum_{k'=1}^K \exp(\bv_{k'}\T\x)}.\]
+\bigskip
 
-\medskip
+where $\bth$ denotes the concatenated vector of parameters:
+\[
+\bth = [\w_1,\dots,\w_k,\bv_1,\dots,\bv_k,\beta]\T,
+\]
+and $\bB = \beta \bI_m$ is the covariance matrix for~$\by$.
+%
+%\medskip
 
-Parameter's estimation via EM differs only in M-step.
+%Parameter's estimation via EM differs only in M-step.
 
 
 
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
-\begin{frame}{EM for Mixture of experts}
+\begin{frame}{Parameter estimation}
 
-\Wider[1em]{
+\Wider[2em]{
+To obtain maximum likelihood estimates of $\hat{\bth}$
+\[
+\hat{\bth} = \argmax_{\bth}\ln p(\by|\bth),
+%~\ln p(\by|\bth) = \sum_{i=1}^{m}\ln\left( \sum_{k=1}^K  \pi_k\mathcal{N}(\by|\w\T_{k}\x_i,\beta) \right).
+\]
 
-\textbf{E-step}: compute hidden variables $\textcolor{blue}{\gamma^{(r+1)}_{ik}}$, the expectation of the indicator
-variables, as previously shown.
+introduce hidden indicator variables~$Z = \left[\bz_1,\dots,\bz_m\right], \quad z_{ik}\in \{0,1\},$ such that
+\[z_{ik} = 1 \Leftrightarrow y_i\sim\mathcal{N}(\w_k\T\x_i, \beta).\]
+Then the loglikelihood function $p(\by, Z|X, \bth)$ takes the form
+\[
+p(\by|X, Z, \bth) = \sum_{i=1}^{m}\sum_{k=1}^{K} z_{ik} \left( \ln\pi_k + \ln\mathcal{N}(y_i|\w\T_{k}\x_i,\beta) \right). \]
 
-\medskip
+%\[=\sum_{i=1}^{m}\sum_{k=1}^{K} z_{ik} \left( \ln\pi_k - \frac{1}{2\beta}(y_i-\w\T_{k}\x_i)^2 + \frac{n\ln{\beta}}{2} + \text{const}\right).\]
+\bigskip
 
-\textbf{M-step}: find new parameter estimates
-   \[ \textcolor{red}{\bv^{(r+1)}_k }= \argmax_{\bv} \sum_{i=1}^m \textcolor{blue}{\gamma_{ik}^{(r+1)}}\ln\pi_k(\x_i, \bv), \quad\quad \]
-
-  \[   \textcolor{red}{\w^{(r+1)}_k} = \argmax_{\w_k} \left[- \sum_{i=1}^m\textcolor{blue}{\gamma^{(r+1)}_{ik}}
-    \left(
-        y_i-\w_k\T\x_i
-    \right)^2 \right], \]
-
-  \[ \beta^{(r+1)}_k = \argmax_{\beta} \left[ n\ln\beta
-        -\frac{1}{\beta}\left(y_i-\x_i\T\w^{(r+1)}_k\right)^2 \right]. \]
-
+\textbf{EM-algorithm:} instead of $p(\by|X, \bth)$ maximize the expected loglikelihood $\mathsf{E}_{Z} [p(\y, Z|X, \bth)]$ of the observed data.
+%\[\mathsf{E}_{Z} [p(\y, Z|X, \bth)] = \]
+%\[ \sum_{i=1}^{m}\sum_{k=1}^{K} \gamma_{ik} \Big( \ln\pi_k - \frac{1}{2\beta}(y_i-\w\T_{k}\x_i)^2 +
+%  \frac{n\ln{\beta}}{2}\Big),\] where $\gamma_{ik} = \mathsf{E}[z_{ik}|\y, X]$.
 }
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
-\begin{frame}{EM for Mixture of experts}
-
-\Wider[1em]{
-
-\textbf{E-step}: compute hidden variables $\textcolor{blue}{{\gamma^{(r+1)}_{ik}}}$, the expectation of the indicator
-variables, as previously shown.
+\begin{frame}{EM-algorithm for mixture of experts}
+\textbf{E-step}: Compute expectations, according to Bayes' rule
+\[
+\gamma_{ik}^{r+1} = \mathsf{E}(z_{ik}) = p(k|\x_i, \bth^{r}) =
+    \frac{
+        \pi_k(\x_i, \bv_k)\mathcal{N}(\y_i|\x_i\T\w^{r}_{k}, \beta^{r})
+        }{
+        \sum_{k'=1}^{K}\pi_{k'}(\x_i, \bv_{k'})\mathcal{N}(\y_i|\x_i\T\w^{r}_{k'}, \beta^{r}).
+} \]
 
 \medskip
 
-\textbf{M-step}: find new parameter estimates
-   \[ \bv^{(r+1)}_k = \argmax_{\bv} \sum_{i=1}^m \gamma_{ik}^{(r+1)}\ln\pi_k(\x_i, \bv), \quad\quad \]
+\textbf{M-step}: Recompute parameter estimates:
+  \[ \bv^{r+1}_k = \argmax_{\bv} \sum_{i=1}^m \gamma_{ik}^{r+1}\ln\pi_k(\x_i, \bv), \quad\quad\]
 
-  \[   \textcolor{blue}{\w^{(r+1)}_k} = \argmax_{\w_k} \left[- \sum_{i=1}^m\gamma^{(r+1)}_{ik}
+  \[   \w^{r+1}_k = \argmax_{\w_k} \left[- \sum_{i=1}^m\gamma^{r+1}_{ik}
     \left(
         y_i-\w_k\T\x_i
     \right)^2 \right], \]
+  \[ \beta^{r+1}_k = \argmax_{\beta} \left[ n\ln\beta
+        -\frac{1}{\beta}\left(y_i-\x_i\T\w^{r+1}_k\right)^2 \right]. \]
 
-  \[ \textcolor{red}{\beta^{(r+1)}_k} = \argmax_{\beta} \left[ n\ln\beta
-        -\frac{1}{\beta}\left(y_i-\x_i\T\textcolor{blue}{\w^{(r+1)}_k}\right)^2 \right]. \]
-
-}
 \end{frame}
+
+%----------------------------------------------------------------------------------------------------------
+
+%\begin{frame}{EM for Mixture of experts}
+%
+%\Wider[1em]{
+%
+%\textbf{E-step}: compute hidden variables $\textcolor{blue}{\gamma^{(r+1)}_{ik}}$, the expectation of the indicator
+%variables, as previously shown.
+%
+%\medskip
+%
+%\textbf{M-step}: find new parameter estimates
+%   \[ \textcolor{red}{\bv^{(r+1)}_k }= \argmax_{\bv} \sum_{i=1}^m \textcolor{blue}{\gamma_{ik}^{(r+1)}}\ln\pi_k(\x_i, \bv), \quad\quad \]
+%
+%  \[   \textcolor{red}{\w^{(r+1)}_k} = \argmax_{\w_k} \left[- \sum_{i=1}^m\textcolor{blue}{\gamma^{(r+1)}_{ik}}
+%    \left(
+%        y_i-\w_k\T\x_i
+%    \right)^2 \right], \]
+%
+%  \[ \beta^{(r+1)}_k = \argmax_{\beta} \left[ n\ln\beta
+%        -\frac{1}{\beta}\left(y_i-\x_i\T\w^{(r+1)}_k\right)^2 \right]. \]
+%
+%}
+%\end{frame}
+%%-----------------------------------------------------------------------------------------------------
+%\begin{frame}{EM for Mixture of experts}
+%
+%\Wider[1em]{
+%
+%\textbf{E-step}: compute hidden variables $\textcolor{blue}{{\gamma^{(r+1)}_{ik}}}$, the expectation of the indicator
+%variables, as previously shown.
+%
+%\medskip
+%
+%\textbf{M-step}: find new parameter estimates
+%   \[ \bv^{(r+1)}_k = \argmax_{\bv} \sum_{i=1}^m \gamma_{ik}^{(r+1)}\ln\pi_k(\x_i, \bv), \quad\quad \]
+%
+%  \[   \textcolor{blue}{\w^{(r+1)}_k} = \argmax_{\w_k} \left[- \sum_{i=1}^m\gamma^{(r+1)}_{ik}
+%    \left(
+%        y_i-\w_k\T\x_i
+%    \right)^2 \right], \]
+%
+%  \[ \textcolor{red}{\beta^{(r+1)}_k} = \argmax_{\beta} \left[ n\ln\beta
+%        -\frac{1}{\beta}\left(y_i-\x_i\T\textcolor{blue}{\w^{(r+1)}_k}\right)^2 \right]. \]
+%
+%}
+%\end{frame}
 
 %-----------------------------------------------------------------------------------------------------
 \begin{frame}
@@ -982,17 +1202,14 @@ variables, as previously shown.
 
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
-%\begin{frame}{Experimental setting}
-%
-%\begin{tabular}{p{3cm}|c}
-%Datasets & 6 \\
-%Time series in each dataset & 7 \\
-%Models & 4 \\
-%Feature combinations & 9 \\
-%Loss functions & 6 \\
-%\end{tabular}
-%
-%\end{frame}
+\begin{frame}{Goals}
+
+\begin{itemize}
+\item Demonstrate that the proposed framework yields adequate forecasting quality.
+\item Analyze performance of feature generations strategies discussed above.
+\end{itemize}
+
+\end{frame}
 %-----------------------------------------------------------------------------------------------------
 \begin{frame}{Data}
 \Wider[3em]{
@@ -1173,120 +1390,17 @@ Ratio of datasets, where best forecasts outperformed baseline according to a par
 
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
-\begin{frame}
-\vfill
-\begin{center}
-{\Large \bf Resampling time series}
-\end{center}
-\vfill
-\end{frame}
-%-----------------------------------------------------------------------------------------------------
-\begin{frame}{Resampling time series}
+\begin{frame}{Conclusion}
 
-Suppose that the observations $s_i = s(t_i)$ of the signal $s(t)$ are sampled unevenly:
-\[\Gs = \{t_1, \dots, t_T\}, \quad t_i \neq i\cdot\frac{t_T - t_1}{T-1} \]
+\begin{itemize}
+\item The framework for multiscale time series forecast employs ``multiple forecast'' approach: all time series are forecasted simultaneously.
+\item For better discrimination between experts apply feature generation strategies.         
+\item Even for such naive approach the results are still better then those of the baseline method.
+\end{itemize}
 
-\bigskip
-
-To obtain evenly spaced observations:
-\begin{enumerate}[1)]
-\item select a new sampling rate $\trs$,
-\item form the new grid
-\[\Grs = \{t_1, \dots, \Trs \}, \quad t_i  = t_1 + (i-1)\cdot\trs \]
-\item and approximate
-unobserved evenly-spaced values $\hat{s_i} = s(t_i)$, $t_i \in \Grs$ using the sampled observations $s_i = s(t_i)$, $t_i \in \Gs$.
-\end{enumerate}
-
-\end{frame}
-%-----------------------------------------------------------------------------------------------------
-\begin{frame}{Resampling: special case}
-
-\begin{enumerate}
-\item The initial sampling rate is approximately even, but distortions are possible:
-\[ t_i = i\cdot\tau + \delta_i, |\delta_i| < \frac{\tau}{2}.\]
-In this case the number $\Ts$ of resampled observations equals the initial number of observations $T$.
-\end{enumerate}
-
-\centering{\includegraphics[width=0.6\textwidth]{data_resampling_distortions.eps}}
-
-
-\end{frame}
-%-----------------------------------------------------------------------------------------------------
-\begin{frame}{Resampling: special case}
-
-\begin{enumerate}
-\item[2.] The sampling rate is even, but some values are missing:
-\[ |t_{i+1} - t_{i}| = n\tau, n \in \mathbb{N}.\]
-Here $\ts = \tau$ and missing values are the only ones that one needs to approximate.
-\end{enumerate}
-
-\centering{\includegraphics[width=0.7\textwidth]{data_resampling_missing_values.eps}}
-
-
-\end{frame}
-%-----------------------------------------------------------------------------------------------------
-\begin{frame}{Resampling: special case}
-
-\Wider[3em]{
-\begin{enumerate}
-\item[3.] Time series $\bs$ comprises a finite number of intervals $\bs_k$, each sampled from $s(t)$ at fixed sampling rate:
-\[ \bs = \left[s(\tau_1), \dots, s(T_1\tau_1), s(T_1\tau_1 + \tau_2), \dots,  s\left(\sum_{k}T_k\tau_k\right)\right], \] where $\sum_k{T_k} = T.$
-Here we select the maximum sampling rate $\fs = \max_{k} \frac{1}{\tau_k}$ and upsample the rest time series, using piecewise constant approximation.
-\end{enumerate}
-
-\centering{\includegraphics[width=0.5\textwidth]{data_resampling_varying_rates.eps}}
-
-
-}
-
-\end{frame}
-%-----------------------------------------------------------------------------------------------------
-\begin{frame}{Resampling details}
-
-Suppose that the signal $s(t)$ is bandlimited with frequency $\fb$.
-
-\bigskip
-
-\textbf{Nyquist–Shannon  sampling condition:} it is sufficient to sample the signal $s(t)$ with frequency
-\[ \frac{1}{\trs} = \fs > 2\fb\]
-to be able to fully reconstruct the signal from its discretely sampled observations $s(t_i) = s(i\ts)$.
-
-\bigskip
-
-%For $\fs > 2\fb$, Whittaker-Shannon interpolation
-%\[s(t) = \sum_{i = -\infty}^{\infty} s_i\text{sinc}\left(\frac{t-i\ts}{\ts}\right)\]
-%of the time series $\bs$ yields perfect reconstruction of the signal $s(t)$.
-%
-%\medskip
-
-Discrete signals are never bandlimited %Sampling with $\fs < 2\fb$ causes distortions known as aliasing
-$\Rightarrow$ the time series have to be low-pass filtered to satisfy the Nyquist condition.
-
-
-\end{frame}
-%-----------------------------------------------------------------------------------------------------
-\begin{frame}{Upsampling procedure}
-
-Let $\Grs$ be the desired grid, $G \subseteq \Grs$. To obtain $s(\Grs)$:
-\begin{enumerate}
-\item Approximate $s(\Grs\setminus G)$ using piecewise linear approximation.
-%\item Lowpass filter $\bs$, so that $\bs$ is bendlimited with $\fb$. \\
-\item Find $\bs$'s FFT coefficients $a_j,\; b_j$ for  $j = 1, \dots, 2^{\lfloor\log_2T\rfloor}$.
-\item Set $a_j = 0,\; b_j=0$, for  $j > 2^{{\lfloor\log_2T\rfloor} - 1}$.
-\item Reconstruct the time series, using inverse FFT.
-
-\end{enumerate}
-\includegraphics[width=0.55\textwidth]{pw_linear_approximation.eps}
-\includegraphics[width=0.55\textwidth]{fft_rec_err_upsampling.eps}
-
-\end{frame}
-%-----------------------------------------------------------------------------------------------------
-\begin{frame}{Resampling}
-
-
-Piece-wise constant approximation of missing values:
-\includegraphics[width=0.4\textwidth]{resample1.png}\includegraphics[width=0.5\textwidth]{resample2.png}
-
+\medskip
+Stresstest procedure for feature selection algorithms. \emph{A.M.~Katrutsa, V.V.~Strijov} /  Chemometrics and Intelligent Laboratory Systems 2015. \\
+Feature generation for multiscale time series forecasting. \emph{A. Motrenko, R. Neychev, R. Isachenko, M. Popova, V. Strijov} / Submitted to ICDM 2016.
 
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
