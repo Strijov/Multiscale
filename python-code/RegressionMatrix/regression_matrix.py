@@ -141,13 +141,13 @@ class RegMatrix:
             self.ts[i] = tsMiniStruct(ts_arranged, ts.norm_div, ts.norm_subt, index)
 
 
-    def train_test_split(self, train_test_ratio=0.25, splitter=None):
+    def train_test_split(self, train_test_ratio=0.75, splitter=None):
         if not splitter is None:
             idx_test, idx_train = splitter()
         else: # sequesntial split
-            n_train = int(self.X.shape[0]*train_test_ratio)
-            idx_train = range(n_train)
-            idx_test = range(n_train, self.X.shape[0])
+            n_train= int(self.X.shape[0]*train_test_ratio)
+            idx_test = range(self.X.shape[0] - n_train)
+            idx_train = range(self.X.shape[0] - n_train, self.X.shape[0])
         self.trainX, self.trainY = self.X[idx_train, :], self.Y[idx_train]
         self.testX, self.testY = self.X[idx_test, :], self.Y[idx_test]
         self.idx_train, self.idx_test = idx_train, idx_test
