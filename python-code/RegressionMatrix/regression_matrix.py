@@ -74,7 +74,7 @@ class RegMatrix:
 
         # ts are not overwritten, only normalization constants
         if norm_flag:
-            ts, norm_div, norm_subt = normalize_ts(self.ts[i_ts].s)
+            ts, norm_div, norm_subt = normalize_ts(self.ts[i_ts].s, self.ts[i_ts].name)
             self.ts[i_ts] = tsMiniStruct(self.ts[i_ts].s, norm_div, norm_subt, self.ts[i_ts].name, self.ts[i_ts].index)
             ts = tsMiniStruct(ts, norm_div, norm_subt, self.ts[i_ts].name, self.ts[i_ts].index)
         else:
@@ -209,7 +209,7 @@ class RegMatrix:
         errors = np.zeros((self.nts))
         for i, ind in enumerate(idx):
             ts = self.ts[i].s
-            errors[i] = np.mean(abs(ts[ind] - self.forecasts[i][ind]))
+            errors[i] = np.mean(np.abs(ts[ind] - self.forecasts[i][ind]))
 
         if not out is None:
             print out, "MAE"
@@ -233,9 +233,9 @@ class RegMatrix:
 
         errors = np.zeros((self.nts))
         for i, ind in enumerate(idx):
-            denom = self.ts[i].s[ind]
-            denom[denom == 0] = np.mean(abs(self.ts[i].s))
-            errors[i] = np.mean(np.divide(abs(self.ts[i].s[ind] - self.forecasts[i][ind]), denom))
+            denom = np.abs(self.ts[i].s[ind])
+            denom[denom == 0] = np.mean(np.abs(self.ts[i].s))
+            errors[i] = np.mean(np.divide(np.abs(self.ts[i].s[ind] - self.forecasts[i][ind]), denom))
 
         if not out is None:
             print out, "MAPE"
@@ -262,12 +262,12 @@ class RegMatrix:
         for i, ts in enumerate(self.ts):
             my_plots.plot_forecast(ts, self.forecasts[i], idx_frc=idx[i], idx_ts=idx_ts[i])
 
-def normalize_ts(ts):
+def normalize_ts(ts, name=None):
 
     norm_subt = np.min(ts)
     norm_div = np.max(ts) - norm_subt
     if norm_div == 0:
-        print "Time series", ts.name, "is constant"
+        print "Time series", name, "is constant"
         norm_div = 1
         norm_subt = 0
     else:
@@ -302,13 +302,14 @@ def check_time(y, x):
 
 def replace_nans(ts, name=None):
     #
+    if not np.isnan(ts).any():
+        return ts
+
     print "Filling NaNs for TS", name
     if np.isnan(ts).all():
         print "All inputs are NaN", "replacing with zeros"
         ts = np.zeros_like(ts)
         return ts
-
-
 
     ts_prop = pd.Series(ts).fillna(method="pad")
     ts_back = pd.Series(ts_prop).fillna(method="bfill")

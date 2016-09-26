@@ -84,9 +84,9 @@ def load_train_test_weather(train, test, weather):
 
     for k in ['Max Temperature', 'Min Temperature', 'Precipitation', 'Wind', 'Relative Humidity', 'Solar']:
         series = pd.Series(weather_data[k][:1096], index=weather_data["Date"][:1096], name=k)
-        weather_test_ts.append(series)
-        series = pd.Series(weather_data[k][1096:], index=weather_data["Date"][1096:], name=k)
         weather_train_ts.append(series)
+        series = pd.Series(weather_data[k][1096:], index=weather_data["Date"][1096:], name=k)
+        weather_test_ts.append(series)
 
 
     if not len(weather_data) == 2192:
@@ -110,7 +110,7 @@ def process_csv_output(filename, start_date, ndays):
        'Hour 21', 'Hour 22', 'Hour 23', 'Hour 24']
 
     other = ts[['Day of the week', '1-workday, 2-Saturday, 3-Sunday, >4-untypical']]
-    ts = pd.Series(ts[keys].as_matrix().reshape(24*1096), index=time_stamps)
+    ts = pd.Series(ts[keys].as_matrix().reshape(24*1096), index=time_stamps, name="Energy")
 
 
     """
