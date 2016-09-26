@@ -1,7 +1,7 @@
 from __future__ import division
 import os.path
 import glob
-import joblib
+from sklearn.externals import joblib
 import re
 from collections import namedtuple
 
