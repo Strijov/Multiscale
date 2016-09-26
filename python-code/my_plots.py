@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from collections import namedtuple
+import re
 
 tsMiniStruct = namedtuple('tsMiniStruct', 's norm_div norm_subt name index')
 
@@ -27,5 +28,45 @@ def plot_forecast(ts, forecasts, idx_ts=None, idx_frc=None):
     plt.title('Forecasting results')
     plt.xscale('linear')
     plt.show()
+
+
+def save_to_latex(df_list, df_names=None, file_name=None):
+
+    if file_name is None:
+        file_name = "test_latex_output"
+    file_name = file_name + ".tex"
+
+    if df_names is None:
+        df_names = ["Table" + str(i + 1) for i in range(len(df_list))]
+    latex_header = '\\documentclass[12pt]{article}\n' +\
+            '\\extrafloats{100}\n' +\
+            '\\usepackage{a4wide}\n' +\
+            '\\usepackage{booktabs}\n' +\
+            '\\usepackage{multicol, multirow}\n' +\
+            '\\usepackage[cp1251]{inputenc}\n' +\
+            '\\usepackage[russian]{babel}\n' +\
+            '\\usepackage{amsmath, amsfonts, amssymb, amsthm, amscd}\n' +\
+            '\\usepackage{graphicx, epsfig, subfig, epstopdf}\n' +\
+            '\\usepackage{longtable}\n' +\
+            '\\graphicspath{ {../fig/} {../} }\n' +\
+            '\\begin{document}\n\n'
+    latex_end = "\\end{document}"
+    with open(file_name, "w+") as f:
+        f.write(latex_header)
+        for i, df in enumerate(df_list):
+            f.write("\n"+ check_text_for_latex(df_names[i])  + "\\\ \n")
+            f.write(df.to_latex())
+            f.write("\n")
+
+        f.write(latex_end)
+        f.close()
+
+
+def check_text_for_latex(text):
+
+    text = re.sub("_", "\_", text)
+    return text
+
+
 
 
