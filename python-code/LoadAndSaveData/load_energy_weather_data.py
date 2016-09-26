@@ -82,12 +82,10 @@ def load_train_test_weather(train, test, weather):
     weather_train_ts = []
     weather_test_ts = []
 
-    for k in weather_data.keys():
-        series = pd.Series(weather_data[k][:1096], index=weather_data["Date"][:1096])
-        series.rename(k)
+    for k in ['Max Temperature', 'Min Temperature', 'Precipitation', 'Wind', 'Relative Humidity', 'Solar']:
+        series = pd.Series(weather_data[k][:1096], index=weather_data["Date"][:1096], name=k)
         weather_test_ts.append(series)
-        series = pd.Series(weather_data[k][1096:], index=weather_data["Date"][1096:])
-        series.rename(k)
+        series = pd.Series(weather_data[k][1096:], index=weather_data["Date"][1096:], name=k)
         weather_train_ts.append(series)
 
 
