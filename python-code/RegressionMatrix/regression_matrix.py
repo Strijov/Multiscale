@@ -1,8 +1,11 @@
 from __future__ import division
 import pandas as pd
 import numpy as np
+import sklearn.pipeline as pipeline
 from itertools import product
 from collections import namedtuple
+
+from Forecasting import frc_class
 
 import my_plots
 
@@ -153,8 +156,16 @@ class RegMatrix:
         self.idx_train, self.idx_test = idx_train, idx_test
 
 
-    def train_model(self, model):
+    def train_model(self, frc_model, selector=None, generator=None):
+        if selector is None:
+            selector = frc_class.IdentityFrc()
+        if generator is None:
+            generator = frc_class.IdentityGenerator()
+
+        #model = pipeline.Pipeline(('gen', generator), ('sel', selector), ('frc', frc_model))
+        model = pipeline.make_pipeline(generator, selector, frc_model)
         model.fit(self.trainX, self.trainY)
+
 
         return model
 
