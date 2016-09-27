@@ -55,7 +55,7 @@ def load_all_time_series(datasets=None, load_funcs=None, name_pattern='', load_r
 
     if load_raw:
         dirnames = [RAW_DIRS_DICT[x] for x in datasets]
-        load_raw_data(load_funcs, dirnames)
+        load_raw_data(load_funcs)
 
     # find all .pkl files in DIRNAME directory
     filenames = glob.glob(os.path.join(DIRNAME, '*.pkl'))
@@ -74,12 +74,12 @@ def load_all_time_series(datasets=None, load_funcs=None, name_pattern='', load_r
 
     return all_ts
 
-def load_raw_data(load_funcs, dirnames):
+def load_raw_data(load_funcs):
     # dirnames is a (list of) names of directory with raw data, passed to load_ts func
     # DIRNAME is the common directory for saving processed data
 
-    for func, dir in zip(load_funcs, dirnames):
-        ts_list, names = getattr(func, 'load_ts')(dir)
+    for func in load_funcs:
+        ts_list, names = getattr(func, 'load_ts')()
         for ts, name in zip(ts_list, names):
             save_ts_to_dir(ts, name, DIRNAME)
 

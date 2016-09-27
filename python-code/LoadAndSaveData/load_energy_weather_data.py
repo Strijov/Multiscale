@@ -1,25 +1,128 @@
 from __future__ import division
 import os
 import glob
+import csv
+
+import numpy as np
 import pandas as pd
+from datetime import datetime
+from datetime import timedelta
 from collections import namedtuple
 
 tsStruct = namedtuple('tsStruct', 'data request history name readme')
 DATASET = "EnergyWeather"
+DIRNAME = "../code/data/EnergyWeatherTS"
 
-def load_ts(dirname):
+def load_ts():
     """
     Loads a set of time series and returns the cell array of ts structres.
     :param dirname: [string] named of folder with the loaded data.
     :return: time series, namedtuple tsStruct
     """
+    dirnames = ["orig", "missing_value", "varying_rates"]
+
+    ts_list = []
+    name_list = []
+    for dname in dirnames:
+        ts, names = load_ts_by_dirname(DIRNAME, dname)
+        ts_list.extend(ts)
+        name_list.extend(names)
+
+    return ts_list, name_list
 
 
-    dirname = os.path.abspath(dirname)
-    folders = os.path.split(dirname) #, os.sep
-    folder_name = folders[-1]
-    if len(folder_name) == 0:
-        folder_name = folders[-2]
+def load_train_test_csv(train, test, weather):
+    # reading CSV file
+    print train
+    reader = csv.reader(open(train, 'r'), delimiter=',')
+    train = np.array(list(reader))
+    reader = csv.reader(open(test, 'r'), delimiter=',')
+    test = np.array(list(reader))
+    reader = csv.reader(open(weather, 'r'), delimiter=',')
+    weather = np.array(list(reader))
+
+    labels = test[0, :]
+    print labels
+
+    train = np.delete(train, [0], 0) # remove labels
+    train_time = train[:, 0]
+    # weekday_train = train[:, 1]
+    # day_type_train = train[:, 2]
+    train_set = np.delete(train, [0, 1, 2], 1) # remove date, weekday and day type columns
+
+    test = np.delete(test, [0], 0)
+    test_time = test[:, 0]
+    # weekday_test = test[:, 1]
+    # day_type_test = test[:, 2]
+    test_set = np.delete(test, [0, 1, 2], 1)
+
+
+    train_set = np.array(train_set, dtype='float32')
+    train_set = np.reshape(train_set, (1096*24))
+    test_set = np.array(test_set, dtype='float32')
+    test_set = np.reshape(test_set, (1096*24))
+
+    print weather[0, :]
+    if "Longitude" in weather[0, :]:
+        weather_labels = list(weather[0, 4:])
+        idx_del = range(4)
+    else:
+        weather_labels = list(weather[0, 1:])
+        idx_del = [0]
+    weather = np.delete(weather, [0], 0)
+    weather_time = weather[:, 0]
+    weather = np.delete(weather, idx_del, 1) # discard 'Date' 'Longitude' 'Latitude' 'Elevation'
+    weather = np.array(weather, dtype="float32")
+
+    # convert time to unix format:
+    if "/" in weather_time[0]:
+        weather_time = [datetime.strptime(str_d, "%m/%d/%Y") for str_d in weather_time]
+        train_time = [datetime.strptime(str_d, "%Y%m%d.0") for str_d in train_time]
+        test_time = [datetime.strptime(str_d, "%Y%m%d.0") for str_d in test_time]
+    else:
+        weather_time = [datetime.strptime(str_d, "%d.%m.%Y") for str_d in weather_time]
+        train_time = [datetime.strptime(str_d, "%Y%m%d") for str_d in train_time]
+        test_time = [datetime.strptime(str_d, "%Y%m%d") for str_d in test_time]
+
+
+    min_date = min(weather_time + train_time + test_time)
+    weather_time = [(dt - min_date).total_seconds() for dt in weather_time]
+    train_weather_time = weather_time[:1096]
+    test_weather_time = weather_time[1096:]
+
+    train_time = add_hours_to_dates(train_time)
+    test_time = add_hours_to_dates(test_time)
+    test_time = [(dt - min_date).total_seconds() for dt in test_time]
+    train_time = [(dt - min_date).total_seconds() for dt in train_time]
+
+
+    train_set = pd.Series(train_set, index=train_time, name="Energy")
+    test_set = pd.Series(test_set, index=test_time, name="Energy")
+
+    train_weather, test_weather = [0]*len(weather_labels), [0]*len(weather_labels)
+    for i in range(len(weather_labels)):
+        train_weather[i] = pd.Series(weather[:1096, i], index=train_weather_time, name=weather_labels[i])
+        test_weather[i] = pd.Series(weather[1096:, i], index=test_weather_time, name=weather_labels[i])
+        print "nans:", weather_labels[i], np.sum(np.isnan(weather[:, i])), np.sum(train_weather[i].isnull()), np.sum(test_weather[i].isnull())
+
+    return train_set, test_set, train_weather, test_weather
+
+def add_hours_to_dates(dates):
+
+    date_vec = []
+    for date in dates:
+        date_vec.extend([date + timedelta(hours=x) for x in range(24)])
+
+    return date_vec
+
+def load_ts_by_dirname(dirname, folder_name):
+    dirname = os.path.abspath(dirname + os.sep + folder_name)
+    
+    
+    # folders = os.path.split(dirname) #, os.sep
+    # folder_name = folders[-1]
+    # if len(folder_name) == 0:
+    #     folder_name = folders[-2]
 
     readme = {'orig':'Original time energy-weather series',
         'missing_value':'Energy-weather time series with artificially inserted missing values',
@@ -28,14 +131,16 @@ def load_ts(dirname):
 
     filename_train, filename_test, filename_weather = read_missing_value_dir(dirname)
 
+
     ts = []
     names = []
     for i in range(len(filename_train)):
-        train_ts, test_ts, time, train_weather, test_weather = load_train_test_weather(
-            filename_train[i], filename_test[i], filename_weather[i])
+        train_ts, test_ts, train_weather, test_weather = load_train_test_csv(filename_train[i], filename_test[i], filename_weather[i])
+        # train_ts, test_ts, train_weather, test_weather = load_train_test_weather(
+        #     filename_train[i], filename_test[i], filename_weather[i])
 
-        request =time[24] - time[0] # by default, forecasts are requested for one day ahead
-        history =time[7*24] - time[0] # by default, ts history is one week
+        request = train_ts.index[24] - train_ts.index[0] # by default, forecasts are requested for one day ahead
+        history = train_ts.index[7*24] - train_ts.index[0] # by default, ts history is one week
 
 
         train_ts = [train_ts]
@@ -50,9 +155,6 @@ def load_ts(dirname):
         names.extend([name_train, name_test])
         ts.append(tsStruct(train_ts, request, history, name_train, readme))
         ts.append(tsStruct(test_ts, request, history, name_test, readme))
-
-
-
 
     return ts, names
 
@@ -94,7 +196,7 @@ def load_train_test_weather(train, test, weather):
 
 
 
-    return train_ts, test_ts, hourly_time, weather_train_ts, weather_test_ts
+    return train_ts, test_ts, weather_train_ts, weather_test_ts
 
 def process_csv_output(filename, start_date, ndays):
 
@@ -120,14 +222,6 @@ def process_csv_output(filename, start_date, ndays):
     return ts, time_stamps, other
 
 
-def add_hours_to_dates(start_date, ndays, hours):
-
-    nticks = ndays*hours
-    date_vec = pd.date_range(start_date, periods=nticks, freq='H')
-    date_vec = pd.to_numeric(date_vec)
-
-    return date_vec
-
 
 def read_missing_value_dir(dirname):
 
@@ -137,7 +231,3 @@ def read_missing_value_dir(dirname):
 
     return train_fns, test_fns, weather_fns
 
-'''
-dirname = "../../code/data/EnergyWeatherTS/orig"
-load_ts(dirname)
-'''
