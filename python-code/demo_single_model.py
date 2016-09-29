@@ -1,8 +1,10 @@
 from __future__ import division
+from __future__ import print_function
+
 
 import pandas as pd
 from collections import namedtuple
-from RegressionMatrix import regression_matrix, random_data
+from RegressionMatrix import regression_matrix
 from sklearn.linear_model import Lasso
 from LoadAndSaveData import load_time_series
 from Forecasting import frc_class
@@ -37,7 +39,6 @@ def main(frc_model=None, generator=None, selector=None):
     res_text = []
     for ts in ts_struct_list:
         data = regression_matrix.RegMatrix(ts)
-
         # Create regression matrix
         data.create_matrix(nsteps=1, norm_flag=True)
 
@@ -60,7 +61,7 @@ def main(frc_model=None, generator=None, selector=None):
         res3 = pd.DataFrame(test_mae, index=[t.name for t in ts.data], columns=[("MAE", "test")])
         res4 = pd.DataFrame(test_mape, index=[t.name for t in ts.data], columns=[("MAPE", "test")])
         res = pd.concat([res1, res2, res3, res4], axis=1)
-        print res
+        print(res)
 
         results.append(res)
         res_text.append(ts.name + ": Lasso, feature generation: " + generator.name + ", " + selector.name)

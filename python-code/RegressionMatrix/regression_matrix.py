@@ -1,4 +1,7 @@
 from __future__ import division
+from __future__ import print_function
+
+
 import pandas as pd
 import numpy as np
 import sklearn.pipeline as pipeline
@@ -27,12 +30,17 @@ class RegMatrix:
         self.forecasts = [0] * self.nts
         self.idxY = [0] * self.nts
         for ts in ts_struct.data:
+            # print("nans:", ts.name, np.sum(np.isnan(ts)))
             self.ts.append(tsMiniStruct(ts.as_matrix(), 1, 0, ts.name, np.array(ts.index)))
 
 
     def create_matrix(self, nsteps=1, norm_flag=True):
         # define matrix dimensions:
-        
+        nsteps = int(nsteps)
+        if nsteps < 1:
+            print("nsteps should be at least 1. Setting nsteps = 1")
+
+
         self.n_hist_points = [0] * self.nts
         self.n_req_points = [0] * self.nts
         n_rows = [0] * self.nts
@@ -43,6 +51,8 @@ class RegMatrix:
             n_rows[i] = int(np.floor(len(ts.s) - self.n_hist_points[i]) / self.n_req_points[i])
 
         n_rows = min(n_rows)
+        if n_rows < 4:
+            print("Number of rows is ", n_rows, "consider setting a lower value of nsteps or requested points")
 
 
         # prepare time series
@@ -63,13 +73,13 @@ class RegMatrix:
 
 
         if np.isnan(self.X).any():
-            print "Inputs contain NaNs"
+            print("Inputs contain NaNs")
 
         if np.isnan(self.Y).any():
-            print "Targets contain NaNs"
+            print("Targets contain NaNs")
 
         if not check_time(timey, timex):
-            print "Time check failed"
+            print("Time check failed")
 
 
 
@@ -131,11 +141,15 @@ class RegMatrix:
 
         return idxX, idxY
 
-    def generate_features(self, gnt):
-        pass
+    def matrix_to_flat_by_ts(self, idx_rows, i_ts):
+        idx = ravel_idx(self.idxY[i_ts][idx_rows, :], len(self.forecasts[i_ts]))
+        return np.flipud(idx)
 
-    def select_features(self, slt):
-        pass
+    def matrix_to_flat(self, idx_rows):
+        idx = []
+        for i in range(self.nts):
+            idx.append(self.matrix_to_flat_by_ts(idx_rows, i))
+        return idx
 
 
     def arrange_time_scales(self, method):
@@ -156,7 +170,7 @@ class RegMatrix:
         self.idx_train, self.idx_test = idx_train, idx_test
 
 
-    def train_model(self, frc_model, selector=None, generator=None):
+    def train_model(self, frc_model, selector=None, generator=None, from_scratch=True):
         if selector is None:
             selector = frc_class.IdentityFrc()
         if generator is None:
@@ -188,7 +202,7 @@ class RegMatrix:
             #_, idxY = self.matrix_idx(self.n_hist_points[i], self.n_req_points[i], self.X.shape[0])
             idx_flat[i] = ravel_idx(self.idxY[i][idx_rows, :], len(self.forecasts[i]))#self.n_hist_points[i], self.n_req_points[i], self.X.shape[0])
             # if not np.all(np.flipud(idx_flat[i]) == range(self.n_hist_points[i], len(self.forecasts[i]))):
-            #     print "idx_flat =( "
+            #     print("idx_flat =( ")
 
         if not replace:
             return idx_flat
@@ -196,7 +210,7 @@ class RegMatrix:
         for i in xrange(self.nts):
             self.forecasts[i][idx_flat[i]] = ravel_y(frc[:, :self.n_req_points[i]], self.ts[i].norm_div, self.ts[i].norm_subt)
             # if not np.all(self.forecasts[i][self.n_hist_points[i]:] == self.ts[i].s[self.n_hist_points[i]:]):
-            #     print "wrong frc", np.nonzero(self.forecasts[0] != self.ts[i].s)[self.n_hist_points[i]:]
+            #     print("wrong frc", np.nonzero(self.forecasts[0] != self.ts[i].s)[self.n_hist_points[i]:])
             frc = frc[:, self.n_req_points[i]:]
 
         return idx_flat
@@ -223,9 +237,9 @@ class RegMatrix:
             errors[i] = np.mean(np.abs(ts[ind] - self.forecasts[i][ind]))
 
         if not out is None:
-            print out, "MAE"
+            print(out, "MAE")
             for i, err in enumerate(errors):
-                print self.ts[i].name, err
+                print(self.ts[i].name, err)
 
         return errors
 
@@ -249,9 +263,9 @@ class RegMatrix:
             errors[i] = np.mean(np.divide(np.abs(self.ts[i].s[ind] - self.forecasts[i][ind]), denom))
 
         if not out is None:
-            print out, "MAPE"
+            print(out, "MAPE")
             for i, err in enumerate(errors):
-                print self.ts[i].name, err
+                print(self.ts[i].name, err)
 
         return errors
 
@@ -278,7 +292,7 @@ def normalize_ts(ts, name=None):
     norm_subt = np.min(ts)
     norm_div = np.max(ts) - norm_subt
     if norm_div == 0:
-        print "Time series", name, "is constant"
+        print("Time series", name, "is constant")
         norm_div = 1
         norm_subt = 0
     else:
@@ -316,9 +330,9 @@ def replace_nans(ts, name=None):
     if not np.isnan(ts).any():
         return ts
 
-    print "Filling NaNs for TS", name
+    print("Filling NaNs for TS", name)
     if np.isnan(ts).all():
-        print "All inputs are NaN", "replacing with zeros"
+        print("All inputs are NaN", "replacing with zeros")
         ts = np.zeros_like(ts)
         return ts
 
