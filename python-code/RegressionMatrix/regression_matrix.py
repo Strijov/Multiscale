@@ -1,7 +1,7 @@
 from __future__ import division
 from __future__ import print_function
 
-
+import copy
 import pandas as pd
 import numpy as np
 import sklearn.pipeline as pipeline
@@ -22,17 +22,24 @@ class RegMatrix:
         """ ts_structs_list contains namedtuples tsStruct with information for all time series, that will be forecasted
          simultaneously """
         #self.ts = ts_struct
-        self.history = ts_struct.history
+
         self.request = ts_struct.request
+
+        if ts_struct.history < 0:
+            self.history = ts_struct.request
+            print("Hiostory is not defined.  Do not forget to optimize it!") # FIXIT
 
         self.nts = len(ts_struct.data)
         self.ts = []
+
         self.forecasts = [0] * self.nts
         self.idxY = [0] * self.nts
+        names = []
         for ts in ts_struct.data:
             # print("nans:", ts.name, np.sum(np.isnan(ts)))
             self.ts.append(tsMiniStruct(ts.as_matrix(), 1, 0, ts.name, np.array(ts.index)))
-
+            names.append(ts.name)
+        self.feature_dict = dict.fromkeys(names)
 
     def create_matrix(self, nsteps=1, norm_flag=True):
         # define matrix dimensions:
@@ -44,11 +51,16 @@ class RegMatrix:
         self.n_hist_points = [0] * self.nts
         self.n_req_points = [0] * self.nts
         n_rows = [0] * self.nts
+        hist = [0]
         # infer dimensions of X and Y
         for i, ts in enumerate(self.ts):
             self.n_req_points[i] = sum(ts.index < ts.index[0] + self.request)*nsteps # here we assume time stamps are uniform
             self.n_hist_points[i] = sum(ts.index < ts.index[0] + self.history)
             n_rows[i] = int(np.floor(len(ts.s) - self.n_hist_points[i]) / self.n_req_points[i])
+            hist.append(hist[i] + self.n_hist_points[i])
+            self.feature_dict[ts.name] = range(hist[i], hist[i+1])
+
+
 
         n_rows = min(n_rows)
         if n_rows < 4:
@@ -173,13 +185,14 @@ class RegMatrix:
     def train_model(self, frc_model, selector=None, generator=None, from_scratch=True):
         if selector is None:
             selector = frc_class.IdentityFrc()
+            selector.feature_dict = copy.deepcopy(self.feature_dict)
         if generator is None:
             generator = frc_class.IdentityGenerator()
+            generator.feature_dict = copy.deepcopy(self.feature_dict)
 
-        #model = pipeline.Pipeline(('gen', generator), ('sel', selector), ('frc', frc_model))
-        model = pipeline.make_pipeline(generator, selector, frc_model)
+        model = pipeline.Pipeline([('gen', generator), ('sel', selector), ('frc', frc_model)])
+        #model = pipeline.make_pipeline(generator, selector, frc_model)
         model.fit(self.trainX, self.trainY)
-
 
         return model
 
