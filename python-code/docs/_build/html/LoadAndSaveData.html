@@ -59,235 +59,303 @@
 </div>
 <div class="section" id="module-LoadAndSaveData.get_iot_data">
 <span id="loadandsavedata-get-iot-data-module"></span><h2>LoadAndSaveData.get_iot_data module<a class="headerlink" href="#module-LoadAndSaveData.get_iot_data" title="Permalink to this headline">¶</a></h2>
+<p>Created on 30 September 2016
+&#64;author: Parantapa Goswami, Yagmur Gizem Cinar</p>
 <dl class="function">
 <dt id="LoadAndSaveData.get_iot_data.get_data">
 <code class="descclassname">LoadAndSaveData.get_iot_data.</code><code class="descname">get_data</code><span class="sig-paren">(</span><em>file_name</em>, <em>line_indices='all'</em>, <em>header=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/get_iot_data.html#get_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.get_iot_data.get_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="LoadAndSaveData.get_iot_data.read_all_lines">
-<code class="descclassname">LoadAndSaveData.get_iot_data.</code><code class="descname">read_all_lines</code><span class="sig-paren">(</span><em>file_name</em>, <em>header</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/get_iot_data.html#read_all_lines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.get_iot_data.read_all_lines" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="LoadAndSaveData.get_iot_data.read_random_lines">
-<code class="descclassname">LoadAndSaveData.get_iot_data.</code><code class="descname">read_random_lines</code><span class="sig-paren">(</span><em>file_name</em>, <em>line_indices</em>, <em>header</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/get_iot_data.html#read_random_lines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.get_iot_data.read_random_lines" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</div>
-<div class="section" id="module-LoadAndSaveData.load_energy_weather_data">
-<span id="loadandsavedata-load-energy-weather-data-module"></span><h2>LoadAndSaveData.load_energy_weather_data module<a class="headerlink" href="#module-LoadAndSaveData.load_energy_weather_data" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="LoadAndSaveData.load_energy_weather_data.add_hours_to_dates">
-<code class="descclassname">LoadAndSaveData.load_energy_weather_data.</code><code class="descname">add_hours_to_dates</code><span class="sig-paren">(</span><em>dates</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/load_energy_weather_data.html#add_hours_to_dates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.load_energy_weather_data.add_hours_to_dates" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="LoadAndSaveData.load_energy_weather_data.load_train_test_csv">
-<code class="descclassname">LoadAndSaveData.load_energy_weather_data.</code><code class="descname">load_train_test_csv</code><span class="sig-paren">(</span><em>train</em>, <em>test</em>, <em>weather</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/load_energy_weather_data.html#load_train_test_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.load_energy_weather_data.load_train_test_csv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="LoadAndSaveData.load_energy_weather_data.load_train_test_weather">
-<code class="descclassname">LoadAndSaveData.load_energy_weather_data.</code><code class="descname">load_train_test_weather</code><span class="sig-paren">(</span><em>train</em>, <em>test</em>, <em>weather</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/load_energy_weather_data.html#load_train_test_weather"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.load_energy_weather_data.load_train_test_weather" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Read data from InternetOfThings dataset.</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>test, weather</strong> (<em>train,</em>) &#8211; filenames</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>file_name</strong> (<em>string</em>) &#8211; .csv filename with raw data</li>
+<li><strong>line_indices</strong> &#8211; indices of lines to read from file.  Lines are enumerated from 1. If &#8220;all&#8221;, read the whole file</li>
+<li><strong>header</strong> (<em>bool</em>) &#8211; Specifies if the file contains a header row</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">[train_ts, test_ts, time_train, time_test, train_weather, test_weather]</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">data, metric_ids_dict, host_ids, header_names</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple</p>
+</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="function">
+<dt id="LoadAndSaveData.get_iot_data.read_all_lines">
+<code class="descclassname">LoadAndSaveData.get_iot_data.</code><code class="descname">read_all_lines</code><span class="sig-paren">(</span><em>file_name</em>, <em>header</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/get_iot_data.html#read_all_lines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.get_iot_data.read_all_lines" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read (all lines) from file in InternetOfThings format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>file_name</strong> (<em>string</em>) &#8211; .csv filename with raw data</li>
+<li><strong>header</strong> (<em>bool</em>) &#8211; Specifies if the file contains a header row</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">data - list of pandas.Series; metric_dict - dictionary, maps ts numbers device names; host_ids - dictionary,</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>maps host names to devices; header_names stores columns names, read from the header row
+:rtype: tuple</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="LoadAndSaveData.get_iot_data.read_random_lines">
+<code class="descclassname">LoadAndSaveData.get_iot_data.</code><code class="descname">read_random_lines</code><span class="sig-paren">(</span><em>file_name</em>, <em>line_indices</em>, <em>header</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/get_iot_data.html#read_random_lines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.get_iot_data.read_random_lines" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read specific lines from file in InternetOfThings format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>file_name</strong> (<em>string</em>) &#8211; .csv filename with raw data</li>
+<li><strong>line_indices</strong> (<em>list</em>) &#8211; indices of lines to read from file.  Lines are enumerated from 1</li>
+<li><strong>header</strong> (<em>bool</em>) &#8211; Specifies if the file contains a header row</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">data - list of pandas.Series; metric_ids_dict - dictionary, maps ts numbers device names; host_ids - dictionary,</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>maps host names to devices; header_names stores columns names, read from the header row
+:rtype: tuple</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-LoadAndSaveData.load_energy_weather_data">
+<span id="loadandsavedata-load-energy-weather-data-module"></span><h2>LoadAndSaveData.load_energy_weather_data module<a class="headerlink" href="#module-LoadAndSaveData.load_energy_weather_data" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
 <dt id="LoadAndSaveData.load_energy_weather_data.load_ts">
 <code class="descclassname">LoadAndSaveData.load_energy_weather_data.</code><code class="descname">load_ts</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/load_energy_weather_data.html#load_ts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.load_energy_weather_data.load_ts" title="Permalink to this definition">¶</a></dt>
-<dd><p>Loads a set of time series and returns the cell array of ts structres.
-:param dirname: [string] named of folder with the loaded data.
-:return: time series, namedtuple tsStruct</p>
+<dd><p>Loads energy consumption and weather time series</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">TsStructures with loaded data and reference names</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list, list</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="LoadAndSaveData.load_energy_weather_data.load_ts_by_dirname">
 <code class="descclassname">LoadAndSaveData.load_energy_weather_data.</code><code class="descname">load_ts_by_dirname</code><span class="sig-paren">(</span><em>dirname</em>, <em>folder_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/load_energy_weather_data.html#load_ts_by_dirname"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.load_energy_weather_data.load_ts_by_dirname" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="LoadAndSaveData.load_energy_weather_data.process_csv_output">
-<code class="descclassname">LoadAndSaveData.load_energy_weather_data.</code><code class="descname">process_csv_output</code><span class="sig-paren">(</span><em>filename</em>, <em>start_date</em>, <em>ndays</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/load_energy_weather_data.html#process_csv_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.load_energy_weather_data.process_csv_output" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Load time series of specific type from EnergyWeather dataset</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dirname</strong> (<em>string</em>) &#8211; path to directory with input data, ends with &#8220;orig&#8221;, &#8220;missing_vale&#8221; or &#8220;varying_rates&#8221;</li>
+<li><strong>folder_name</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">sStructures with loaded data and reference names</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list, list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="LoadAndSaveData.load_energy_weather_data.read_missing_value_dir">
 <code class="descclassname">LoadAndSaveData.load_energy_weather_data.</code><code class="descname">read_missing_value_dir</code><span class="sig-paren">(</span><em>dirname</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/load_energy_weather_data.html#read_missing_value_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.load_energy_weather_data.read_missing_value_dir" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="class">
-<dt id="LoadAndSaveData.load_energy_weather_data.tsStruct">
-<em class="property">class </em><code class="descclassname">LoadAndSaveData.load_energy_weather_data.</code><code class="descname">tsStruct</code><span class="sig-paren">(</span><em>data</em>, <em>request</em>, <em>history</em>, <em>name</em>, <em>readme</em><span class="sig-paren">)</span><a class="headerlink" href="#LoadAndSaveData.load_energy_weather_data.tsStruct" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">tuple</span></code></p>
-<dl class="attribute">
-<dt id="LoadAndSaveData.load_energy_weather_data.tsStruct.data">
-<code class="descname">data</code><a class="headerlink" href="#LoadAndSaveData.load_energy_weather_data.tsStruct.data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Alias for field number 0</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="LoadAndSaveData.load_energy_weather_data.tsStruct.history">
-<code class="descname">history</code><a class="headerlink" href="#LoadAndSaveData.load_energy_weather_data.tsStruct.history" title="Permalink to this definition">¶</a></dt>
-<dd><p>Alias for field number 2</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="LoadAndSaveData.load_energy_weather_data.tsStruct.name">
-<code class="descname">name</code><a class="headerlink" href="#LoadAndSaveData.load_energy_weather_data.tsStruct.name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Alias for field number 3</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="LoadAndSaveData.load_energy_weather_data.tsStruct.readme">
-<code class="descname">readme</code><a class="headerlink" href="#LoadAndSaveData.load_energy_weather_data.tsStruct.readme" title="Permalink to this definition">¶</a></dt>
-<dd><p>Alias for field number 4</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="LoadAndSaveData.load_energy_weather_data.tsStruct.request">
-<code class="descname">request</code><a class="headerlink" href="#LoadAndSaveData.load_energy_weather_data.tsStruct.request" title="Permalink to this definition">¶</a></dt>
-<dd><p>Alias for field number 1</p>
-</dd></dl>
-
-</dd></dl>
-
 </div>
 <div class="section" id="module-LoadAndSaveData.load_time_series">
 <span id="loadandsavedata-load-time-series-module"></span><h2>LoadAndSaveData.load_time_series module<a class="headerlink" href="#module-LoadAndSaveData.load_time_series" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="LoadAndSaveData.load_time_series.TsStruct">
+<em class="property">class </em><code class="descclassname">LoadAndSaveData.load_time_series.</code><code class="descname">TsStruct</code><a class="reference internal" href="_modules/LoadAndSaveData/load_time_series.html#TsStruct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.load_time_series.TsStruct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#LoadAndSaveData.load_time_series.TsStruct" title="LoadAndSaveData.load_time_series.TsStruct"><code class="xref py py-class docutils literal"><span class="pre">LoadAndSaveData.load_time_series.TsStruct</span></code></a></p>
+<p>This structure stores input data. The fields are:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data</strong> (<em>list</em>) &#8211; input time series, each is pandas.Series</li>
+<li><strong>request</strong> (<em>inttime delta ? #FIXIT</em>) &#8211; Time interval requested for forecast</li>
+<li><strong>history</strong> (<em>inttime delta ? #FIXIT</em>) &#8211; Time interval,  to define number of historical points.</li>
+<li><strong>name</strong> (<em>string</em>) &#8211; Dataset name</li>
+<li><strong>readme</strong> (<em>string</em>) &#8211; Dataset info</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="LoadAndSaveData.load_time_series.TsStruct_">
+<code class="descclassname">LoadAndSaveData.load_time_series.</code><code class="descname">TsStruct_</code><a class="headerlink" href="#LoadAndSaveData.load_time_series.TsStruct_" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#LoadAndSaveData.load_time_series.TsStruct" title="LoadAndSaveData.load_time_series.TsStruct"><code class="xref py py-class docutils literal"><span class="pre">TsStruct</span></code></a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="LoadAndSaveData.load_time_series.from_iot_to_struct">
+<code class="descclassname">LoadAndSaveData.load_time_series.</code><code class="descname">from_iot_to_struct</code><span class="sig-paren">(</span><em>ts_list</em>, <em>idx</em>, <em>dataset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/load_time_series.html#from_iot_to_struct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.load_time_series.from_iot_to_struct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts data from IoT output to tsStruct. Request is single point for every ts and history is unknown</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ts_list</strong> (<em>list</em>) &#8211; stores data in pandas.Series format</li>
+<li><strong>idx</strong> (<em>list</em>) &#8211; indices of time series in ts_list correspondent to specific host/dataset</li>
+<li><strong>dataset</strong> (<em>string</em>) &#8211; host/dataset name</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">data structure with selected time series</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#LoadAndSaveData.load_time_series.TsStruct" title="LoadAndSaveData.load_time_series.TsStruct">TsStruct</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="function">
 <dt id="LoadAndSaveData.load_time_series.load_all_time_series">
 <code class="descclassname">LoadAndSaveData.load_time_series.</code><code class="descname">load_all_time_series</code><span class="sig-paren">(</span><em>datasets=None</em>, <em>load_funcs=None</em>, <em>name_pattern=''</em>, <em>load_raw=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/load_time_series.html#load_all_time_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.load_time_series.load_all_time_series" title="Permalink to this definition">¶</a></dt>
-<dd><p>% Data loader
-% Input: datasets - cell array, contains names of the folders inside data/
-% directory
-%
-% Output: a cell array of ts structures
-% Description of the time series structure:
-%   t [T,1]  - Time in milliseconds since 1/1/1970 (UNIX format)
-%   x [T, N] - Columns of the matrix are time series; missing values are NaNs
-%   legend {1, N}  - Time series descriptions ts.x, e.g. ts.legend={?Consumption, ?Price?, ?Temperature?};
-%   nsamples [1] - Number of samples per time series, relative to the target time series
-%   deltaTp [1] - Number of local historical points
-%   deltaTr [1] - Number of points to forecast
-%   readme [string] -  Data information (source, formation time etc.)
-%   dataset [string] - Reference name for the dataset
-%   name [string] - Reference name for the time series
-%   Optional:
-%   type [1,N] (optional) Time series types ts.x, 1-real-valued, 2-binary, k ? k-valued
-%   timegen [T,1]=func_timegen(timetick) (optional) Time ticks generator, may
-%   contain the start (or end) time in UNIX format and a function to generate the vector t of the size [T,1]</p>
+<dd><p>Data loader</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>datasets</strong> (<em>list</em>) &#8211; contains names datasets to download</li>
+<li><strong>load_funcs</strong> (<em>list</em>) &#8211; contains callables for each dataset. Used if load_raw=True</li>
+<li><strong>name_pattern</strong> (<em>string</em>) &#8211; expression to look for in loaded file names</li>
+<li><strong>load_raw</strong> (<em>boolean</em>) &#8211; If set to True, the raw data is reloaded first</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="LoadAndSaveData.load_time_series.load_raw_data">
 <code class="descclassname">LoadAndSaveData.load_time_series.</code><code class="descname">load_raw_data</code><span class="sig-paren">(</span><em>load_funcs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/load_time_series.html#load_raw_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.load_time_series.load_raw_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Loads and saves raw data in .pkl format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>load_funcs</strong> (<em>list</em>) &#8211; Each function (callable) is load_funcs loads some dataset</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="LoadAndSaveData.load_time_series.save_ts_to_dir">
 <code class="descclassname">LoadAndSaveData.load_time_series.</code><code class="descname">save_ts_to_dir</code><span class="sig-paren">(</span><em>ts</em>, <em>tsname</em>, <em>dirname</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/load_time_series.html#save_ts_to_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.load_time_series.save_ts_to_dir" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="class">
-<dt id="LoadAndSaveData.load_time_series.tsStruct">
-<em class="property">class </em><code class="descclassname">LoadAndSaveData.load_time_series.</code><code class="descname">tsStruct</code><span class="sig-paren">(</span><em>data</em>, <em>request</em>, <em>history</em>, <em>name</em>, <em>readme</em><span class="sig-paren">)</span><a class="headerlink" href="#LoadAndSaveData.load_time_series.tsStruct" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">tuple</span></code></p>
-<dl class="attribute">
-<dt id="LoadAndSaveData.load_time_series.tsStruct.data">
-<code class="descname">data</code><a class="headerlink" href="#LoadAndSaveData.load_time_series.tsStruct.data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Alias for field number 0</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="LoadAndSaveData.load_time_series.tsStruct.history">
-<code class="descname">history</code><a class="headerlink" href="#LoadAndSaveData.load_time_series.tsStruct.history" title="Permalink to this definition">¶</a></dt>
-<dd><p>Alias for field number 2</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="LoadAndSaveData.load_time_series.tsStruct.name">
-<code class="descname">name</code><a class="headerlink" href="#LoadAndSaveData.load_time_series.tsStruct.name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Alias for field number 3</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="LoadAndSaveData.load_time_series.tsStruct.readme">
-<code class="descname">readme</code><a class="headerlink" href="#LoadAndSaveData.load_time_series.tsStruct.readme" title="Permalink to this definition">¶</a></dt>
-<dd><p>Alias for field number 4</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="LoadAndSaveData.load_time_series.tsStruct.request">
-<code class="descname">request</code><a class="headerlink" href="#LoadAndSaveData.load_time_series.tsStruct.request" title="Permalink to this definition">¶</a></dt>
-<dd><p>Alias for field number 1</p>
-</dd></dl>
-
+<dd><p>Saves time series into specified directory</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ts</strong> (<em>list of TsStruct</em>) &#8211; time series</li>
+<li><strong>tsname</strong> (<em>string</em>) &#8211; Filename. Data will be saved as .pkl, do not specify any extensions</li>
+<li><strong>dirname</strong> (<em>string</em>) &#8211; Directory that stores processed data</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
 <div class="section" id="module-LoadAndSaveData.write_data_to_iot_format">
 <span id="loadandsavedata-write-data-to-iot-format-module"></span><h2>LoadAndSaveData.write_data_to_iot_format module<a class="headerlink" href="#module-LoadAndSaveData.write_data_to_iot_format" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="LoadAndSaveData.write_data_to_iot_format.from_iot_to_struct">
-<code class="descclassname">LoadAndSaveData.write_data_to_iot_format.</code><code class="descname">from_iot_to_struct</code><span class="sig-paren">(</span><em>ts_list</em>, <em>idx</em>, <em>dataset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/write_data_to_iot_format.html#from_iot_to_struct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.write_data_to_iot_format.from_iot_to_struct" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts data from IoT output to tsStruct. Request is single point for every ts and horizon is unknown</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="LoadAndSaveData.write_data_to_iot_format.tsStruct">
-<em class="property">class </em><code class="descclassname">LoadAndSaveData.write_data_to_iot_format.</code><code class="descname">tsStruct</code><span class="sig-paren">(</span><em>data</em>, <em>request</em>, <em>history</em>, <em>name</em>, <em>readme</em><span class="sig-paren">)</span><a class="headerlink" href="#LoadAndSaveData.write_data_to_iot_format.tsStruct" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">tuple</span></code></p>
-<dl class="attribute">
-<dt id="LoadAndSaveData.write_data_to_iot_format.tsStruct.data">
-<code class="descname">data</code><a class="headerlink" href="#LoadAndSaveData.write_data_to_iot_format.tsStruct.data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Alias for field number 0</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="LoadAndSaveData.write_data_to_iot_format.tsStruct.history">
-<code class="descname">history</code><a class="headerlink" href="#LoadAndSaveData.write_data_to_iot_format.tsStruct.history" title="Permalink to this definition">¶</a></dt>
-<dd><p>Alias for field number 2</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="LoadAndSaveData.write_data_to_iot_format.tsStruct.name">
-<code class="descname">name</code><a class="headerlink" href="#LoadAndSaveData.write_data_to_iot_format.tsStruct.name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Alias for field number 3</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="LoadAndSaveData.write_data_to_iot_format.tsStruct.readme">
-<code class="descname">readme</code><a class="headerlink" href="#LoadAndSaveData.write_data_to_iot_format.tsStruct.readme" title="Permalink to this definition">¶</a></dt>
-<dd><p>Alias for field number 4</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="LoadAndSaveData.write_data_to_iot_format.tsStruct.request">
-<code class="descname">request</code><a class="headerlink" href="#LoadAndSaveData.write_data_to_iot_format.tsStruct.request" title="Permalink to this definition">¶</a></dt>
-<dd><p>Alias for field number 1</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="function">
 <dt id="LoadAndSaveData.write_data_to_iot_format.ts_to_csv_row">
 <code class="descclassname">LoadAndSaveData.write_data_to_iot_format.</code><code class="descname">ts_to_csv_row</code><span class="sig-paren">(</span><em>ts</em>, <em>dataset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/write_data_to_iot_format.html#ts_to_csv_row"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.write_data_to_iot_format.ts_to_csv_row" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Converts time series into csv strings. Status is replaced with &#8220;nan&#8221;s. Device name is replaced with ts.name</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ts</strong> (<a class="reference internal" href="#LoadAndSaveData.load_time_series.TsStruct" title="LoadAndSaveData.load_time_series.TsStruct"><em>TsStruct</em></a>) &#8211; input time series</li>
+<li><strong>dataset</strong> (<em>string</em>) &#8211; dataset name, replaces host name in IoT format</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">strings to write into file as a csv row</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="LoadAndSaveData.write_data_to_iot_format.write_ts">
 <code class="descclassname">LoadAndSaveData.write_data_to_iot_format.</code><code class="descname">write_ts</code><span class="sig-paren">(</span><em>ts_struct=None</em>, <em>file_name='data.csv'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/write_data_to_iot_format.html#write_ts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.write_data_to_iot_format.write_ts" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Write time series into .csv file in IoT format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ts_struct</strong> (<a class="reference internal" href="#LoadAndSaveData.load_time_series.TsStruct" title="LoadAndSaveData.load_time_series.TsStruct"><em>TsStruct</em></a>) &#8211; data to be written into file</li>
+<li><strong>file_name</strong> (<em>string</em>) &#8211; output filename</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </div>
 <div class="section" id="module-LoadAndSaveData">

@@ -65,25 +65,6 @@
 <span class="kn">import</span> <span class="nn">my_plots</span>
 <span class="kn">from</span> <span class="nn">Forecasting</span> <span class="k">import</span> <span class="n">frc_class</span>
 
-
-<span class="n">TsStruct_</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;TsStruct&#39;</span><span class="p">,</span> <span class="s1">&#39;data request history name readme&#39;</span><span class="p">)</span>
-<div class="viewcode-block" id="TsStruct"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.TsStruct">[docs]</a><span class="k">class</span> <span class="nc">TsStruct</span><span class="p">(</span><span class="n">TsStruct_</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; This structure stores input data. The fields are:</span>
-
-<span class="sd">    :param data: input time series, each is pandas.Series</span>
-<span class="sd">    :type data: list</span>
-<span class="sd">    :param request: Time interval requested for forecast</span>
-<span class="sd">    :type request: int\ time delta ? #FIXIT</span>
-<span class="sd">    :param history: Time interval,  to define number of historical points.</span>
-<span class="sd">    :type history: int\ time delta ? #FIXIT</span>
-<span class="sd">    :param name: Dataset name</span>
-<span class="sd">    :type name: string</span>
-<span class="sd">    :param readme: Dataset info</span>
-<span class="sd">    :type readme: string</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">pass</span></div>
-
-
 <span class="n">TsMiniStruct_</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;TsMiniStruct&#39;</span><span class="p">,</span> <span class="s1">&#39;s norm_div norm_subt name index&#39;</span><span class="p">)</span>
 <div class="viewcode-block" id="TsMiniStruct"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.TsMiniStruct">[docs]</a><span class="k">class</span> <span class="nc">TsMiniStruct</span><span class="p">(</span><span class="n">TsMiniStruct_</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; This structure stores a particular time series. The fields are:</span>
