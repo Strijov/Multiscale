@@ -24,8 +24,8 @@ class RegMatrix:
         #self.ts = ts_struct
 
         self.request = ts_struct.request
-
-        if ts_struct.history < 0:
+        self.history = ts_struct.history
+        if self.history < 0:
             self.history = ts_struct.request
             print("Hiostory is not defined.  Do not forget to optimize it!") # FIXIT
 
