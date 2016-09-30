@@ -1,0 +1,474 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>RegressionMatrix package &#8212; MultiscaleForecasting 0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="MultiscaleForecasting 0 documentation" href="index.html" />
+    <link rel="next" title="Forecasting package" href="Forecasting.html" />
+    <link rel="prev" title="LoadAndSaveData package" href="LoadAndSaveData.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="Forecasting.html" title="Forecasting package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="LoadAndSaveData.html" title="LoadAndSaveData package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">MultiscaleForecasting 0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="regressionmatrix-package">
+<h1>RegressionMatrix package<a class="headerlink" href="#regressionmatrix-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-RegressionMatrix.random_data">
+<span id="regressionmatrix-random-data-module"></span><h2>RegressionMatrix.random_data module<a class="headerlink" href="#module-RegressionMatrix.random_data" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="RegressionMatrix.random_data.create_linear_ts">
+<code class="descclassname">RegressionMatrix.random_data.</code><code class="descname">create_linear_ts</code><span class="sig-paren">(</span><em>n_ts=3</em>, <em>n_req=10</em>, <em>n_hist=20</em>, <em>max_length=5000</em>, <em>min_length=200</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/random_data.html#create_linear_ts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.random_data.create_linear_ts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="RegressionMatrix.random_data.create_random_ts">
+<code class="descclassname">RegressionMatrix.random_data.</code><code class="descname">create_random_ts</code><span class="sig-paren">(</span><em>n_ts=3</em>, <em>n_req=10</em>, <em>n_hist=20</em>, <em>max_length=5000</em>, <em>min_length=200</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/random_data.html#create_random_ts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.random_data.create_random_ts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="RegressionMatrix.random_data.create_sine_ts">
+<code class="descclassname">RegressionMatrix.random_data.</code><code class="descname">create_sine_ts</code><span class="sig-paren">(</span><em>n_ts=3</em>, <em>n_req=10</em>, <em>n_hist=20</em>, <em>max_length=5000</em>, <em>min_length=200</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/random_data.html#create_sine_ts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.random_data.create_sine_ts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="RegressionMatrix.random_data.tsStruct">
+<em class="property">class </em><code class="descclassname">RegressionMatrix.random_data.</code><code class="descname">tsStruct</code><span class="sig-paren">(</span><em>time</em>, <em>data</em>, <em>norm_div</em>, <em>norm_subt</em>, <em>request</em>, <em>history</em>, <em>name</em>, <em>readme</em><span class="sig-paren">)</span><a class="headerlink" href="#RegressionMatrix.random_data.tsStruct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">tuple</span></code></p>
+<dl class="attribute">
+<dt id="RegressionMatrix.random_data.tsStruct.data">
+<code class="descname">data</code><a class="headerlink" href="#RegressionMatrix.random_data.tsStruct.data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="RegressionMatrix.random_data.tsStruct.history">
+<code class="descname">history</code><a class="headerlink" href="#RegressionMatrix.random_data.tsStruct.history" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 5</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="RegressionMatrix.random_data.tsStruct.name">
+<code class="descname">name</code><a class="headerlink" href="#RegressionMatrix.random_data.tsStruct.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 6</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="RegressionMatrix.random_data.tsStruct.norm_div">
+<code class="descname">norm_div</code><a class="headerlink" href="#RegressionMatrix.random_data.tsStruct.norm_div" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="RegressionMatrix.random_data.tsStruct.norm_subt">
+<code class="descname">norm_subt</code><a class="headerlink" href="#RegressionMatrix.random_data.tsStruct.norm_subt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 3</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="RegressionMatrix.random_data.tsStruct.readme">
+<code class="descname">readme</code><a class="headerlink" href="#RegressionMatrix.random_data.tsStruct.readme" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 7</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="RegressionMatrix.random_data.tsStruct.request">
+<code class="descname">request</code><a class="headerlink" href="#RegressionMatrix.random_data.tsStruct.request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 4</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="RegressionMatrix.random_data.tsStruct.time">
+<code class="descname">time</code><a class="headerlink" href="#RegressionMatrix.random_data.tsStruct.time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-RegressionMatrix.regression_matrix">
+<span id="regressionmatrix-regression-matrix-module"></span><h2>RegressionMatrix.regression_matrix module<a class="headerlink" href="#module-RegressionMatrix.regression_matrix" title="Permalink to this headline">¶</a></h2>
+<p>Created on 30 September 2016
+&#64;author: Anastasia Motrenko</p>
+<dl class="class">
+<dt id="RegressionMatrix.regression_matrix.RegMatrix">
+<em class="property">class </em><code class="descclassname">RegressionMatrix.regression_matrix.</code><code class="descname">RegMatrix</code><span class="sig-paren">(</span><em>ts_struct</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#RegMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.RegMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>The main class for ts-to-matrix, matrix-to-ts conversions and other data operations.</p>
+<dl class="method">
+<dt id="RegressionMatrix.regression_matrix.RegMatrix.add_forecasts">
+<code class="descname">add_forecasts</code><span class="sig-paren">(</span><em>frc</em>, <em>idx_rows</em>, <em>replace</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#RegMatrix.add_forecasts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.RegMatrix.add_forecasts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RegressionMatrix.regression_matrix.RegMatrix.add_ts_to_matrix">
+<code class="descname">add_ts_to_matrix</code><span class="sig-paren">(</span><em>i_ts</em>, <em>norm_flag</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#RegMatrix.add_ts_to_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.RegMatrix.add_ts_to_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds time series to data matrix</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>i_ts</strong> &#8211; Number of ts to add</li>
+<li><strong>norm_flag</strong> &#8211; normalisation flag. Default=True, if False, time series are processed without normalisation</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="RegressionMatrix.regression_matrix.RegMatrix.arrange_time_scales">
+<code class="descname">arrange_time_scales</code><span class="sig-paren">(</span><em>method</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#RegMatrix.arrange_time_scales"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.RegMatrix.arrange_time_scales" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RegressionMatrix.regression_matrix.RegMatrix.create_matrix">
+<code class="descname">create_matrix</code><span class="sig-paren">(</span><em>nsteps=1</em>, <em>norm_flag=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#RegMatrix.create_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.RegMatrix.create_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turn the input set of time series into regression matrix.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>nsteps</strong> (<em>int</em>) &#8211; Number of times request is repeated in Y</li>
+<li><strong>norm_flag</strong> (<em>bool</em>) &#8211; if False, time series are processed without normalisation</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None. Updates attributes self.X, self.Y, self.n_requested_points, self.n_historical_points, self.feature_dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="RegressionMatrix.regression_matrix.RegMatrix.forecast">
+<code class="descname">forecast</code><span class="sig-paren">(</span><em>model</em>, <em>idx_rows=None</em>, <em>replace=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#RegMatrix.forecast"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.RegMatrix.forecast" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RegressionMatrix.regression_matrix.RegMatrix.mae">
+<code class="descname">mae</code><span class="sig-paren">(</span><em>idx_frc=None</em>, <em>idx_rows=None</em>, <em>out=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#RegMatrix.mae"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.RegMatrix.mae" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mean Absolute Error calculation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>idx_frc</strong> (<em>list</em>) &#8211; Indices of forecasted/target TS entries used to compute MAE</li>
+<li><strong>idx_rows</strong> (<em>list</em>) &#8211; Alternatively, specify raw indices for matrix Y. If idx_frc is specified, idx_rows is ignored</li>
+<li><strong>out</strong> (<em>string</em>) &#8211; Specification of out invokes printing MAE values. out string is printed before the output</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">list of MAPE values, one for each input time series</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="RegressionMatrix.regression_matrix.RegMatrix.mape">
+<code class="descname">mape</code><span class="sig-paren">(</span><em>idx_frc=None</em>, <em>idx_rows=None</em>, <em>out=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#RegMatrix.mape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.RegMatrix.mape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mean Absolute Percentage Error calculation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>idx_frc</strong> (<em>list</em>) &#8211; Indices of forecasted/target TS entries used to compute MAE</li>
+<li><strong>idx_rows</strong> (<em>list</em>) &#8211; Alternatively, specify raw indices for matrix Y. If idx_frc is specified, idx_rows is ignored</li>
+<li><strong>out</strong> (<em>string</em>) &#8211; Specification of out invokes printing MAPE values. out string is printed before the output</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">list of MAPE values, one for each input time series</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="RegressionMatrix.regression_matrix.RegMatrix.matrix_to_flat">
+<code class="descname">matrix_to_flat</code><span class="sig-paren">(</span><em>idx_rows</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#RegMatrix.matrix_to_flat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.RegMatrix.matrix_to_flat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns indices of TS entries stored in specific rows of regression matrix self.Y</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>idx_rows</strong> (<em>list</em>) &#8211; rows of self.Y matrix</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">self.nts lists of ts indices. Each list corresponds to one of the input time series</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="RegressionMatrix.regression_matrix.RegMatrix.plot_frc">
+<code class="descname">plot_frc</code><span class="sig-paren">(</span><em>idx_frc=None</em>, <em>idx_rows=None</em>, <em>n_frc=1</em>, <em>n_hist=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#RegMatrix.plot_frc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.RegMatrix.plot_frc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RegressionMatrix.regression_matrix.RegMatrix.train_model">
+<code class="descname">train_model</code><span class="sig-paren">(</span><em>frc_model</em>, <em>selector=None</em>, <em>generator=None</em>, <em>from_scratch=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#RegMatrix.train_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.RegMatrix.train_model" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RegressionMatrix.regression_matrix.RegMatrix.train_test_split">
+<code class="descname">train_test_split</code><span class="sig-paren">(</span><em>train_test_ratio=0.75</em>, <em>splitter=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#RegMatrix.train_test_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.RegMatrix.train_test_split" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="RegressionMatrix.regression_matrix.TsMiniStruct">
+<em class="property">class </em><code class="descclassname">RegressionMatrix.regression_matrix.</code><code class="descname">TsMiniStruct</code><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#TsMiniStruct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.TsMiniStruct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#RegressionMatrix.regression_matrix.TsMiniStruct" title="RegressionMatrix.regression_matrix.TsMiniStruct"><code class="xref py py-class docutils literal"><span class="pre">RegressionMatrix.regression_matrix.TsMiniStruct</span></code></a></p>
+<p>This structure stores a particular time series. The fields are:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>s</strong> (<em>1d-ndarray</em>) &#8211; time series</li>
+<li><strong>norm_div</strong> (<em>float</em>) &#8211; Standartisation constant</li>
+<li><strong>norm_subt</strong> (<em>float</em>) &#8211; Standartisation constant</li>
+<li><strong>name</strong> (<em>string</em>) &#8211; Dataset name</li>
+<li><strong>index</strong> (<em>1d-ndarray</em>) &#8211; time ticks</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="RegressionMatrix.regression_matrix.TsMiniStruct_">
+<code class="descclassname">RegressionMatrix.regression_matrix.</code><code class="descname">TsMiniStruct_</code><a class="headerlink" href="#RegressionMatrix.regression_matrix.TsMiniStruct_" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#RegressionMatrix.regression_matrix.TsMiniStruct" title="RegressionMatrix.regression_matrix.TsMiniStruct"><code class="xref py py-class docutils literal"><span class="pre">TsMiniStruct</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="RegressionMatrix.regression_matrix.TsStruct">
+<em class="property">class </em><code class="descclassname">RegressionMatrix.regression_matrix.</code><code class="descname">TsStruct</code><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#TsStruct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.TsStruct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#RegressionMatrix.regression_matrix.TsStruct" title="RegressionMatrix.regression_matrix.TsStruct"><code class="xref py py-class docutils literal"><span class="pre">RegressionMatrix.regression_matrix.TsStruct</span></code></a></p>
+<p>This structure stores input data. The fields are:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data</strong> (<em>list</em>) &#8211; input time series, each is pandas.Series</li>
+<li><strong>request</strong> (<em>inttime delta ? #FIXIT</em>) &#8211; Time interval requested for forecast</li>
+<li><strong>history</strong> (<em>inttime delta ? #FIXIT</em>) &#8211; Time interval,  to define number of historical points.</li>
+<li><strong>name</strong> (<em>string</em>) &#8211; Dataset name</li>
+<li><strong>readme</strong> (<em>string</em>) &#8211; Dataset info</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="RegressionMatrix.regression_matrix.TsStruct_">
+<code class="descclassname">RegressionMatrix.regression_matrix.</code><code class="descname">TsStruct_</code><a class="headerlink" href="#RegressionMatrix.regression_matrix.TsStruct_" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#RegressionMatrix.regression_matrix.TsStruct" title="RegressionMatrix.regression_matrix.TsStruct"><code class="xref py py-class docutils literal"><span class="pre">TsStruct</span></code></a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="RegressionMatrix.regression_matrix.check_time">
+<code class="descclassname">RegressionMatrix.regression_matrix.</code><code class="descname">check_time</code><span class="sig-paren">(</span><em>y</em>, <em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#check_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.check_time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="RegressionMatrix.regression_matrix.denormalize">
+<code class="descclassname">RegressionMatrix.regression_matrix.</code><code class="descname">denormalize</code><span class="sig-paren">(</span><em>ts_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#denormalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.denormalize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="RegressionMatrix.regression_matrix.matrix_idx">
+<code class="descclassname">RegressionMatrix.regression_matrix.</code><code class="descname">matrix_idx</code><span class="sig-paren">(</span><em>n_hist</em>, <em>n_req</em>, <em>n_rows</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#matrix_idx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.matrix_idx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns indices of ts entries in matrices X and Y given forecast parameters, by rows. Ts are enumerated from the latest entry</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n_hist</strong> (<em>int</em>) &#8211; <ol class="upperalpha" start="24">
+<li>row length</li>
+</ol>
+</li>
+<li><strong>n_req</strong> (<em>int</em>) &#8211; <ol class="upperalpha" start="25">
+<li>row length</li>
+</ol>
+</li>
+<li><strong>n_rows</strong> (<em>int</em>) &#8211; number of rows</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">matrices idxX with shape (n_rows, n_hist) and idxY with shape (n_rows, n_req)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">idxX</span><span class="p">,</span> <span class="n">idxY</span> <span class="o">=</span> <span class="n">matrix_idx</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">idxX</span>
+<span class="go">[[ 2  3  4  5  6  7  8  9 10 11]</span>
+<span class="go">[ 4  5  6  7  8  9 10 11 12 13]</span>
+<span class="go">[ 6  7  8  9 10 11 12 13 14 15]</span>
+<span class="go">[ 8  9 10 11 12 13 14 15 16 17]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">idxY</span>
+<span class="go">[[0 1]</span>
+<span class="go"> [2 3]</span>
+<span class="go"> [4 5]</span>
+<span class="go"> [6 7]]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="RegressionMatrix.regression_matrix.normalize_ts">
+<code class="descclassname">RegressionMatrix.regression_matrix.</code><code class="descname">normalize_ts</code><span class="sig-paren">(</span><em>ts</em>, <em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#normalize_ts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.normalize_ts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="RegressionMatrix.regression_matrix.replace_nans">
+<code class="descclassname">RegressionMatrix.regression_matrix.</code><code class="descname">replace_nans</code><span class="sig-paren">(</span><em>ts</em>, <em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#replace_nans"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.replace_nans" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="RegressionMatrix.regression_matrix.truncate">
+<code class="descclassname">RegressionMatrix.regression_matrix.</code><code class="descname">truncate</code><span class="sig-paren">(</span><em>ts_struct</em>, <em>n_hist</em>, <em>n_req</em>, <em>n_rows</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#truncate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.truncate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-RegressionMatrix">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-RegressionMatrix" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">RegressionMatrix package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-RegressionMatrix.random_data">RegressionMatrix.random_data module</a></li>
+<li><a class="reference internal" href="#module-RegressionMatrix.regression_matrix">RegressionMatrix.regression_matrix module</a></li>
+<li><a class="reference internal" href="#module-RegressionMatrix">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="LoadAndSaveData.html"
+                        title="previous chapter">LoadAndSaveData package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="Forecasting.html"
+                        title="next chapter">Forecasting package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/RegressionMatrix.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="Forecasting.html" title="Forecasting package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="LoadAndSaveData.html" title="LoadAndSaveData package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">MultiscaleForecasting 0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Strijov, Motrenko, Neychev, Isachenko.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>

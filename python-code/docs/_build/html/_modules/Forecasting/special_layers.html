@@ -1,0 +1,1168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Forecasting.special_layers &#8212; MultiscaleForecasting 0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="MultiscaleForecasting 0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for Forecasting.special_layers</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">theano</span>
+<span class="kn">import</span> <span class="nn">theano.tensor</span> <span class="k">as</span> <span class="nn">T</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">lasagne</span> <span class="k">import</span> <span class="n">init</span>
+<span class="kn">from</span> <span class="nn">lasagne</span> <span class="k">import</span> <span class="n">nonlinearities</span>
+<span class="kn">from</span> <span class="nn">lasagne.utils</span> <span class="k">import</span> <span class="n">as_tuple</span><span class="p">,</span> <span class="n">floatX</span>
+<span class="kn">from</span> <span class="nn">lasagne.random</span> <span class="k">import</span> <span class="n">get_rng</span>
+<span class="kn">from</span> <span class="nn">lasagne.layers.base</span> <span class="k">import</span> <span class="n">Layer</span><span class="p">,</span> <span class="n">MergeLayer</span>
+<span class="kn">from</span> <span class="nn">theano.sandbox.rng_mrg</span> <span class="k">import</span> <span class="n">MRG_RandomStreams</span> <span class="k">as</span> <span class="n">RandomStreams</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;NonlinearityLayer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BiasLayer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ScaleLayer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;standardize&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ExpressionLayer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;InverseLayer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TransformerLayer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TPSTransformerLayer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ParametricRectifierLayer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;prelu&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RandomizedRectifierLayer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rrelu&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="NonlinearityLayer"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.NonlinearityLayer">[docs]</a><span class="k">class</span> <span class="nc">NonlinearityLayer</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    lasagne.layers.NonlinearityLayer(incoming,</span>
+<span class="sd">    nonlinearity=lasagne.nonlinearities.rectify, **kwargs)</span>
+<span class="sd">    A layer that just applies a nonlinearity.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    incoming : a :class:`Layer` instance or a tuple</span>
+<span class="sd">        The layer feeding into this layer, or the expected input shape</span>
+<span class="sd">    nonlinearity : callable or None</span>
+<span class="sd">        The nonlinearity that is applied to the layer activations. If None</span>
+<span class="sd">        is provided, the layer will be linear.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">incoming</span><span class="p">,</span> <span class="n">nonlinearity</span><span class="o">=</span><span class="n">nonlinearities</span><span class="o">.</span><span class="n">rectify</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">NonlinearityLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">incoming</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nonlinearity</span> <span class="o">=</span> <span class="p">(</span><span class="n">nonlinearities</span><span class="o">.</span><span class="n">identity</span> <span class="k">if</span> <span class="n">nonlinearity</span> <span class="ow">is</span> <span class="kc">None</span>
+                             <span class="k">else</span> <span class="n">nonlinearity</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NonlinearityLayer.get_output_for"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.NonlinearityLayer.get_output_for">[docs]</a>    <span class="k">def</span> <span class="nf">get_output_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nonlinearity</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="BiasLayer"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.BiasLayer">[docs]</a><span class="k">class</span> <span class="nc">BiasLayer</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    lasagne.layers.BiasLayer(incoming, b=lasagne.init.Constant(0),</span>
+<span class="sd">    shared_axes=&#39;auto&#39;, **kwargs)</span>
+<span class="sd">    A layer that just adds a (trainable) bias term.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    incoming : a :class:`Layer` instance or a tuple</span>
+<span class="sd">        The layer feeding into this layer, or the expected input shape</span>
+<span class="sd">    b : Theano shared variable, expression, numpy array, callable or ``None``</span>
+<span class="sd">        Initial value, expression or initializer for the biases. If set to</span>
+<span class="sd">        ``None``, the layer will have no biases and pass through its input</span>
+<span class="sd">        unchanged. Otherwise, the bias shape must match the incoming shape,</span>
+<span class="sd">        skipping those axes the biases are shared over (see the example below).</span>
+<span class="sd">        See :func:`lasagne.utils.create_param` for more information.</span>
+<span class="sd">    shared_axes : &#39;auto&#39;, int or tuple of int</span>
+<span class="sd">        The axis or axes to share biases over. If ``&#39;auto&#39;`` (the default),</span>
+<span class="sd">        share over all axes except for the second: this will share biases over</span>
+<span class="sd">        the minibatch dimension for dense layers, and additionally over all</span>
+<span class="sd">        spatial dimensions for convolutional layers.</span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The bias parameter dimensionality is the input dimensionality minus the</span>
+<span class="sd">    number of axes the biases are shared over, which matches the bias parameter</span>
+<span class="sd">    conventions of :class:`DenseLayer` or :class:`Conv2DLayer`. For example:</span>
+<span class="sd">    &gt;&gt;&gt; layer = BiasLayer((20, 30, 40, 50), shared_axes=(0, 2))</span>
+<span class="sd">    &gt;&gt;&gt; layer.b.get_value().shape</span>
+<span class="sd">    (30, 50)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">incoming</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">init</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">shared_axes</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BiasLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">incoming</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">shared_axes</span> <span class="o">==</span> <span class="s1">&#39;auto&#39;</span><span class="p">:</span>
+            <span class="c1"># default: share biases over all but the second axis</span>
+            <span class="n">shared_axes</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="p">)))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shared_axes</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">shared_axes</span> <span class="o">=</span> <span class="p">(</span><span class="n">shared_axes</span><span class="p">,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shared_axes</span> <span class="o">=</span> <span class="n">shared_axes</span>
+
+        <span class="k">if</span> <span class="n">b</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># create bias parameter, ignoring all dimensions in shared_axes</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">size</span> <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="p">)</span>
+                     <span class="k">if</span> <span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_axes</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;BiasLayer needs specified input sizes for &quot;</span>
+                                 <span class="s2">&quot;all axes that biases are not shared over.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_param</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">regularizable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BiasLayer.get_output_for"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.BiasLayer.get_output_for">[docs]</a>    <span class="k">def</span> <span class="nf">get_output_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">bias_axes</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">ndim</span><span class="p">))</span>
+            <span class="n">pattern</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;x&#39;</span> <span class="k">if</span> <span class="n">input_axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_axes</span>
+                       <span class="k">else</span> <span class="nb">next</span><span class="p">(</span><span class="n">bias_axes</span><span class="p">)</span>
+                       <span class="k">for</span> <span class="n">input_axis</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">ndim</span><span class="p">)]</span>
+            <span class="k">return</span> <span class="nb">input</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">dimshuffle</span><span class="p">(</span><span class="o">*</span><span class="n">pattern</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">input</span></div></div>
+
+
+<div class="viewcode-block" id="ScaleLayer"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.ScaleLayer">[docs]</a><span class="k">class</span> <span class="nc">ScaleLayer</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    lasagne.layers.ScaleLayer(incoming, scales=lasagne.init.Constant(1),</span>
+<span class="sd">    shared_axes=&#39;auto&#39;, **kwargs)</span>
+<span class="sd">    A layer that scales its inputs by learned coefficients.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    incoming : a :class:`Layer` instance or a tuple</span>
+<span class="sd">        The layer feeding into this layer, or the expected input shape</span>
+<span class="sd">    scales : Theano shared variable, expression, numpy array, or callable</span>
+<span class="sd">        Initial value, expression or initializer for the scale.  The scale</span>
+<span class="sd">        shape must match the incoming shape, skipping those axes the scales are</span>
+<span class="sd">        shared over (see the example below).  See</span>
+<span class="sd">        :func:`lasagne.utils.create_param` for more information.</span>
+<span class="sd">    shared_axes : &#39;auto&#39;, int or tuple of int</span>
+<span class="sd">        The axis or axes to share scales over. If ``&#39;auto&#39;`` (the default),</span>
+<span class="sd">        share over all axes except for the second: this will share scales over</span>
+<span class="sd">        the minibatch dimension for dense layers, and additionally over all</span>
+<span class="sd">        spatial dimensions for convolutional layers.</span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The scales parameter dimensionality is the input dimensionality minus the</span>
+<span class="sd">    number of axes the scales are shared over, which matches the bias parameter</span>
+<span class="sd">    conventions of :class:`DenseLayer` or :class:`Conv2DLayer`. For example:</span>
+<span class="sd">    &gt;&gt;&gt; layer = ScaleLayer((20, 30, 40, 50), shared_axes=(0, 2))</span>
+<span class="sd">    &gt;&gt;&gt; layer.scales.get_value().shape</span>
+<span class="sd">    (30, 50)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">incoming</span><span class="p">,</span> <span class="n">scales</span><span class="o">=</span><span class="n">init</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">shared_axes</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ScaleLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">incoming</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">shared_axes</span> <span class="o">==</span> <span class="s1">&#39;auto&#39;</span><span class="p">:</span>
+            <span class="c1"># default: share scales over all but the second axis</span>
+            <span class="n">shared_axes</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="p">)))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shared_axes</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">shared_axes</span> <span class="o">=</span> <span class="p">(</span><span class="n">shared_axes</span><span class="p">,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shared_axes</span> <span class="o">=</span> <span class="n">shared_axes</span>
+
+        <span class="c1"># create scales parameter, ignoring all dimensions in shared_axes</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">size</span> <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="p">)</span>
+                 <span class="k">if</span> <span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_axes</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;ScaleLayer needs specified input sizes for &quot;</span>
+                             <span class="s2">&quot;all axes that scales are not shared over.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scales</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_param</span><span class="p">(</span>
+            <span class="n">scales</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="s1">&#39;scales&#39;</span><span class="p">,</span> <span class="n">regularizable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ScaleLayer.get_output_for"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.ScaleLayer.get_output_for">[docs]</a>    <span class="k">def</span> <span class="nf">get_output_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scales</span><span class="o">.</span><span class="n">ndim</span><span class="p">))</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;x&#39;</span> <span class="k">if</span> <span class="n">input_axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_axes</span>
+                   <span class="k">else</span> <span class="nb">next</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span> <span class="k">for</span> <span class="n">input_axis</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">ndim</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="nb">input</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">scales</span><span class="o">.</span><span class="n">dimshuffle</span><span class="p">(</span><span class="o">*</span><span class="n">pattern</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="standardize"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.standardize">[docs]</a><span class="k">def</span> <span class="nf">standardize</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">shared_axes</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convenience function for standardizing inputs by applying a fixed offset</span>
+<span class="sd">    and scale.  This is usually useful when you want the input to your network</span>
+<span class="sd">    to, say, have zero mean and unit standard deviation over the feature</span>
+<span class="sd">    dimensions.  This layer allows you to include the appropriate statistics to</span>
+<span class="sd">    achieve this normalization as part of your network, and applies them to its</span>
+<span class="sd">    input.  The statistics are supplied as the `offset` and `scale` parameters,</span>
+<span class="sd">    which are applied to the input by subtracting `offset` and dividing by</span>
+<span class="sd">    `scale`, sharing dimensions as specified by the `shared_axes` argument.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    layer : a :class:`Layer` instance or a tuple</span>
+<span class="sd">        The layer feeding into this layer, or the expected input shape.</span>
+<span class="sd">    offset : Theano shared variable or numpy array</span>
+<span class="sd">        The offset to apply (via subtraction) to the axis/axes being</span>
+<span class="sd">        standardized.</span>
+<span class="sd">    scale : Theano shared variable or numpy array</span>
+<span class="sd">        The scale to apply (via division) to the axis/axes being standardized.</span>
+<span class="sd">    shared_axes : &#39;auto&#39;, int or tuple of int</span>
+<span class="sd">        The axis or axes to share the offset and scale over. If ``&#39;auto&#39;`` (the</span>
+<span class="sd">        default), share over all axes except for the second: this will share</span>
+<span class="sd">        scales over the minibatch dimension for dense layers, and additionally</span>
+<span class="sd">        over all spatial dimensions for convolutional layers.</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Assuming your training data exists in a 2D numpy ndarray called</span>
+<span class="sd">    ``training_data``, you can use this function to scale input features to the</span>
+<span class="sd">    [0, 1] range based on the training set statistics like so:</span>
+<span class="sd">    &gt;&gt;&gt; import lasagne</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; training_data = np.random.standard_normal((100, 20))</span>
+<span class="sd">    &gt;&gt;&gt; input_shape = (None, training_data.shape[1])</span>
+<span class="sd">    &gt;&gt;&gt; l_in = lasagne.layers.InputLayer(input_shape)</span>
+<span class="sd">    &gt;&gt;&gt; offset = training_data.min(axis=0)</span>
+<span class="sd">    &gt;&gt;&gt; scale = training_data.max(axis=0) - training_data.min(axis=0)</span>
+<span class="sd">    &gt;&gt;&gt; l_std = standardize(l_in, offset, scale, shared_axes=0)</span>
+<span class="sd">    Alternatively, to z-score your inputs based on training set statistics, you</span>
+<span class="sd">    could set ``offset = training_data.mean(axis=0)`` and</span>
+<span class="sd">    ``scale = training_data.std(axis=0)`` instead.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Subtract the offset</span>
+    <span class="n">layer</span> <span class="o">=</span> <span class="n">BiasLayer</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="o">-</span><span class="n">offset</span><span class="p">,</span> <span class="n">shared_axes</span><span class="p">)</span>
+    <span class="c1"># Do not optimize the offset parameter</span>
+    <span class="n">layer</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="n">layer</span><span class="o">.</span><span class="n">b</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;trainable&#39;</span><span class="p">)</span>
+    <span class="c1"># Divide by the scale</span>
+    <span class="n">layer</span> <span class="o">=</span> <span class="n">ScaleLayer</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">floatX</span><span class="p">(</span><span class="mf">1.</span><span class="p">)</span><span class="o">/</span><span class="n">scale</span><span class="p">,</span> <span class="n">shared_axes</span><span class="p">)</span>
+    <span class="c1"># Do not optimize the scales parameter</span>
+    <span class="n">layer</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="n">layer</span><span class="o">.</span><span class="n">scales</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;trainable&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">layer</span></div>
+
+
+<div class="viewcode-block" id="ExpressionLayer"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.ExpressionLayer">[docs]</a><span class="k">class</span> <span class="nc">ExpressionLayer</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This layer provides boilerplate for a custom layer that applies a</span>
+<span class="sd">    simple transformation to the input.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    incoming : a :class:`Layer` instance or a tuple</span>
+<span class="sd">        The layer feeding into this layer, or the expected input shape.</span>
+<span class="sd">    function : callable</span>
+<span class="sd">        A function to be applied to the output of the previous layer.</span>
+<span class="sd">    output_shape : None, callable, tuple, or &#39;auto&#39;</span>
+<span class="sd">        Specifies the output shape of this layer. If a tuple, this fixes the</span>
+<span class="sd">        output shape for any input shape (the tuple can contain None if some</span>
+<span class="sd">        dimensions may vary). If a callable, it should return the calculated</span>
+<span class="sd">        output shape given the input shape. If None, the output shape is</span>
+<span class="sd">        assumed to be the same as the input shape. If &#39;auto&#39;, an attempt will</span>
+<span class="sd">        be made to automatically infer the correct output shape.</span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    An :class:`ExpressionLayer` that does not change the shape of the data</span>
+<span class="sd">    (i.e., is constructed with the default setting of ``output_shape=None``)</span>
+<span class="sd">    is functionally equivalent to a :class:`NonlinearityLayer`.</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from lasagne.layers import InputLayer, ExpressionLayer</span>
+<span class="sd">    &gt;&gt;&gt; l_in = InputLayer((32, 100, 20))</span>
+<span class="sd">    &gt;&gt;&gt; l1 = ExpressionLayer(l_in, lambda X: X.mean(-1), output_shape=&#39;auto&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; l1.output_shape</span>
+<span class="sd">    (32, 100)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">incoming</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="n">output_shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ExpressionLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">incoming</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">output_shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_output_shape</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="n">output_shape</span> <span class="o">==</span> <span class="s1">&#39;auto&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_output_shape</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">output_shape</span><span class="p">,</span> <span class="s1">&#39;__call__&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_output_shape_for</span> <span class="o">=</span> <span class="n">output_shape</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_output_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">output_shape</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">function</span> <span class="o">=</span> <span class="n">function</span>
+
+<div class="viewcode-block" id="ExpressionLayer.get_output_shape_for"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.ExpressionLayer.get_output_shape_for">[docs]</a>    <span class="k">def</span> <span class="nf">get_output_shape_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">input_shape</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_shape</span> <span class="ow">is</span> <span class="s1">&#39;auto&#39;</span><span class="p">:</span>
+            <span class="n">input_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">input_shape</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">theano</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">alloc</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">*</span><span class="n">input_shape</span><span class="p">)</span>
+            <span class="n">output_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+            <span class="n">output_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">s</span> <span class="k">if</span> <span class="n">s</span> <span class="k">else</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">output_shape</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">output_shape</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_shape</span></div>
+
+<div class="viewcode-block" id="ExpressionLayer.get_output_for"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.ExpressionLayer.get_output_for">[docs]</a>    <span class="k">def</span> <span class="nf">get_output_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="InverseLayer"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.InverseLayer">[docs]</a><span class="k">class</span> <span class="nc">InverseLayer</span><span class="p">(</span><span class="n">MergeLayer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The :class:`InverseLayer` class performs inverse operations</span>
+<span class="sd">    for a single layer of a neural network by applying the</span>
+<span class="sd">    partial derivative of the layer to be inverted with</span>
+<span class="sd">    respect to its input: transposed layer</span>
+<span class="sd">    for a :class:`DenseLayer`, deconvolutional layer for</span>
+<span class="sd">    :class:`Conv2DLayer`, :class:`Conv1DLayer`; or</span>
+<span class="sd">    an unpooling layer for :class:`MaxPool2DLayer`.</span>
+<span class="sd">    It is specially useful for building (convolutional)</span>
+<span class="sd">    autoencoders with tied parameters.</span>
+<span class="sd">    Note that if the layer to be inverted contains a nonlinearity</span>
+<span class="sd">    and/or a bias, the :class:`InverseLayer` will include the derivative</span>
+<span class="sd">    of that in its computation.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    incoming : a :class:`Layer` instance or a tuple</span>
+<span class="sd">        The layer feeding into this layer, or the expected input shape.</span>
+<span class="sd">    layer : a :class:`Layer` instance or a tuple</span>
+<span class="sd">        The layer with respect to which the instance of the</span>
+<span class="sd">        :class:`InverseLayer` is inverse to.</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import lasagne</span>
+<span class="sd">    &gt;&gt;&gt; from lasagne.layers import InputLayer, Conv2DLayer, DenseLayer</span>
+<span class="sd">    &gt;&gt;&gt; from lasagne.layers import InverseLayer</span>
+<span class="sd">    &gt;&gt;&gt; l_in = InputLayer((100, 3, 28, 28))</span>
+<span class="sd">    &gt;&gt;&gt; l1 = Conv2DLayer(l_in, num_filters=16, filter_size=5)</span>
+<span class="sd">    &gt;&gt;&gt; l2 = DenseLayer(l1, num_units=20)</span>
+<span class="sd">    &gt;&gt;&gt; l_u2 = InverseLayer(l2, l2)  # backprop through l2</span>
+<span class="sd">    &gt;&gt;&gt; l_u1 = InverseLayer(l_u2, l1)  # backprop through l1</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">incoming</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">InverseLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">incoming</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">layer</span><span class="o">.</span><span class="n">input_layer</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="InverseLayer.get_output_shape_for"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.InverseLayer.get_output_shape_for">[docs]</a>    <span class="k">def</span> <span class="nf">get_output_shape_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">input_shapes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="InverseLayer.get_output_for"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.InverseLayer.get_output_for">[docs]</a>    <span class="k">def</span> <span class="nf">get_output_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">input</span><span class="p">,</span> <span class="n">layer_out</span><span class="p">,</span> <span class="n">layer_in</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="k">return</span> <span class="n">theano</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="n">layer_in</span><span class="p">,</span> <span class="n">known_grads</span><span class="o">=</span><span class="p">{</span><span class="n">layer_out</span><span class="p">:</span> <span class="nb">input</span><span class="p">})</span></div></div>
+
+
+<div class="viewcode-block" id="TransformerLayer"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.TransformerLayer">[docs]</a><span class="k">class</span> <span class="nc">TransformerLayer</span><span class="p">(</span><span class="n">MergeLayer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Spatial transformer layer</span>
+<span class="sd">    The layer applies an affine transformation on the input. The affine</span>
+<span class="sd">    transformation is parameterized with six learned parameters [1]_.</span>
+<span class="sd">    The output is interpolated with a bilinear transformation.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    incoming : a :class:`Layer` instance or a tuple</span>
+<span class="sd">        The layer feeding into this layer, or the expected input shape. The</span>
+<span class="sd">        output of this layer should be a 4D tensor, with shape</span>
+<span class="sd">        ``(batch_size, num_input_channels, input_rows, input_columns)``.</span>
+<span class="sd">    localization_network : a :class:`Layer` instance</span>
+<span class="sd">        The network that calculates the parameters of the affine</span>
+<span class="sd">        transformation. See the example for how to initialize to the identity</span>
+<span class="sd">        transform.</span>
+<span class="sd">    downsample_factor : float or iterable of float</span>
+<span class="sd">        A float or a 2-element tuple specifying the downsample factor for the</span>
+<span class="sd">        output image (in both spatial dimensions). A value of 1 will keep the</span>
+<span class="sd">        original size of the input. Values larger than 1 will downsample the</span>
+<span class="sd">        input. Values below 1 will upsample the input.</span>
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1]  Max Jaderberg, Karen Simonyan, Andrew Zisserman,</span>
+<span class="sd">            Koray Kavukcuoglu (2015):</span>
+<span class="sd">            Spatial Transformer Networks. NIPS 2015,</span>
+<span class="sd">            http://papers.nips.cc/paper/5854-spatial-transformer-networks.pdf</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Here we set up the layer to initially do the identity transform, similarly</span>
+<span class="sd">    to [1]_. Note that you will want to use a localization with linear output.</span>
+<span class="sd">    If the output from the localization networks is [t1, t2, t3, t4, t5, t6]</span>
+<span class="sd">    then t1 and t5 determines zoom, t2 and t4 determines skewness, and t3 and</span>
+<span class="sd">    t6 move the center position.</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; import lasagne</span>
+<span class="sd">    &gt;&gt;&gt; b = np.zeros((2, 3), dtype=&#39;float32&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; b[0, 0] = 1</span>
+<span class="sd">    &gt;&gt;&gt; b[1, 1] = 1</span>
+<span class="sd">    &gt;&gt;&gt; b = b.flatten()  # identity transform</span>
+<span class="sd">    &gt;&gt;&gt; W = lasagne.init.Constant(0.0)</span>
+<span class="sd">    &gt;&gt;&gt; l_in = lasagne.layers.InputLayer((None, 3, 28, 28))</span>
+<span class="sd">    &gt;&gt;&gt; l_loc = lasagne.layers.DenseLayer(l_in, num_units=6, W=W, b=b,</span>
+<span class="sd">    ... nonlinearity=None)</span>
+<span class="sd">    &gt;&gt;&gt; l_trans = lasagne.layers.TransformerLayer(l_in, l_loc)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">incoming</span><span class="p">,</span> <span class="n">localization_network</span><span class="p">,</span> <span class="n">downsample_factor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TransformerLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">incoming</span><span class="p">,</span> <span class="n">localization_network</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">downsample_factor</span> <span class="o">=</span> <span class="n">as_tuple</span><span class="p">(</span><span class="n">downsample_factor</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">input_shp</span><span class="p">,</span> <span class="n">loc_shp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_shapes</span>
+
+        <span class="k">if</span> <span class="n">loc_shp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">6</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">loc_shp</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The localization network must have &quot;</span>
+                             <span class="s2">&quot;output shape: (batch_size, 6)&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_shp</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The input network must have a 4-dimensional &quot;</span>
+                             <span class="s2">&quot;output shape: (batch_size, num_input_channels, &quot;</span>
+                             <span class="s2">&quot;input_rows, input_columns)&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TransformerLayer.get_output_shape_for"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.TransformerLayer.get_output_shape_for">[docs]</a>    <span class="k">def</span> <span class="nf">get_output_shape_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">):</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">input_shapes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">factors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">downsample_factor</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="kc">None</span> <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span> <span class="o">//</span> <span class="n">f</span><span class="p">)</span>
+                                  <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:],</span> <span class="n">factors</span><span class="p">)))</span></div>
+
+<div class="viewcode-block" id="TransformerLayer.get_output_for"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.TransformerLayer.get_output_for">[docs]</a>    <span class="k">def</span> <span class="nf">get_output_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># see eq. (1) and sec 3.1 in [1]</span>
+        <span class="nb">input</span><span class="p">,</span> <span class="n">theta</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="k">return</span> <span class="n">_transform_affine</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">downsample_factor</span><span class="p">)</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">_transform_affine</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">downsample_factor</span><span class="p">):</span>
+    <span class="n">num_batch</span><span class="p">,</span> <span class="n">num_channels</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+    <span class="c1"># grid of (x_t, y_t, 1), eq (1) in ref [1]</span>
+    <span class="n">out_height</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">height</span> <span class="o">//</span> <span class="n">downsample_factor</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;int64&#39;</span><span class="p">)</span>
+    <span class="n">out_width</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">width</span> <span class="o">//</span> <span class="n">downsample_factor</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;int64&#39;</span><span class="p">)</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">_meshgrid</span><span class="p">(</span><span class="n">out_height</span><span class="p">,</span> <span class="n">out_width</span><span class="p">)</span>
+
+    <span class="c1"># Transform A x (x_t, y_t, 1)^T -&gt; (x_s, y_s)</span>
+    <span class="n">T_g</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">grid</span><span class="p">)</span>
+    <span class="n">x_s</span> <span class="o">=</span> <span class="n">T_g</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">y_s</span> <span class="o">=</span> <span class="n">T_g</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">x_s_flat</span> <span class="o">=</span> <span class="n">x_s</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    <span class="n">y_s_flat</span> <span class="o">=</span> <span class="n">y_s</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+    <span class="c1"># dimshuffle input to  (bs, height, width, channels)</span>
+    <span class="n">input_dim</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">dimshuffle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">input_transformed</span> <span class="o">=</span> <span class="n">_interpolate</span><span class="p">(</span>
+        <span class="n">input_dim</span><span class="p">,</span> <span class="n">x_s_flat</span><span class="p">,</span> <span class="n">y_s_flat</span><span class="p">,</span>
+        <span class="n">out_height</span><span class="p">,</span> <span class="n">out_width</span><span class="p">)</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+        <span class="n">input_transformed</span><span class="p">,</span> <span class="p">(</span><span class="n">num_batch</span><span class="p">,</span> <span class="n">out_height</span><span class="p">,</span> <span class="n">out_width</span><span class="p">,</span> <span class="n">num_channels</span><span class="p">))</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">dimshuffle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># dimshuffle to conv format</span>
+    <span class="k">return</span> <span class="n">output</span>
+
+
+<span class="k">def</span> <span class="nf">_interpolate</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">out_height</span><span class="p">,</span> <span class="n">out_width</span><span class="p">):</span>
+    <span class="c1"># *_f are floats</span>
+    <span class="n">num_batch</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">channels</span> <span class="o">=</span> <span class="n">im</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">height_f</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">theano</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">floatX</span><span class="p">)</span>
+    <span class="n">width_f</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">theano</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">floatX</span><span class="p">)</span>
+
+    <span class="c1"># clip coordinates to [-1, 1]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># scale coordinates from [-1, 1] to [0, width/height - 1]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">width_f</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">height_f</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># obtain indices of the 2x2 pixel neighborhood surrounding the coordinates;</span>
+    <span class="c1"># we need those in floatX for interpolation and in int64 for indexing. for</span>
+    <span class="c1"># indexing, we need to take care they do not extend past the image.</span>
+    <span class="n">x0_f</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">y0_f</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="n">x1_f</span> <span class="o">=</span> <span class="n">x0_f</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">y1_f</span> <span class="o">=</span> <span class="n">y0_f</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">x0_f</span><span class="p">,</span> <span class="s1">&#39;int64&#39;</span><span class="p">)</span>
+    <span class="n">y0</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">y0_f</span><span class="p">,</span> <span class="s1">&#39;int64&#39;</span><span class="p">)</span>
+    <span class="n">x1</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">x1_f</span><span class="p">,</span> <span class="n">width_f</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;int64&#39;</span><span class="p">)</span>
+    <span class="n">y1</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">y1_f</span><span class="p">,</span> <span class="n">height_f</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;int64&#39;</span><span class="p">)</span>
+
+    <span class="c1"># The input is [num_batch, height, width, channels]. We do the lookup in</span>
+    <span class="c1"># the flattened input, i.e [num_batch*height*width, channels]. We need</span>
+    <span class="c1"># to offset all indices to match the flat version</span>
+    <span class="n">dim2</span> <span class="o">=</span> <span class="n">width</span>
+    <span class="n">dim1</span> <span class="o">=</span> <span class="n">width</span><span class="o">*</span><span class="n">height</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_batch</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int64&#39;</span><span class="p">)</span><span class="o">*</span><span class="n">dim1</span><span class="p">,</span> <span class="n">out_height</span><span class="o">*</span><span class="n">out_width</span><span class="p">)</span>
+    <span class="n">base_y0</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="n">y0</span><span class="o">*</span><span class="n">dim2</span>
+    <span class="n">base_y1</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="n">y1</span><span class="o">*</span><span class="n">dim2</span>
+    <span class="n">idx_a</span> <span class="o">=</span> <span class="n">base_y0</span> <span class="o">+</span> <span class="n">x0</span>
+    <span class="n">idx_b</span> <span class="o">=</span> <span class="n">base_y1</span> <span class="o">+</span> <span class="n">x0</span>
+    <span class="n">idx_c</span> <span class="o">=</span> <span class="n">base_y0</span> <span class="o">+</span> <span class="n">x1</span>
+    <span class="n">idx_d</span> <span class="o">=</span> <span class="n">base_y1</span> <span class="o">+</span> <span class="n">x1</span>
+
+    <span class="c1"># use indices to lookup pixels for all samples</span>
+    <span class="n">im_flat</span> <span class="o">=</span> <span class="n">im</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">channels</span><span class="p">))</span>
+    <span class="n">Ia</span> <span class="o">=</span> <span class="n">im_flat</span><span class="p">[</span><span class="n">idx_a</span><span class="p">]</span>
+    <span class="n">Ib</span> <span class="o">=</span> <span class="n">im_flat</span><span class="p">[</span><span class="n">idx_b</span><span class="p">]</span>
+    <span class="n">Ic</span> <span class="o">=</span> <span class="n">im_flat</span><span class="p">[</span><span class="n">idx_c</span><span class="p">]</span>
+    <span class="n">Id</span> <span class="o">=</span> <span class="n">im_flat</span><span class="p">[</span><span class="n">idx_d</span><span class="p">]</span>
+
+    <span class="c1"># calculate interpolated values</span>
+    <span class="n">wa</span> <span class="o">=</span> <span class="p">((</span><span class="n">x1_f</span><span class="o">-</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y1_f</span><span class="o">-</span><span class="n">y</span><span class="p">))</span><span class="o">.</span><span class="n">dimshuffle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">)</span>
+    <span class="n">wb</span> <span class="o">=</span> <span class="p">((</span><span class="n">x1_f</span><span class="o">-</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">y0_f</span><span class="p">))</span><span class="o">.</span><span class="n">dimshuffle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">)</span>
+    <span class="n">wc</span> <span class="o">=</span> <span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">x0_f</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y1_f</span><span class="o">-</span><span class="n">y</span><span class="p">))</span><span class="o">.</span><span class="n">dimshuffle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">)</span>
+    <span class="n">wd</span> <span class="o">=</span> <span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">x0_f</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">y0_f</span><span class="p">))</span><span class="o">.</span><span class="n">dimshuffle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">wa</span><span class="o">*</span><span class="n">Ia</span><span class="p">,</span> <span class="n">wb</span><span class="o">*</span><span class="n">Ib</span><span class="p">,</span> <span class="n">wc</span><span class="o">*</span><span class="n">Ic</span><span class="p">,</span> <span class="n">wd</span><span class="o">*</span><span class="n">Id</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span>
+
+
+<span class="k">def</span> <span class="nf">_linspace</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+    <span class="c1"># Theano linspace. Behaves similar to np.linspace</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">theano</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">floatX</span><span class="p">)</span>
+    <span class="n">stop</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="n">theano</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">floatX</span><span class="p">)</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="n">theano</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">floatX</span><span class="p">)</span>
+    <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="n">stop</span><span class="o">-</span><span class="n">start</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">T</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">theano</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">floatX</span><span class="p">)</span><span class="o">*</span><span class="n">step</span><span class="o">+</span><span class="n">start</span>
+
+
+<span class="k">def</span> <span class="nf">_meshgrid</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">):</span>
+    <span class="c1"># This function is the grid generator from eq. (1) in reference [1].</span>
+    <span class="c1"># It is equivalent to the following numpy code:</span>
+    <span class="c1">#  x_t, y_t = np.meshgrid(np.linspace(-1, 1, width),</span>
+    <span class="c1">#                         np.linspace(-1, 1, height))</span>
+    <span class="c1">#  ones = np.ones(np.prod(x_t.shape))</span>
+    <span class="c1">#  grid = np.vstack([x_t.flatten(), y_t.flatten(), ones])</span>
+    <span class="c1"># It is implemented in Theano instead to support symbolic grid sizes.</span>
+    <span class="c1"># Note: If the image size is known at layer construction time, we could</span>
+    <span class="c1"># compute the meshgrid offline in numpy instead of doing it dynamically</span>
+    <span class="c1"># in Theano. However, it hardly affected performance when we tried.</span>
+    <span class="n">x_t</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">height</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+                <span class="n">_linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span><span class="o">.</span><span class="n">dimshuffle</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">y_t</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">_linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span><span class="o">.</span><span class="n">dimshuffle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">),</span>
+                <span class="n">T</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">width</span><span class="p">)))</span>
+
+    <span class="n">x_t_flat</span> <span class="o">=</span> <span class="n">x_t</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">y_t_flat</span> <span class="o">=</span> <span class="n">y_t</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">ones</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">x_t_flat</span><span class="p">)</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">x_t_flat</span><span class="p">,</span> <span class="n">y_t_flat</span><span class="p">,</span> <span class="n">ones</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">grid</span>
+
+
+<div class="viewcode-block" id="TPSTransformerLayer"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.TPSTransformerLayer">[docs]</a><span class="k">class</span> <span class="nc">TPSTransformerLayer</span><span class="p">(</span><span class="n">MergeLayer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Spatial transformer layer</span>
+<span class="sd">    The layer applies a thin plate spline transformation [2]_ on the input</span>
+<span class="sd">    as in [1]_. The thin plate spline transform is determined based on the</span>
+<span class="sd">    movement of some number of control points. The starting positions for</span>
+<span class="sd">    these control points are fixed. The output is interpolated with a</span>
+<span class="sd">    bilinear transformation.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    incoming : a :class:`Layer` instance or a tuple</span>
+<span class="sd">        The layer feeding into this layer, or the expected input shape. The</span>
+<span class="sd">        output of this layer should be a 4D tensor, with shape</span>
+<span class="sd">        ``(batch_size, num_input_channels, input_rows, input_columns)``.</span>
+<span class="sd">    localization_network : a :class:`Layer` instance</span>
+<span class="sd">        The network that calculates the parameters of the thin plate spline</span>
+<span class="sd">        transformation as the x and y coordinates of the destination offsets of</span>
+<span class="sd">        each control point. The output of the localization network  should</span>
+<span class="sd">        be a 2D tensor, with shape ``(batch_size, 2 * num_control_points)``</span>
+<span class="sd">    downsample_factor : float or iterable of float</span>
+<span class="sd">        A float or a 2-element tuple specifying the downsample factor for the</span>
+<span class="sd">        output image (in both spatial dimensions). A value of 1 will keep the</span>
+<span class="sd">        original size of the input. Values larger than 1 will downsample the</span>
+<span class="sd">        input. Values below 1 will upsample the input.</span>
+<span class="sd">    control_points : integer</span>
+<span class="sd">        The number of control points to be used for the thin plate spline</span>
+<span class="sd">        transformation. These points will be arranged as a grid along the</span>
+<span class="sd">        image, so the value must be a perfect square. Default is 16.</span>
+<span class="sd">    precompute_grid : &#39;auto&#39; or boolean</span>
+<span class="sd">        Flag to precompute the U function [2]_ for the grid and source</span>
+<span class="sd">        points. If &#39;auto&#39;, will be set to true as long as the input height</span>
+<span class="sd">        and width are specified. If true, the U function is computed when the</span>
+<span class="sd">        layer is constructed for a fixed input shape. If false, grid will be</span>
+<span class="sd">        computed as part of the Theano computational graph, which is</span>
+<span class="sd">        substantially slower as this computation scales with</span>
+<span class="sd">        num_pixels*num_control_points. Default is &#39;auto&#39;.</span>
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1]  Max Jaderberg, Karen Simonyan, Andrew Zisserman,</span>
+<span class="sd">            Koray Kavukcuoglu (2015):</span>
+<span class="sd">            Spatial Transformer Networks. NIPS 2015,</span>
+<span class="sd">            http://papers.nips.cc/paper/5854-spatial-transformer-networks.pdf</span>
+<span class="sd">    .. [2]  Fred L. Bookstein (1989):</span>
+<span class="sd">            Principal warps: thin-plate splines and the decomposition of</span>
+<span class="sd">            deformations. IEEE Transactions on</span>
+<span class="sd">            Pattern Analysis and Machine Intelligence.</span>
+<span class="sd">            http://doi.org/10.1109/34.24792</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Here, we&#39;ll implement an identity transform using a thin plate spline</span>
+<span class="sd">    transform. First we&#39;ll create the destination control point offsets. To</span>
+<span class="sd">    make everything invariant to the shape of the image, the x and y range</span>
+<span class="sd">    of the image is normalized to [-1, 1] as in ref [1]_. To replicate an</span>
+<span class="sd">    identity transform, we&#39;ll set the bias to have all offsets be 0. More</span>
+<span class="sd">    complicated transformations can easily be implemented using different x</span>
+<span class="sd">    and y offsets (importantly, each control point can have it&#39;s own pair of</span>
+<span class="sd">    offsets).</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; import lasagne</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; # Create the network</span>
+<span class="sd">    &gt;&gt;&gt; # we&#39;ll initialize the weights and biases to zero, so it starts</span>
+<span class="sd">    &gt;&gt;&gt; # as the identity transform (all control point offsets are zero)</span>
+<span class="sd">    &gt;&gt;&gt; W = b = lasagne.init.Constant(0.0)</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; # Set the number of points</span>
+<span class="sd">    &gt;&gt;&gt; num_points = 16</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; l_in = lasagne.layers.InputLayer((None, 3, 28, 28))</span>
+<span class="sd">    &gt;&gt;&gt; l_loc = lasagne.layers.DenseLayer(l_in, num_units=2*num_points,</span>
+<span class="sd">    ...                                   W=W, b=b, nonlinearity=None)</span>
+<span class="sd">    &gt;&gt;&gt; l_trans = lasagne.layers.TPSTransformerLayer(l_in, l_loc,</span>
+<span class="sd">    ...                                          control_points=num_points)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">incoming</span><span class="p">,</span> <span class="n">localization_network</span><span class="p">,</span> <span class="n">downsample_factor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">control_points</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">precompute_grid</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TPSTransformerLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">incoming</span><span class="p">,</span> <span class="n">localization_network</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">downsample_factor</span> <span class="o">=</span> <span class="n">as_tuple</span><span class="p">(</span><span class="n">downsample_factor</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">control_points</span> <span class="o">=</span> <span class="n">control_points</span>
+
+        <span class="n">input_shp</span><span class="p">,</span> <span class="n">loc_shp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_shapes</span>
+
+        <span class="c1"># Error checking</span>
+        <span class="k">if</span> <span class="n">loc_shp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">control_points</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">loc_shp</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The localization network must have &quot;</span>
+                             <span class="s2">&quot;output shape: (batch_size, &quot;</span>
+                             <span class="s2">&quot;2*control_points)&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">control_points</span><span class="p">))</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+                <span class="n">control_points</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The number of control points must be&quot;</span>
+                             <span class="s2">&quot; a perfect square.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_shp</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The input network must have a 4-dimensional &quot;</span>
+                             <span class="s2">&quot;output shape: (batch_size, num_input_channels, &quot;</span>
+                             <span class="s2">&quot;input_rows, input_columns)&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Process precompute grid</span>
+        <span class="n">can_precompute_grid</span> <span class="o">=</span> <span class="nb">all</span><span class="p">(</span><span class="n">s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">input_shp</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+        <span class="k">if</span> <span class="n">precompute_grid</span> <span class="o">==</span> <span class="s1">&#39;auto&#39;</span><span class="p">:</span>
+            <span class="n">precompute_grid</span> <span class="o">=</span> <span class="n">can_precompute_grid</span>
+        <span class="k">elif</span> <span class="n">precompute_grid</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">can_precompute_grid</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Grid can only be precomputed if the input &quot;</span>
+                             <span class="s2">&quot;height and width are pre-specified.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">precompute_grid</span> <span class="o">=</span> <span class="n">precompute_grid</span>
+
+        <span class="c1"># Create source points and L matrix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">right_mat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">L_inv</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_points</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_height</span><span class="p">,</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">out_width</span> <span class="o">=</span> <span class="n">_initialize_tps</span><span class="p">(</span>
+                <span class="n">control_points</span><span class="p">,</span> <span class="n">input_shp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">downsample_factor</span><span class="p">,</span>
+                <span class="n">precompute_grid</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TPSTransformerLayer.get_output_shape_for"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.TPSTransformerLayer.get_output_shape_for">[docs]</a>    <span class="k">def</span> <span class="nf">get_output_shape_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">):</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">input_shapes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">factors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">downsample_factor</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="kc">None</span> <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span> <span class="o">//</span> <span class="n">f</span><span class="p">)</span>
+                                  <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:],</span> <span class="n">factors</span><span class="p">)))</span></div>
+
+<div class="viewcode-block" id="TPSTransformerLayer.get_output_for"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.TPSTransformerLayer.get_output_for">[docs]</a>    <span class="k">def</span> <span class="nf">get_output_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># see eq. (1) and sec 3.1 in [1]</span>
+        <span class="c1"># Get input and destination control points</span>
+        <span class="nb">input</span><span class="p">,</span> <span class="n">dest_offsets</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="k">return</span> <span class="n">_transform_thin_plate_spline</span><span class="p">(</span>
+                <span class="n">dest_offsets</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">right_mat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">L_inv</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">source_points</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_width</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">precompute_grid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">downsample_factor</span><span class="p">)</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">_transform_thin_plate_spline</span><span class="p">(</span>
+        <span class="n">dest_offsets</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">right_mat</span><span class="p">,</span> <span class="n">L_inv</span><span class="p">,</span> <span class="n">source_points</span><span class="p">,</span> <span class="n">out_height</span><span class="p">,</span>
+        <span class="n">out_width</span><span class="p">,</span> <span class="n">precompute_grid</span><span class="p">,</span> <span class="n">downsample_factor</span><span class="p">):</span>
+
+    <span class="n">num_batch</span><span class="p">,</span> <span class="n">num_channels</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">num_control_points</span> <span class="o">=</span> <span class="n">source_points</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># reshape destination offsets to be (num_batch, 2, num_control_points)</span>
+    <span class="c1"># and add to source_points</span>
+    <span class="n">dest_points</span> <span class="o">=</span> <span class="n">source_points</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+            <span class="n">dest_offsets</span><span class="p">,</span> <span class="p">(</span><span class="n">num_batch</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">num_control_points</span><span class="p">))</span>
+
+    <span class="c1"># Solve as in ref [2]</span>
+    <span class="n">coefficients</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dest_points</span><span class="p">,</span> <span class="n">L_inv</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">precompute_grid</span><span class="p">:</span>
+
+        <span class="c1"># Transform each point on the source grid (image_size x image_size)</span>
+        <span class="n">right_mat</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">right_mat</span><span class="o">.</span><span class="n">dimshuffle</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">num_batch</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">transformed_points</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">batched_dot</span><span class="p">(</span><span class="n">coefficients</span><span class="p">,</span> <span class="n">right_mat</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="c1"># Transformed grid</span>
+        <span class="n">out_height</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">height</span> <span class="o">//</span> <span class="n">downsample_factor</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;int64&#39;</span><span class="p">)</span>
+        <span class="n">out_width</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">width</span> <span class="o">//</span> <span class="n">downsample_factor</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;int64&#39;</span><span class="p">)</span>
+        <span class="n">orig_grid</span> <span class="o">=</span> <span class="n">_meshgrid</span><span class="p">(</span><span class="n">out_height</span><span class="p">,</span> <span class="n">out_width</span><span class="p">)</span>
+        <span class="n">orig_grid</span> <span class="o">=</span> <span class="n">orig_grid</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">orig_grid</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">orig_grid</span><span class="p">,</span> <span class="p">(</span><span class="n">num_batch</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># Transform each point on the source grid (image_size x image_size)</span>
+        <span class="n">transformed_points</span> <span class="o">=</span> <span class="n">_get_transformed_points_tps</span><span class="p">(</span>
+                <span class="n">orig_grid</span><span class="p">,</span> <span class="n">source_points</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">,</span> <span class="n">num_control_points</span><span class="p">,</span>
+                <span class="n">num_batch</span><span class="p">)</span>
+
+    <span class="c1"># Get out new points</span>
+    <span class="n">x_transformed</span> <span class="o">=</span> <span class="n">transformed_points</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    <span class="n">y_transformed</span> <span class="o">=</span> <span class="n">transformed_points</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+    <span class="c1"># dimshuffle input to  (bs, height, width, channels)</span>
+    <span class="n">input_dim</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">dimshuffle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">input_transformed</span> <span class="o">=</span> <span class="n">_interpolate</span><span class="p">(</span>
+            <span class="n">input_dim</span><span class="p">,</span> <span class="n">x_transformed</span><span class="p">,</span> <span class="n">y_transformed</span><span class="p">,</span>
+            <span class="n">out_height</span><span class="p">,</span> <span class="n">out_width</span><span class="p">)</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">input_transformed</span><span class="p">,</span>
+                       <span class="p">(</span><span class="n">num_batch</span><span class="p">,</span> <span class="n">out_height</span><span class="p">,</span> <span class="n">out_width</span><span class="p">,</span> <span class="n">num_channels</span><span class="p">))</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">dimshuffle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># dimshuffle to conv format</span>
+    <span class="k">return</span> <span class="n">output</span>
+
+
+<span class="k">def</span> <span class="nf">_get_transformed_points_tps</span><span class="p">(</span><span class="n">new_points</span><span class="p">,</span> <span class="n">source_points</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">,</span>
+                                <span class="n">num_points</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the transformed points&#39; value using the provided coefficients</span>
+<span class="sd">    :param new_points: num_batch x 2 x num_to_transform tensor</span>
+<span class="sd">    :param source_points: 2 x num_points array of source points</span>
+<span class="sd">    :param coefficients: coefficients (should be shape (num_batch, 2,</span>
+<span class="sd">        control_points + 3))</span>
+<span class="sd">    :param num_points: the number of points</span>
+<span class="sd">    :return: the x and y coordinates of each transformed point. Shape (</span>
+<span class="sd">        num_batch, 2, num_to_transform)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Calculate the U function for the new point and each source point as in</span>
+    <span class="c1"># ref [2]</span>
+    <span class="c1"># The U function is simply U(r) = r^2 * log(r^2), where r^2 is the</span>
+    <span class="c1"># squared distance</span>
+
+    <span class="c1"># Calculate the squared dist between the new point and the source points</span>
+    <span class="n">to_transform</span> <span class="o">=</span> <span class="n">new_points</span><span class="o">.</span><span class="n">dimshuffle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">stacked_transform</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">to_transform</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_points</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">r_2</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">sum</span><span class="p">(((</span><span class="n">stacked_transform</span> <span class="o">-</span> <span class="n">source_points</span><span class="o">.</span><span class="n">dimshuffle</span><span class="p">(</span>
+            <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Take the product (r^2 * log(r^2)), being careful to avoid NaNs</span>
+    <span class="n">log_r_2</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r_2</span><span class="p">)</span>
+    <span class="n">distances</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">switch</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">log_r_2</span><span class="p">),</span> <span class="n">r_2</span> <span class="o">*</span> <span class="n">log_r_2</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
+
+    <span class="c1"># Add in the coefficients for the affine translation (1, x, and y,</span>
+    <span class="c1"># corresponding to a_1, a_x, and a_y)</span>
+    <span class="n">upper_array</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">T</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">new_points</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+                                        <span class="n">dtype</span><span class="o">=</span><span class="n">theano</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">floatX</span><span class="p">),</span>
+                                 <span class="n">new_points</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">right_mat</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">upper_array</span><span class="p">,</span> <span class="n">distances</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Calculate the new value as the dot product</span>
+    <span class="n">new_value</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">batched_dot</span><span class="p">(</span><span class="n">coefficients</span><span class="p">,</span> <span class="n">right_mat</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_value</span>
+
+
+<span class="k">def</span> <span class="nf">_U_func_numpy</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function which implements the U function from Bookstein paper</span>
+<span class="sd">    :param x1: x coordinate of the first point</span>
+<span class="sd">    :param y1: y coordinate of the first point</span>
+<span class="sd">    :param x2: x coordinate of the second point</span>
+<span class="sd">    :param y2: y coordinate of the second point</span>
+<span class="sd">    :return: value of z</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Return zero if same point</span>
+    <span class="k">if</span> <span class="n">x1</span> <span class="o">==</span> <span class="n">x2</span> <span class="ow">and</span> <span class="n">y1</span> <span class="o">==</span> <span class="n">y2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.</span>
+
+    <span class="c1"># Calculate the squared Euclidean norm (r^2)</span>
+    <span class="n">r_2</span> <span class="o">=</span> <span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+    <span class="c1"># Return the squared norm (r^2 * log r^2)</span>
+    <span class="k">return</span> <span class="n">r_2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r_2</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_initialize_tps</span><span class="p">(</span><span class="n">num_control_points</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">,</span> <span class="n">downsample_factor</span><span class="p">,</span>
+                    <span class="n">precompute_grid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initializes the thin plate spline calculation by creating the source</span>
+<span class="sd">    point array and the inverted L matrix used for calculating the</span>
+<span class="sd">    transformations as in ref [2]_</span>
+<span class="sd">    :param num_control_points: the number of control points. Must be a</span>
+<span class="sd">        perfect square. Points will be used to generate an evenly spaced grid.</span>
+<span class="sd">    :param input_shape: tuple with 4 elements specifying the input shape</span>
+<span class="sd">    :param downsample_factor: tuple with 2 elements specifying the</span>
+<span class="sd">        downsample for the height and width, respectively</span>
+<span class="sd">    :param precompute_grid: boolean specifying whether to precompute the</span>
+<span class="sd">        grid matrix</span>
+<span class="sd">    :return:</span>
+<span class="sd">        right_mat: shape (num_control_points + 3, out_height*out_width) tensor</span>
+<span class="sd">        L_inv: shape (num_control_points + 3, num_control_points + 3) tensor</span>
+<span class="sd">        source_points: shape (2, num_control_points) tensor</span>
+<span class="sd">        out_height: tensor constant specifying the ouptut height</span>
+<span class="sd">        out_width: tensor constant specifying the output width</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># break out input_shape</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">input_shape</span>
+
+    <span class="c1"># Create source grid</span>
+    <span class="n">grid_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">num_control_points</span><span class="p">)</span>
+    <span class="n">x_control_source</span><span class="p">,</span> <span class="n">y_control_source</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">grid_size</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">grid_size</span><span class="p">))</span>
+
+    <span class="c1"># Create 2 x num_points array of source points</span>
+    <span class="n">source_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">x_control_source</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">y_control_source</span><span class="o">.</span><span class="n">flatten</span><span class="p">()))</span>
+
+    <span class="c1"># Convert to floatX</span>
+    <span class="n">source_points</span> <span class="o">=</span> <span class="n">source_points</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">theano</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">floatX</span><span class="p">)</span>
+
+    <span class="c1"># Get number of equations</span>
+    <span class="n">num_equations</span> <span class="o">=</span> <span class="n">num_control_points</span> <span class="o">+</span> <span class="mi">3</span>
+
+    <span class="c1"># Initialize L to be num_equations square matrix</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_equations</span><span class="p">,</span> <span class="n">num_equations</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">theano</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">floatX</span><span class="p">)</span>
+
+    <span class="c1"># Create P matrix components</span>
+    <span class="n">L</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span><span class="n">num_equations</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
+    <span class="n">L</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span><span class="n">num_equations</span><span class="p">]</span> <span class="o">=</span> <span class="n">source_points</span>
+    <span class="n">L</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="n">num_equations</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
+    <span class="n">L</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="n">num_equations</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">source_points</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="c1"># Loop through each pair of points and create the K matrix</span>
+    <span class="k">for</span> <span class="n">point_1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_control_points</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">point_2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">point_1</span><span class="p">,</span> <span class="n">num_control_points</span><span class="p">):</span>
+
+            <span class="n">L</span><span class="p">[</span><span class="n">point_1</span> <span class="o">+</span> <span class="mi">3</span><span class="p">,</span> <span class="n">point_2</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">_U_func_numpy</span><span class="p">(</span>
+                    <span class="n">source_points</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">point_1</span><span class="p">],</span> <span class="n">source_points</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">point_1</span><span class="p">],</span>
+                    <span class="n">source_points</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">point_2</span><span class="p">],</span> <span class="n">source_points</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">point_2</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="n">point_1</span> <span class="o">!=</span> <span class="n">point_2</span><span class="p">:</span>
+                <span class="n">L</span><span class="p">[</span><span class="n">point_2</span> <span class="o">+</span> <span class="mi">3</span><span class="p">,</span> <span class="n">point_1</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">L</span><span class="p">[</span><span class="n">point_1</span> <span class="o">+</span> <span class="mi">3</span><span class="p">,</span> <span class="n">point_2</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span>
+
+    <span class="c1"># Invert</span>
+    <span class="n">L_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">L</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">precompute_grid</span><span class="p">:</span>
+        <span class="c1"># Construct grid</span>
+        <span class="n">out_height</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">height</span> <span class="o">//</span> <span class="n">downsample_factor</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int64&#39;</span><span class="p">)</span>
+        <span class="n">out_width</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">width</span> <span class="o">//</span> <span class="n">downsample_factor</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int64&#39;</span><span class="p">)</span>
+        <span class="n">x_t</span><span class="p">,</span> <span class="n">y_t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">out_width</span><span class="p">),</span>
+                               <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">out_height</span><span class="p">))</span>
+        <span class="n">ones</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">x_t</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+        <span class="n">orig_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">x_t</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">y_t</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">ones</span><span class="p">])</span>
+        <span class="n">orig_grid</span> <span class="o">=</span> <span class="n">orig_grid</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">orig_grid</span> <span class="o">=</span> <span class="n">orig_grid</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">theano</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">floatX</span><span class="p">)</span>
+
+        <span class="c1"># Construct right mat</span>
+
+        <span class="c1"># First Calculate the U function for the new point and each source</span>
+        <span class="c1"># point as in ref [2]</span>
+        <span class="c1"># The U function is simply U(r) = r^2 * log(r^2), where r^2 is the</span>
+        <span class="c1"># squared distance</span>
+        <span class="n">to_transform</span> <span class="o">=</span> <span class="n">orig_grid</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">stacked_transform</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">to_transform</span><span class="p">,</span> <span class="p">(</span><span class="n">num_control_points</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">stacked_source_points</span> <span class="o">=</span> \
+            <span class="n">source_points</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">r_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">stacked_transform</span> <span class="o">-</span> <span class="n">stacked_source_points</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Take the product (r^2 * log(r^2)), being careful to avoid NaNs</span>
+        <span class="n">log_r_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r_2</span><span class="p">)</span>
+        <span class="n">log_r_2</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">log_r_2</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="n">distances</span> <span class="o">=</span> <span class="n">r_2</span> <span class="o">*</span> <span class="n">log_r_2</span>
+
+        <span class="c1"># Add in the coefficients for the affine translation (1, x, and y,</span>
+        <span class="c1"># corresponding to a_1, a_x, and a_y)</span>
+        <span class="n">upper_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">orig_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                              <span class="n">dtype</span><span class="o">=</span><span class="n">theano</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">floatX</span><span class="p">)</span>
+        <span class="n">upper_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">upper_array</span><span class="p">,</span> <span class="n">orig_grid</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">right_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">upper_array</span><span class="p">,</span> <span class="n">distances</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Convert to tensors</span>
+        <span class="n">out_height</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">as_tensor_variable</span><span class="p">(</span><span class="n">out_height</span><span class="p">)</span>
+        <span class="n">out_width</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">as_tensor_variable</span><span class="p">(</span><span class="n">out_width</span><span class="p">)</span>
+        <span class="n">right_mat</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">as_tensor_variable</span><span class="p">(</span><span class="n">right_mat</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">out_height</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">out_width</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">right_mat</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Convert to tensors</span>
+    <span class="n">L_inv</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">as_tensor_variable</span><span class="p">(</span><span class="n">L_inv</span><span class="p">)</span>
+    <span class="n">source_points</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">as_tensor_variable</span><span class="p">(</span><span class="n">source_points</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">right_mat</span><span class="p">,</span> <span class="n">L_inv</span><span class="p">,</span> <span class="n">source_points</span><span class="p">,</span> <span class="n">out_height</span><span class="p">,</span> <span class="n">out_width</span>
+
+
+<div class="viewcode-block" id="ParametricRectifierLayer"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.ParametricRectifierLayer">[docs]</a><span class="k">class</span> <span class="nc">ParametricRectifierLayer</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    lasagne.layers.ParametricRectifierLayer(incoming,</span>
+<span class="sd">    alpha=init.Constant(0.25), shared_axes=&#39;auto&#39;, **kwargs)</span>
+<span class="sd">    A layer that applies parametric rectify nonlinearity to its input</span>
+<span class="sd">    following [1]_.</span>
+<span class="sd">    Equation for the parametric rectifier linear unit:</span>
+<span class="sd">    :math:`\\varphi(x) = \\max(x,0) + \\alpha \\min(x,0)`</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    incoming : a :class:`Layer` instance or a tuple</span>
+<span class="sd">        The layer feeding into this layer, or the expected input shape</span>
+<span class="sd">    alpha : Theano shared variable, expression, numpy array or callable</span>
+<span class="sd">        Initial value, expression or initializer for the alpha values. The</span>
+<span class="sd">        shape must match the incoming shape, skipping those axes the alpha</span>
+<span class="sd">        values are shared over (see the example below).</span>
+<span class="sd">        See :func:`lasagne.utils.create_param` for more information.</span>
+<span class="sd">    shared_axes : &#39;auto&#39;, &#39;all&#39;, int or tuple of int</span>
+<span class="sd">        The axes along which the parameters of the rectifier units are</span>
+<span class="sd">        going to be shared. If ``&#39;auto&#39;`` (the default), share over all axes</span>
+<span class="sd">        except for the second - this will share the parameter over the</span>
+<span class="sd">        minibatch dimension for dense layers, and additionally over all</span>
+<span class="sd">        spatial dimensions for convolutional layers. If ``&#39;all&#39;``, share over</span>
+<span class="sd">        all axes, which corresponds to a single scalar parameter.</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Any additional keyword arguments are passed to the `Layer` superclass.</span>
+<span class="sd">     References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] K He, X Zhang et al. (2015):</span>
+<span class="sd">       Delving Deep into Rectifiers: Surpassing Human-Level Performance on</span>
+<span class="sd">       ImageNet Classification,</span>
+<span class="sd">       http://arxiv.org/abs/1502.01852</span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The alpha parameter dimensionality is the input dimensionality minus the</span>
+<span class="sd">    number of axes it is shared over, which matches the same convention as</span>
+<span class="sd">    the :class:`BiasLayer`.</span>
+<span class="sd">    &gt;&gt;&gt; layer = ParametricRectifierLayer((20, 3, 28, 28), shared_axes=(0, 3))</span>
+<span class="sd">    &gt;&gt;&gt; layer.alpha.get_value().shape</span>
+<span class="sd">    (3, 28)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">incoming</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">init</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.25</span><span class="p">),</span> <span class="n">shared_axes</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ParametricRectifierLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">incoming</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">shared_axes</span> <span class="o">==</span> <span class="s1">&#39;auto&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shared_axes</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="p">)))</span>
+        <span class="k">elif</span> <span class="n">shared_axes</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shared_axes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="p">)))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shared_axes</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shared_axes</span> <span class="o">=</span> <span class="p">(</span><span class="n">shared_axes</span><span class="p">,)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shared_axes</span> <span class="o">=</span> <span class="n">shared_axes</span>
+
+        <span class="n">shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">size</span> <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="p">)</span>
+                 <span class="k">if</span> <span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_axes</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;ParametricRectifierLayer needs input sizes for &quot;</span>
+                             <span class="s2">&quot;all axes that alpha&#39;s are not shared over.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_param</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;alpha&quot;</span><span class="p">,</span>
+                                    <span class="n">regularizable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ParametricRectifierLayer.get_output_for"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.ParametricRectifierLayer.get_output_for">[docs]</a>    <span class="k">def</span> <span class="nf">get_output_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">ndim</span><span class="p">))</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;x&#39;</span> <span class="k">if</span> <span class="n">input_axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_axes</span>
+                   <span class="k">else</span> <span class="nb">next</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+                   <span class="k">for</span> <span class="n">input_axis</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">ndim</span><span class="p">)]</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">dimshuffle</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">theano</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">nnet</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="prelu"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.prelu">[docs]</a><span class="k">def</span> <span class="nf">prelu</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convenience function to apply parametric rectify to a given layer&#39;s output.</span>
+<span class="sd">    Will set the layer&#39;s nonlinearity to identity if there is one and will</span>
+<span class="sd">    apply the parametric rectifier instead.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    layer: a :class:`Layer` instance</span>
+<span class="sd">        The `Layer` instance to apply the parametric rectifier layer to;</span>
+<span class="sd">        note that it will be irreversibly modified as specified above</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Any additional keyword arguments are passed to the</span>
+<span class="sd">        :class:`ParametericRectifierLayer`</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Note that this function modifies an existing layer, like this:</span>
+<span class="sd">    &gt;&gt;&gt; from lasagne.layers import InputLayer, DenseLayer, prelu</span>
+<span class="sd">    &gt;&gt;&gt; layer = InputLayer((32, 100))</span>
+<span class="sd">    &gt;&gt;&gt; layer = DenseLayer(layer, num_units=200)</span>
+<span class="sd">    &gt;&gt;&gt; layer = prelu(layer)</span>
+<span class="sd">    In particular, :func:`prelu` can *not* be passed as a nonlinearity.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nonlinearity</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s1">&#39;nonlinearity&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nonlinearity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">layer</span><span class="o">.</span><span class="n">nonlinearity</span> <span class="o">=</span> <span class="n">nonlinearities</span><span class="o">.</span><span class="n">identity</span>
+    <span class="k">return</span> <span class="n">ParametricRectifierLayer</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RandomizedRectifierLayer"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.RandomizedRectifierLayer">[docs]</a><span class="k">class</span> <span class="nc">RandomizedRectifierLayer</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A layer that applies a randomized leaky rectify nonlinearity to its input.</span>
+<span class="sd">    The randomized leaky rectifier was first proposed and used in the Kaggle</span>
+<span class="sd">    NDSB Competition, and later evaluated in [1]_. Compared to the standard</span>
+<span class="sd">    leaky rectifier :func:`leaky_rectify`, it has a randomly sampled slope</span>
+<span class="sd">    for negative input during training, and a fixed slope during evaluation.</span>
+<span class="sd">    Equation for the randomized rectifier linear unit during training:</span>
+<span class="sd">    :math:`\\varphi(x) = \\max((\\sim U(lower, upper)) \\cdot x, x)`</span>
+<span class="sd">    During evaluation, the factor is fixed to the arithmetic mean of `lower`</span>
+<span class="sd">    and `upper`.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    incoming : a :class:`Layer` instance or a tuple</span>
+<span class="sd">        The layer feeding into this layer, or the expected input shape</span>
+<span class="sd">    lower : Theano shared variable, expression, or constant</span>
+<span class="sd">        The lower bound for the randomly chosen slopes.</span>
+<span class="sd">    upper : Theano shared variable, expression, or constant</span>
+<span class="sd">        The upper bound for the randomly chosen slopes.</span>
+<span class="sd">    shared_axes : &#39;auto&#39;, &#39;all&#39;, int or tuple of int</span>
+<span class="sd">        The axes along which the random slopes of the rectifier units are</span>
+<span class="sd">        going to be shared. If ``&#39;auto&#39;`` (the default), share over all axes</span>
+<span class="sd">        except for the second - this will share the random slope over the</span>
+<span class="sd">        minibatch dimension for dense layers, and additionally over all</span>
+<span class="sd">        spatial dimensions for convolutional layers. If ``&#39;all&#39;``, share over</span>
+<span class="sd">        all axes, thus using a single random slope.</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Any additional keyword arguments are passed to the `Layer` superclass.</span>
+<span class="sd">     References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Bing Xu, Naiyan Wang et al. (2015):</span>
+<span class="sd">       Empirical Evaluation of Rectified Activations in Convolutional Network,</span>
+<span class="sd">       http://arxiv.org/abs/1505.00853</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">incoming</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">shared_axes</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RandomizedRectifierLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">incoming</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_srng</span> <span class="o">=</span> <span class="n">RandomStreams</span><span class="p">(</span><span class="n">get_rng</span><span class="p">()</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2147462579</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lower</span> <span class="o">=</span> <span class="n">lower</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upper</span> <span class="o">=</span> <span class="n">upper</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lower</span> <span class="o">&gt;</span> <span class="n">upper</span><span class="p">,</span> <span class="n">theano</span><span class="o">.</span><span class="n">Variable</span><span class="p">)</span> <span class="ow">and</span> <span class="n">lower</span> <span class="o">&gt;</span> <span class="n">upper</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Upper bound for RandomizedRectifierLayer needs &quot;</span>
+                             <span class="s2">&quot;to be higher than lower bound.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">shared_axes</span> <span class="o">==</span> <span class="s1">&#39;auto&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shared_axes</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="p">)))</span>
+        <span class="k">elif</span> <span class="n">shared_axes</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shared_axes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="p">)))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shared_axes</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shared_axes</span> <span class="o">=</span> <span class="p">(</span><span class="n">shared_axes</span><span class="p">,)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shared_axes</span> <span class="o">=</span> <span class="n">shared_axes</span>
+
+<div class="viewcode-block" id="RandomizedRectifierLayer.get_output_for"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.RandomizedRectifierLayer.get_output_for">[docs]</a>    <span class="k">def</span> <span class="nf">get_output_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">deterministic</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input : tensor</span>
+<span class="sd">            output from the previous layer</span>
+<span class="sd">        deterministic : bool</span>
+<span class="sd">            If true, the arithmetic mean of lower and upper are used for the</span>
+<span class="sd">            leaky slope.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">deterministic</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">theano</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">nnet</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">):</span>
+                <span class="n">shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_axes</span><span class="p">:</span>
+                <span class="n">shape</span><span class="p">[</span><span class="n">ax</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+            <span class="n">rnd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_srng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">shape</span><span class="p">),</span>
+                                     <span class="n">low</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span>
+                                     <span class="n">high</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">,</span>
+                                     <span class="n">dtype</span><span class="o">=</span><span class="n">theano</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">floatX</span><span class="p">)</span>
+            <span class="n">rnd</span> <span class="o">=</span> <span class="n">theano</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">addbroadcast</span><span class="p">(</span><span class="n">rnd</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">shared_axes</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">theano</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">nnet</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">rnd</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="rrelu"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.special_layers.rrelu">[docs]</a><span class="k">def</span> <span class="nf">rrelu</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convenience function to apply randomized rectify to a given layer&#39;s output.</span>
+<span class="sd">    Will set the layer&#39;s nonlinearity to identity if there is one and will</span>
+<span class="sd">    apply the randomized rectifier instead.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    layer: a :class:`Layer` instance</span>
+<span class="sd">        The `Layer` instance to apply the randomized rectifier layer to;</span>
+<span class="sd">        note that it will be irreversibly modified as specified above</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Any additional keyword arguments are passed to the</span>
+<span class="sd">        :class:`RandomizedRectifierLayer`</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Note that this function modifies an existing layer, like this:</span>
+<span class="sd">    &gt;&gt;&gt; from lasagne.layers import InputLayer, DenseLayer, rrelu</span>
+<span class="sd">    &gt;&gt;&gt; layer = InputLayer((32, 100))</span>
+<span class="sd">    &gt;&gt;&gt; layer = DenseLayer(layer, num_units=200)</span>
+<span class="sd">    &gt;&gt;&gt; layer = rrelu(layer)</span>
+<span class="sd">    In particular, :func:`rrelu` can *not* be passed as a nonlinearity.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nonlinearity</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s1">&#39;nonlinearity&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nonlinearity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">layer</span><span class="o">.</span><span class="n">nonlinearity</span> <span class="o">=</span> <span class="n">nonlinearities</span><span class="o">.</span><span class="n">identity</span>
+    <span class="k">return</span> <span class="n">RandomizedRectifierLayer</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Strijov, Motrenko, Neychev, Isachenko.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>

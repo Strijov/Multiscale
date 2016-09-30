@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>LoadAndSaveData.load_time_series &#8212; MultiscaleForecasting 0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="MultiscaleForecasting 0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for LoadAndSaveData.load_time_series</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">from</span> <span class="nn">sklearn.externals</span> <span class="k">import</span> <span class="n">joblib</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
+
+<span class="kn">import</span> <span class="nn">load_energy_weather_data</span>
+
+<span class="n">tsStruct</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;tsStruct&#39;</span><span class="p">,</span> <span class="s1">&#39;data request history name readme&#39;</span><span class="p">)</span>
+
+<span class="n">DIRNAME</span> <span class="o">=</span> <span class="s1">&#39;ProcessedData&#39;</span> <span class="c1"># directory to store data (.pkl) in</span>
+
+<span class="c1"># Define a dict of func names for data loading</span>
+<span class="n">LOAD_FUNCS_DICT</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;EnergyWeather&#39;</span><span class="p">:</span> <span class="n">load_energy_weather_data</span><span class="p">,</span>
+              <span class="s1">&#39;NNcompetition&#39;</span><span class="p">:</span> <span class="s1">&#39;load_energy_weather_data&#39;</span><span class="p">,</span> <span class="c1"># FIXIT</span>
+              <span class="s1">&#39;Artifical&#39;</span><span class="p">:</span><span class="s1">&#39;load_energy_weather_data&#39;</span><span class="p">}</span> <span class="c1">#FIXIT</span>
+
+<span class="c1"># Define a dict for raw data directories</span>
+<span class="n">RAW_DIRS_DICT</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;EnergyWeather&#39;</span><span class="p">:</span> <span class="s1">&#39;../code/data/EnergyWeatherTS/orig&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;NNcompetition&#39;</span><span class="p">:</span> <span class="s1">&#39;../code/data/NNcompetition&#39;</span><span class="p">}</span> <span class="c1">#FIXIT</span>
+
+<div class="viewcode-block" id="load_all_time_series"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.load_time_series.load_all_time_series">[docs]</a><span class="k">def</span> <span class="nf">load_all_time_series</span><span class="p">(</span><span class="n">datasets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">load_funcs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name_pattern</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">load_raw</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    % Data loader</span>
+<span class="sd">    % Input: datasets - cell array, contains names of the folders inside data/</span>
+<span class="sd">    % directory</span>
+<span class="sd">    %</span>
+<span class="sd">    % Output: a cell array of ts structures</span>
+<span class="sd">    % Description of the time series structure:</span>
+<span class="sd">    %   t [T,1]  - Time in milliseconds since 1/1/1970 (UNIX format)</span>
+<span class="sd">    %   x [T, N] - Columns of the matrix are time series; missing values are NaNs</span>
+<span class="sd">    %   legend {1, N}  - Time series descriptions ts.x, e.g. ts.legend={?Consumption, ?Price?, ?Temperature?};</span>
+<span class="sd">    %   nsamples [1] - Number of samples per time series, relative to the target time series</span>
+<span class="sd">    %   deltaTp [1] - Number of local historical points</span>
+<span class="sd">    %   deltaTr [1] - Number of points to forecast</span>
+<span class="sd">    %   readme [string] -  Data information (source, formation time etc.)</span>
+<span class="sd">    %   dataset [string] - Reference name for the dataset</span>
+<span class="sd">    %   name [string] - Reference name for the time series</span>
+<span class="sd">    %   Optional:</span>
+<span class="sd">    %   type [1,N] (optional) Time series types ts.x, 1-real-valued, 2-binary, k ? k-valued</span>
+<span class="sd">    %   timegen [T,1]=func_timegen(timetick) (optional) Time ticks generator, may</span>
+<span class="sd">    %   contain the start (or end) time in UNIX format and a function to generate the vector t of the size [T,1]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="k">if</span> <span class="n">datasets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">datasets</span> <span class="o">=</span> <span class="s1">&#39;EnergyWeather&#39;</span><span class="c1">#[&#39;NNcompetition&#39;, &#39;EnergyWeather&#39;]</span>
+    <span class="c1"># make it a list of datasets</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">datasets</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="n">datasets</span> <span class="o">=</span> <span class="p">[</span><span class="n">datasets</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">load_funcs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">load_funcs</span> <span class="o">=</span> <span class="p">[</span><span class="n">LOAD_FUNCS_DICT</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">load_raw</span><span class="p">:</span>
+        <span class="n">dirnames</span> <span class="o">=</span> <span class="p">[</span><span class="n">RAW_DIRS_DICT</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">]</span>
+        <span class="n">load_raw_data</span><span class="p">(</span><span class="n">load_funcs</span><span class="p">)</span>
+
+    <span class="c1"># find all .pkl files in DIRNAME directory</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DIRNAME</span><span class="p">,</span> <span class="s1">&#39;*.pkl&#39;</span><span class="p">))</span>
+
+    <span class="n">all_ts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+        <span class="c1"># ts is a namedtuple tsStruct</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">joblib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+
+        <span class="c1"># check if the name of time series matches the pattern</span>
+        <span class="n">match_pattern</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">name_pattern</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">name</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="c1"># and select only those from the data sets, listed in &#39;datasets&#39;</span>
+        <span class="n">match_dataset</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">datasets</span> <span class="c1">#FIXIT</span>
+        <span class="k">if</span> <span class="n">match_dataset</span> <span class="ow">and</span> <span class="n">match_pattern</span><span class="p">:</span>
+            <span class="n">all_ts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">all_ts</span></div>
+
+<div class="viewcode-block" id="load_raw_data"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.load_time_series.load_raw_data">[docs]</a><span class="k">def</span> <span class="nf">load_raw_data</span><span class="p">(</span><span class="n">load_funcs</span><span class="p">):</span>
+    <span class="c1"># dirnames is a (list of) names of directory with raw data, passed to load_ts func</span>
+    <span class="c1"># DIRNAME is the common directory for saving processed data</span>
+
+    <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">load_funcs</span><span class="p">:</span>
+        <span class="n">ts_list</span><span class="p">,</span> <span class="n">names</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s1">&#39;load_ts&#39;</span><span class="p">)()</span>
+        <span class="k">for</span> <span class="n">ts</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ts_list</span><span class="p">,</span> <span class="n">names</span><span class="p">):</span>
+            <span class="n">save_ts_to_dir</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">DIRNAME</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="save_ts_to_dir"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.load_time_series.save_ts_to_dir">[docs]</a><span class="k">def</span> <span class="nf">save_ts_to_dir</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">tsname</span><span class="p">,</span> <span class="n">dirname</span><span class="p">):</span>
+    <span class="c1"># save time series under the name dirname/tsname</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">dirname</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span>
+    <span class="n">tsname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">tsname</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span>
+    <span class="n">joblib</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">tsname</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">load_all_time_series</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Strijov, Motrenko, Neychev, Isachenko.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>

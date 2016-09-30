@@ -1,0 +1,255 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Forecasting package &#8212; MultiscaleForecasting 0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="MultiscaleForecasting 0 documentation" href="index.html" />
+    <link rel="next" title="UnitTests package" href="UnitTests.html" />
+    <link rel="prev" title="RegressionMatrix package" href="RegressionMatrix.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="UnitTests.html" title="UnitTests package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="RegressionMatrix.html" title="RegressionMatrix package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">MultiscaleForecasting 0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="forecasting-package">
+<h1>Forecasting package<a class="headerlink" href="#forecasting-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-Forecasting.LSTM">
+<span id="forecasting-lstm-module"></span><h2>Forecasting.LSTM module<a class="headerlink" href="#module-Forecasting.LSTM" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Forecasting.LSTM.LSTM">
+<em class="property">class </em><code class="descclassname">Forecasting.LSTM.</code><code class="descname">LSTM</code><span class="sig-paren">(</span><em>name='LSTM'</em>, <em>grad_clip=100</em>, <em>batch_size=50</em>, <em>l_out=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#LSTM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.LSTM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#Forecasting.frc_class.IdentityModel" title="Forecasting.frc_class.IdentityModel"><code class="xref py py-class docutils literal"><span class="pre">Forecasting.frc_class.IdentityModel</span></code></a></p>
+<dl class="method">
+<dt id="Forecasting.LSTM.LSTM.checkpoint">
+<code class="descname">checkpoint</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#LSTM.checkpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.LSTM.checkpoint" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Forecasting.LSTM.LSTM.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>trainX</em>, <em>trainY</em>, <em>n_epochs=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#LSTM.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.LSTM.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Forecasting.LSTM.LSTM.init_nn_structure">
+<code class="descname">init_nn_structure</code><span class="sig-paren">(</span><em>seq_length</em>, <em>pred_len</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#LSTM.init_nn_structure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.LSTM.init_nn_structure" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Forecasting.LSTM.LSTM.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#LSTM.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.LSTM.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="Forecasting.LSTM.iterate_minibatches">
+<code class="descclassname">Forecasting.LSTM.</code><code class="descname">iterate_minibatches</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em>, <em>batch_size=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#iterate_minibatches"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.iterate_minibatches" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-Forecasting.frc_class">
+<span id="forecasting-frc-class-module"></span><h2>Forecasting.frc_class module<a class="headerlink" href="#module-Forecasting.frc_class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Forecasting.frc_class.CustomModel">
+<em class="property">class </em><code class="descclassname">Forecasting.frc_class.</code><code class="descname">CustomModel</code><span class="sig-paren">(</span><em>name=None</em>, <em>fitfunc=None</em>, <em>predictfunc=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#CustomModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.CustomModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#Forecasting.frc_class.IdentityModel" title="Forecasting.frc_class.IdentityModel"><code class="xref py py-class docutils literal"><span class="pre">Forecasting.frc_class.IdentityModel</span></code></a></p>
+<dl class="method">
+<dt id="Forecasting.frc_class.CustomModel.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#CustomModel.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.CustomModel.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Forecasting.frc_class.CustomModel.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#CustomModel.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.CustomModel.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Forecasting.frc_class.IdentityFrc">
+<em class="property">class </em><code class="descclassname">Forecasting.frc_class.</code><code class="descname">IdentityFrc</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#IdentityFrc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.IdentityFrc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#Forecasting.frc_class.IdentityModel" title="Forecasting.frc_class.IdentityModel"><code class="xref py py-class docutils literal"><span class="pre">Forecasting.frc_class.IdentityModel</span></code></a></p>
+<dl class="method">
+<dt id="Forecasting.frc_class.IdentityFrc.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#IdentityFrc.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.IdentityFrc.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Forecasting.frc_class.IdentityFrc.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#IdentityFrc.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.IdentityFrc.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Forecasting.frc_class.IdentityGenerator">
+<em class="property">class </em><code class="descclassname">Forecasting.frc_class.</code><code class="descname">IdentityGenerator</code><span class="sig-paren">(</span><em>name=None</em>, <em>replace=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#IdentityGenerator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.IdentityGenerator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#Forecasting.frc_class.IdentityModel" title="Forecasting.frc_class.IdentityModel"><code class="xref py py-class docutils literal"><span class="pre">Forecasting.frc_class.IdentityModel</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="Forecasting.frc_class.IdentityModel">
+<em class="property">class </em><code class="descclassname">Forecasting.frc_class.</code><code class="descname">IdentityModel</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#IdentityModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.IdentityModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sklearn.base.BaseEstimator</span></code></p>
+<dl class="method">
+<dt id="Forecasting.frc_class.IdentityModel.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#IdentityModel.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.IdentityModel.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Forecasting.frc_class.IdentityModel.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#IdentityModel.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.IdentityModel.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Forecasting.frc_class.IdentityModel.print_pars">
+<code class="descname">print_pars</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#IdentityModel.print_pars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.IdentityModel.print_pars" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Forecasting.frc_class.IdentityModel.transform">
+<code class="descname">transform</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#IdentityModel.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.IdentityModel.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Forecasting.frc_class.MartingalFrc">
+<em class="property">class </em><code class="descclassname">Forecasting.frc_class.</code><code class="descname">MartingalFrc</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#MartingalFrc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.MartingalFrc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#Forecasting.frc_class.IdentityModel" title="Forecasting.frc_class.IdentityModel"><code class="xref py py-class docutils literal"><span class="pre">Forecasting.frc_class.IdentityModel</span></code></a></p>
+<p>Forecasts n_out Y values by last n_out values of X</p>
+<dl class="method">
+<dt id="Forecasting.frc_class.MartingalFrc.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#MartingalFrc.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.MartingalFrc.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Forecasting.frc_class.MartingalFrc.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#MartingalFrc.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.MartingalFrc.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="Forecasting.frc_class.print_pipeline_pars">
+<code class="descclassname">Forecasting.frc_class.</code><code class="descname">print_pipeline_pars</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#print_pipeline_pars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.print_pipeline_pars" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-Forecasting">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-Forecasting" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Forecasting package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-Forecasting.LSTM">Forecasting.LSTM module</a></li>
+<li><a class="reference internal" href="#module-Forecasting.frc_class">Forecasting.frc_class module</a></li>
+<li><a class="reference internal" href="#module-Forecasting">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="RegressionMatrix.html"
+                        title="previous chapter">RegressionMatrix package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="UnitTests.html"
+                        title="next chapter">UnitTests package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/Forecasting.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="UnitTests.html" title="UnitTests package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="RegressionMatrix.html" title="RegressionMatrix package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">MultiscaleForecasting 0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Strijov, Motrenko, Neychev, Isachenko.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>

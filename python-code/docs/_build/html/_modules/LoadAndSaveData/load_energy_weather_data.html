@@ -1,0 +1,322 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>LoadAndSaveData.load_energy_weather_data &#8212; MultiscaleForecasting 0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="MultiscaleForecasting 0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for LoadAndSaveData.load_energy_weather_data</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
+
+<span class="n">tsStruct</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;tsStruct&#39;</span><span class="p">,</span> <span class="s1">&#39;data request history name readme&#39;</span><span class="p">)</span>
+<span class="n">DATASET</span> <span class="o">=</span> <span class="s2">&quot;EnergyWeather&quot;</span>
+<span class="n">DIRNAME</span> <span class="o">=</span> <span class="s2">&quot;../code/data/EnergyWeatherTS&quot;</span>
+
+<div class="viewcode-block" id="load_ts"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.load_energy_weather_data.load_ts">[docs]</a><span class="k">def</span> <span class="nf">load_ts</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loads a set of time series and returns the cell array of ts structres.</span>
+<span class="sd">    :param dirname: [string] named of folder with the loaded data.</span>
+<span class="sd">    :return: time series, namedtuple tsStruct</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dirnames</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;orig&quot;</span><span class="p">,</span> <span class="s2">&quot;missing_value&quot;</span><span class="p">,</span> <span class="s2">&quot;varying_rates&quot;</span><span class="p">]</span>
+
+    <span class="n">ts_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">name_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">dname</span> <span class="ow">in</span> <span class="n">dirnames</span><span class="p">:</span>
+        <span class="n">ts</span><span class="p">,</span> <span class="n">names</span> <span class="o">=</span> <span class="n">load_ts_by_dirname</span><span class="p">(</span><span class="n">DIRNAME</span><span class="p">,</span> <span class="n">dname</span><span class="p">)</span>
+        <span class="n">ts_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+        <span class="n">name_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ts_list</span><span class="p">,</span> <span class="n">name_list</span></div>
+
+
+<div class="viewcode-block" id="load_train_test_csv"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.load_energy_weather_data.load_train_test_csv">[docs]</a><span class="k">def</span> <span class="nf">load_train_test_csv</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">weather</span><span class="p">):</span>
+    <span class="c1"># reading CSV file</span>
+    <span class="nb">print</span> <span class="n">train</span>
+    <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+    <span class="n">train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">reader</span><span class="p">))</span>
+    <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+    <span class="n">test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">reader</span><span class="p">))</span>
+    <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">weather</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+    <span class="n">weather</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">reader</span><span class="p">))</span>
+
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">test</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="nb">print</span> <span class="n">labels</span>
+
+    <span class="n">train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span> <span class="c1"># remove labels</span>
+    <span class="n">train_time</span> <span class="o">=</span> <span class="n">train</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># weekday_train = train[:, 1]</span>
+    <span class="c1"># day_type_train = train[:, 2]</span>
+    <span class="n">train_set</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># remove date, weekday and day type columns</span>
+
+    <span class="n">test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">test_time</span> <span class="o">=</span> <span class="n">test</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># weekday_test = test[:, 1]</span>
+    <span class="c1"># day_type_test = test[:, 2]</span>
+    <span class="n">test_set</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+
+
+    <span class="n">train_set</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">train_set</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+    <span class="n">train_set</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">train_set</span><span class="p">,</span> <span class="p">(</span><span class="mi">1096</span><span class="o">*</span><span class="mi">24</span><span class="p">))</span>
+    <span class="n">test_set</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">test_set</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+    <span class="n">test_set</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">test_set</span><span class="p">,</span> <span class="p">(</span><span class="mi">1096</span><span class="o">*</span><span class="mi">24</span><span class="p">))</span>
+
+    <span class="nb">print</span> <span class="n">weather</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="k">if</span> <span class="s2">&quot;Longitude&quot;</span> <span class="ow">in</span> <span class="n">weather</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]:</span>
+        <span class="n">weather_labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">weather</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">:])</span>
+        <span class="n">idx_del</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">weather_labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">weather</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:])</span>
+        <span class="n">idx_del</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">weather</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">weather</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">weather_time</span> <span class="o">=</span> <span class="n">weather</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">weather</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">weather</span><span class="p">,</span> <span class="n">idx_del</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># discard &#39;Date&#39; &#39;Longitude&#39; &#39;Latitude&#39; &#39;Elevation&#39;</span>
+    <span class="n">weather</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">weather</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+
+    <span class="c1"># convert time to unix format:</span>
+    <span class="k">if</span> <span class="s2">&quot;/&quot;</span> <span class="ow">in</span> <span class="n">weather_time</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="n">weather_time</span> <span class="o">=</span> <span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">str_d</span><span class="p">,</span> <span class="s2">&quot;%m/</span><span class="si">%d</span><span class="s2">/%Y&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">str_d</span> <span class="ow">in</span> <span class="n">weather_time</span><span class="p">]</span>
+        <span class="n">train_time</span> <span class="o">=</span> <span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">str_d</span><span class="p">,</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">.0&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">str_d</span> <span class="ow">in</span> <span class="n">train_time</span><span class="p">]</span>
+        <span class="n">test_time</span> <span class="o">=</span> <span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">str_d</span><span class="p">,</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">.0&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">str_d</span> <span class="ow">in</span> <span class="n">test_time</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">weather_time</span> <span class="o">=</span> <span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">str_d</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">.%m.%Y&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">str_d</span> <span class="ow">in</span> <span class="n">weather_time</span><span class="p">]</span>
+        <span class="n">train_time</span> <span class="o">=</span> <span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">str_d</span><span class="p">,</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">str_d</span> <span class="ow">in</span> <span class="n">train_time</span><span class="p">]</span>
+        <span class="n">test_time</span> <span class="o">=</span> <span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">str_d</span><span class="p">,</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">str_d</span> <span class="ow">in</span> <span class="n">test_time</span><span class="p">]</span>
+
+
+    <span class="n">min_date</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">weather_time</span> <span class="o">+</span> <span class="n">train_time</span> <span class="o">+</span> <span class="n">test_time</span><span class="p">)</span>
+    <span class="n">weather_time</span> <span class="o">=</span> <span class="p">[(</span><span class="n">dt</span> <span class="o">-</span> <span class="n">min_date</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="k">for</span> <span class="n">dt</span> <span class="ow">in</span> <span class="n">weather_time</span><span class="p">]</span>
+    <span class="n">train_weather_time</span> <span class="o">=</span> <span class="n">weather_time</span><span class="p">[:</span><span class="mi">1096</span><span class="p">]</span>
+    <span class="n">test_weather_time</span> <span class="o">=</span> <span class="n">weather_time</span><span class="p">[</span><span class="mi">1096</span><span class="p">:]</span>
+
+    <span class="n">train_time</span> <span class="o">=</span> <span class="n">add_hours_to_dates</span><span class="p">(</span><span class="n">train_time</span><span class="p">)</span>
+    <span class="n">test_time</span> <span class="o">=</span> <span class="n">add_hours_to_dates</span><span class="p">(</span><span class="n">test_time</span><span class="p">)</span>
+    <span class="n">test_time</span> <span class="o">=</span> <span class="p">[(</span><span class="n">dt</span> <span class="o">-</span> <span class="n">min_date</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="k">for</span> <span class="n">dt</span> <span class="ow">in</span> <span class="n">test_time</span><span class="p">]</span>
+    <span class="n">train_time</span> <span class="o">=</span> <span class="p">[(</span><span class="n">dt</span> <span class="o">-</span> <span class="n">min_date</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="k">for</span> <span class="n">dt</span> <span class="ow">in</span> <span class="n">train_time</span><span class="p">]</span>
+
+
+    <span class="n">train_set</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">train_set</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">train_time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Energy&quot;</span><span class="p">)</span>
+    <span class="n">test_set</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">test_set</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">test_time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Energy&quot;</span><span class="p">)</span>
+
+    <span class="n">train_weather</span><span class="p">,</span> <span class="n">test_weather</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">weather_labels</span><span class="p">),</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">weather_labels</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">weather_labels</span><span class="p">)):</span>
+        <span class="n">train_weather</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">weather</span><span class="p">[:</span><span class="mi">1096</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">train_weather_time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">weather_labels</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">test_weather</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">weather</span><span class="p">[</span><span class="mi">1096</span><span class="p">:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">test_weather_time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">weather_labels</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="nb">print</span> <span class="s2">&quot;nans:&quot;</span><span class="p">,</span> <span class="n">weather_labels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">weather</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])),</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">train_weather</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()),</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">test_weather</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">train_set</span><span class="p">,</span> <span class="n">test_set</span><span class="p">,</span> <span class="n">train_weather</span><span class="p">,</span> <span class="n">test_weather</span></div>
+
+<div class="viewcode-block" id="add_hours_to_dates"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.load_energy_weather_data.add_hours_to_dates">[docs]</a><span class="k">def</span> <span class="nf">add_hours_to_dates</span><span class="p">(</span><span class="n">dates</span><span class="p">):</span>
+
+    <span class="n">date_vec</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">date</span> <span class="ow">in</span> <span class="n">dates</span><span class="p">:</span>
+        <span class="n">date_vec</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">date</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">24</span><span class="p">)])</span>
+
+    <span class="k">return</span> <span class="n">date_vec</span></div>
+
+<div class="viewcode-block" id="load_ts_by_dirname"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.load_energy_weather_data.load_ts_by_dirname">[docs]</a><span class="k">def</span> <span class="nf">load_ts_by_dirname</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">folder_name</span><span class="p">):</span>
+    <span class="n">dirname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">dirname</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">folder_name</span><span class="p">)</span>
+    
+    
+    <span class="c1"># folders = os.path.split(dirname) #, os.sep</span>
+    <span class="c1"># folder_name = folders[-1]</span>
+    <span class="c1"># if len(folder_name) == 0:</span>
+    <span class="c1">#     folder_name = folders[-2]</span>
+
+    <span class="n">readme</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;orig&#39;</span><span class="p">:</span><span class="s1">&#39;Original time energy-weather series&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;missing_value&#39;</span><span class="p">:</span><span class="s1">&#39;Energy-weather time series with artificially inserted missing values&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;varying_rates&#39;</span><span class="p">:</span><span class="s1">&#39;Energy-weather time series with varying sampling rate&#39;</span><span class="p">}</span>
+    <span class="n">readme</span> <span class="o">=</span> <span class="n">readme</span><span class="p">[</span><span class="n">folder_name</span><span class="p">]</span>
+
+    <span class="n">filename_train</span><span class="p">,</span> <span class="n">filename_test</span><span class="p">,</span> <span class="n">filename_weather</span> <span class="o">=</span> <span class="n">read_missing_value_dir</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span>
+
+
+    <span class="n">ts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">filename_train</span><span class="p">)):</span>
+        <span class="n">train_ts</span><span class="p">,</span> <span class="n">test_ts</span><span class="p">,</span> <span class="n">train_weather</span><span class="p">,</span> <span class="n">test_weather</span> <span class="o">=</span> <span class="n">load_train_test_csv</span><span class="p">(</span><span class="n">filename_train</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">filename_test</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">filename_weather</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="c1"># train_ts, test_ts, train_weather, test_weather = load_train_test_weather(</span>
+        <span class="c1">#     filename_train[i], filename_test[i], filename_weather[i])</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="n">train_ts</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">24</span><span class="p">]</span> <span class="o">-</span> <span class="n">train_ts</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># by default, forecasts are requested for one day ahead</span>
+        <span class="n">history</span> <span class="o">=</span> <span class="n">train_ts</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">7</span><span class="o">*</span><span class="mi">24</span><span class="p">]</span> <span class="o">-</span> <span class="n">train_ts</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># by default, ts history is one week</span>
+
+
+        <span class="n">train_ts</span> <span class="o">=</span> <span class="p">[</span><span class="n">train_ts</span><span class="p">]</span>
+        <span class="n">train_ts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">train_weather</span><span class="p">)</span>
+        <span class="n">test_ts</span> <span class="o">=</span> <span class="p">[</span><span class="n">test_ts</span><span class="p">]</span>
+        <span class="n">test_ts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">test_weather</span><span class="p">)</span>
+
+        <span class="n">name_train</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">filename_train</span><span class="p">[</span><span class="n">i</span><span class="p">])[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">name_train</span> <span class="o">=</span> <span class="n">DATASET</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">folder_name</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">name_train</span>
+        <span class="n">name_test</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">filename_test</span><span class="p">[</span><span class="n">i</span><span class="p">])[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">name_test</span> <span class="o">=</span> <span class="n">DATASET</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">folder_name</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">name_test</span>
+        <span class="n">names</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">name_train</span><span class="p">,</span> <span class="n">name_test</span><span class="p">])</span>
+        <span class="n">ts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tsStruct</span><span class="p">(</span><span class="n">train_ts</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">name_train</span><span class="p">,</span> <span class="n">readme</span><span class="p">))</span>
+        <span class="n">ts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tsStruct</span><span class="p">(</span><span class="n">test_ts</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">name_test</span><span class="p">,</span> <span class="n">readme</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">ts</span><span class="p">,</span> <span class="n">names</span></div>
+
+
+
+<div class="viewcode-block" id="load_train_test_weather"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.load_energy_weather_data.load_train_test_weather">[docs]</a><span class="k">def</span> <span class="nf">load_train_test_weather</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">weather</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    :param train, test, weather: filenames</span>
+<span class="sd">    :return: [train_ts, test_ts, time_train, time_test, train_weather, test_weather]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="n">_</span><span class="p">,</span> <span class="n">extension</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">train</span><span class="p">)</span>
+
+
+    <span class="n">weather_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">weather</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;latin1&#39;</span><span class="p">)</span>  <span class="c1"># csvread(weather, 1, 1);</span>
+    <span class="n">weather_data</span> <span class="o">=</span> <span class="n">weather_data</span><span class="p">[[</span><span class="s1">&#39;Date&#39;</span><span class="p">,</span> <span class="s1">&#39;Max Temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;Min Temperature&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;Precipitation&#39;</span><span class="p">,</span> <span class="s1">&#39;Wind&#39;</span><span class="p">,</span> <span class="s1">&#39;Relative Humidity&#39;</span><span class="p">,</span> <span class="s1">&#39;Solar&#39;</span><span class="p">]]</span>
+    <span class="n">weather_data</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">weather_data</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">])</span>
+    <span class="n">test_ts</span><span class="p">,</span> <span class="n">test_time</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">process_csv_output</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">weather_data</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">][</span><span class="mi">1096</span><span class="p">],</span> <span class="mi">1096</span><span class="p">)</span>
+    <span class="n">train_ts</span><span class="p">,</span> <span class="n">train_time</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">process_csv_output</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">weather_data</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1096</span><span class="p">)</span>
+    <span class="n">hourly_time</span> <span class="o">=</span>  <span class="n">train_time</span> <span class="o">+</span> <span class="n">test_time</span> <span class="c1"># for pd.time use # train_time.append(test_time)</span>
+    <span class="n">weather_data</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">24</span><span class="o">*</span><span class="mi">1096</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="mi">24</span><span class="p">)</span> <span class="c1">#pd.to_numeric(weather_data[&#39;Date&#39;])</span>
+
+    <span class="n">weather_train_ts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">weather_test_ts</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;Max Temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;Min Temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;Precipitation&#39;</span><span class="p">,</span> <span class="s1">&#39;Wind&#39;</span><span class="p">,</span> <span class="s1">&#39;Relative Humidity&#39;</span><span class="p">,</span> <span class="s1">&#39;Solar&#39;</span><span class="p">]:</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">weather_data</span><span class="p">[</span><span class="n">k</span><span class="p">][:</span><span class="mi">1096</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">weather_data</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">][:</span><span class="mi">1096</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="n">k</span><span class="p">)</span>
+        <span class="n">weather_train_ts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">weather_data</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">1096</span><span class="p">:],</span> <span class="n">index</span><span class="o">=</span><span class="n">weather_data</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">][</span><span class="mi">1096</span><span class="p">:],</span> <span class="n">name</span><span class="o">=</span><span class="n">k</span><span class="p">)</span>
+        <span class="n">weather_test_ts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">weather_data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2192</span><span class="p">:</span>
+        <span class="nb">print</span> <span class="n">weather</span><span class="p">,</span> <span class="s1">&#39;: Data size: &#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">weather_data</span><span class="p">)),</span><span class="s1">&#39; does not match the expected size 2192 = 2*1096&#39;</span>
+
+
+
+
+    <span class="k">return</span> <span class="n">train_ts</span><span class="p">,</span> <span class="n">test_ts</span><span class="p">,</span> <span class="n">weather_train_ts</span><span class="p">,</span> <span class="n">weather_test_ts</span></div>
+
+<div class="viewcode-block" id="process_csv_output"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.load_energy_weather_data.process_csv_output">[docs]</a><span class="k">def</span> <span class="nf">process_csv_output</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">ndays</span><span class="p">):</span>
+
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;latin1&#39;</span><span class="p">)</span> <span class="c1">#csvread(filename, 1, 0);</span>
+
+    <span class="c1"># generate hourly time stamps:</span>
+    <span class="c1">#time_stamps = add_hours_to_dates(start_date, ndays, 24)</span>
+    <span class="n">time_stamps</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">24</span><span class="o">*</span><span class="mi">1096</span><span class="p">)</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Hour 1&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour 2&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour 3&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour 4&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour 5&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour 6&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour 7&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour 8&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;Hour 9&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour 10&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour 11&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour 12&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour 13&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour 14&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;Hour 15&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour 16&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour 17&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour 18&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour 19&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour 20&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;Hour 21&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour 22&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour 23&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour 24&#39;</span><span class="p">]</span>
+
+    <span class="n">other</span> <span class="o">=</span> <span class="n">ts</span><span class="p">[[</span><span class="s1">&#39;Day of the week&#39;</span><span class="p">,</span> <span class="s1">&#39;1-workday, 2-Saturday, 3-Sunday, &gt;4-untypical&#39;</span><span class="p">]]</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="n">keys</span><span class="p">]</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">24</span><span class="o">*</span><span class="mi">1096</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">time_stamps</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Energy&quot;</span><span class="p">)</span>
+
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    if not len(ts) == 24*1096:</span>
+<span class="sd">        print filename, &#39;: Data size: &#39;, str(len(ts)), &#39; does not match the expected size 26304 = 24x1096&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">ts</span><span class="p">,</span> <span class="n">time_stamps</span><span class="p">,</span> <span class="n">other</span></div>
+
+
+
+<div class="viewcode-block" id="read_missing_value_dir"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.load_energy_weather_data.read_missing_value_dir">[docs]</a><span class="k">def</span> <span class="nf">read_missing_value_dir</span><span class="p">(</span><span class="n">dirname</span><span class="p">):</span>
+
+    <span class="n">train_fns</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="s1">&#39;train*&#39;</span><span class="p">))</span>
+    <span class="n">test_fns</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="s1">&#39;test*&#39;</span><span class="p">))</span>
+    <span class="n">weather_fns</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="s1">&#39;weatherdata*&#39;</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">train_fns</span><span class="p">,</span> <span class="n">test_fns</span><span class="p">,</span> <span class="n">weather_fns</span></div>
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Strijov, Motrenko, Neychev, Isachenko.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>
