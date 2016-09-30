@@ -8,3 +8,6 @@
 *_templates
 *_build
 *.pyc
+*.bat
+*.idea
+*.ipynb_checkpoints
