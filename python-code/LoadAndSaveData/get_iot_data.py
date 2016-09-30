@@ -91,7 +91,7 @@ def read_random_lines(file_name, line_indices, header):
         # stores the metricID and hostID against line numbers
         #if header == True:
         metric_ids[line_index] = b[0]
-        host_ids[b[1]] = line_index - (1 + header)
+        host_ids[b[1]].append(line_index - (1 + header))
         # values of the current metric, v1..vn
         V, T, = [], []
         for i in range(8, len(b)):

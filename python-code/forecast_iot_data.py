@@ -9,6 +9,7 @@ from sklearn.linear_model import Lasso
 
 from LoadAndSaveData import get_iot_data, write_data_to_iot_format, load_time_series
 from RegressionMatrix import regression_matrix
+from Forecasting import frc_class
 
 def main(file_name, line_indices, header):
 
@@ -37,6 +38,11 @@ def main(file_name, line_indices, header):
     data.train_test_split(TRAIN_TEST_RATIO)
     model = data.train_model(frc_model=frc_model, generator=None,
                              selector=None)  # model parameters are changed inside
+
+    print("Features before generation:", data.feature_dict)
+    print("Features after generation:", model.named_steps["gen"].feature_dict)
+    print("Features after generation:", model.named_steps["sel"].feature_dict)
+    frc_class.print_pipeline_pars(model)
 
     # data.forecasts returns model obj, forecasted rows of Y matrix and a list [nts] of "flat"/ts indices of forecasted points
     data.forecast(model, replace=True)

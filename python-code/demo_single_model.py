@@ -1,16 +1,14 @@
 from __future__ import division
 from __future__ import print_function
 
-
+import os
 import pandas as pd
-from collections import namedtuple
 from RegressionMatrix import regression_matrix
 from sklearn.linear_model import Lasso
 from LoadAndSaveData import load_time_series
-from Forecasting import frc_class
+from Forecasting import frc_class, LSTM
 import my_plots
 
-tsStruct = namedtuple('tsStruct', 'data request history name readme')
 
 
 def drop_cols(model, X):
@@ -24,7 +22,8 @@ def main(frc_model=None, generator=None, selector=None):
     N_PREDICTIONS = 10 # plotting par
 
     # Load and prepare dataset.
-    ts_struct_list = load_time_series.load_all_time_series(datasets='EnergyWeather', load_raw=True, name_pattern="")
+    load_raw = not os.path.exists(os.path.join("ProcessedData", "EnergyWeather_orig_train.pkl"))
+    ts_struct_list = load_time_series.load_all_time_series(datasets='EnergyWeather', load_raw=load_raw, name_pattern="")
 
     if generator is None:
         generator = frc_class.CustomModel(name='Poly', fitfunc=None, predictfunc=None, replace=True, ndegrees=3)
@@ -32,7 +31,7 @@ def main(frc_model=None, generator=None, selector=None):
         selector = frc_class.CustomModel(name="Identity", fitfunc=None, predictfunc=drop_cols)
 
     if frc_model is None:
-        frc_model = Lasso(alpha=0.01) #frc_class.IdenitityFrc() #LinearRegression()
+        frc_model = Lasso(alpha=0.01) # LSTM.LSTM() #frc_class.IdenitityFrc() #LinearRegression()
     # Create regression matrix
 
     results = []
@@ -51,10 +50,10 @@ def main(frc_model=None, generator=None, selector=None):
         frc, idx_frc = data.forecast(model, data.idx_train, replace=True)
 
 
-        train_mae = data.mae(idx_rows=data.idx_train, out=None)#, out="Training")
-        train_mape = data.mape(idx_rows=data.idx_train, out=None)#, out="Training")
-        test_mae = data.mae(idx_rows=data.idx_test, out=None)#, out="Test")
-        test_mape = data.mape(idx_rows=data.idx_test, out=None)#, out="Test")
+        train_mae = data.mae(idx_rows=data.idx_train)#, out="Training")
+        train_mape = data.mape(idx_rows=data.idx_train)#, out="Training")
+        test_mae = data.mae(idx_rows=data.idx_test)#, out="Test")
+        test_mape = data.mape(idx_rows=data.idx_test)#, out="Test")
 
         res1 = pd.DataFrame(train_mae, index=[t.name for t in ts.data], columns=[("MAE", "train")])
         res2 = pd.DataFrame(train_mape, index=[t.name for t in ts.data], columns=[("MAPE", "train")])

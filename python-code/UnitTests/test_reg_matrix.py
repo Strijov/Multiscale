@@ -1,5 +1,5 @@
 import unittest
-import numpy as np
+
 from Forecasting import frc_class
 from RegressionMatrix import regression_matrix, random_data
 

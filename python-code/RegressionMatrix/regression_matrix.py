@@ -1,3 +1,7 @@
+"""
+Created on 30 September 2016
+@author: Anastasia Motrenko
+"""
 from __future__ import division
 from __future__ import print_function
 
@@ -5,27 +9,62 @@ import copy
 import pandas as pd
 import numpy as np
 import sklearn.pipeline as pipeline
+
 from itertools import product
 from collections import namedtuple
 
+import my_plots
 from Forecasting import frc_class
 
-import my_plots
 
-tsStruct = namedtuple('tsStruct', 'data request history name readme')
-tsMiniStruct = namedtuple('tsMiniStruct', 's norm_div norm_subt name index')
+TsStruct_ = namedtuple('TsStruct', 'data request history name readme')
+class TsStruct(TsStruct_):
+    """ This structure stores input data. The fields are:
+
+    :param data: input time series, each is pandas.Series
+    :type data: list
+    :param request: Time interval requested for forecast
+    :type request: int\ time delta ? #FIXIT
+    :param history: Time interval,  to define number of historical points.
+    :type history: int\ time delta ? #FIXIT
+    :param name: Dataset name
+    :type name: string
+    :param readme: Dataset info
+    :type readme: string
+    """
+    pass
+
+
+TsMiniStruct_ = namedtuple('TsMiniStruct_', 's norm_div norm_subt name index')
+class TsMiniStruct(TsMiniStruct_):
+    """ This structure stores a particular time series. The fields are:
+
+    :param s: time series
+    :type s: 1d-ndarray
+    :param norm_div: Standartisation constant
+    :type norm_div: float
+    :param norm_subt: Standartisation constant
+    :type norm_subt: float
+    :param name: Dataset name
+    :type name: string
+    :param index: time ticks
+    :type index: 1d-ndarray
+    """
+    pass
 
 class RegMatrix:
-    "For all operations with regression matrices"
+    """The main class for ts-to-matrix, matrix-to-ts convertions and other data operations. """
 
     def __init__(self, ts_struct):
-        """ ts_structs_list contains namedtuples tsStruct with information for all time series, that will be forecasted
-         simultaneously """
-        #self.ts = ts_struct
+        """
+
+        :param ts_struct: input time series
+        :type ts_struct: named tuple TsStruct with fields, data, request, history, name, readme
+        """
 
         self.request = ts_struct.request
         self.history = ts_struct.history
-        if self.history < 0:
+        if self.history is None:
             self.history = ts_struct.request
             print("Hiostory is not defined.  Do not forget to optimize it!") # FIXIT
 
@@ -37,11 +76,20 @@ class RegMatrix:
         names = []
         for ts in ts_struct.data:
             # print("nans:", ts.name, np.sum(np.isnan(ts)))
-            self.ts.append(tsMiniStruct(ts.as_matrix(), 1, 0, ts.name, np.array(ts.index)))
+            self.ts.append(TsMiniStruct(ts.as_matrix(), 1, 0, ts.name, np.array(ts.index)))
             names.append(ts.name)
         self.feature_dict = dict.fromkeys(names)
 
     def create_matrix(self, nsteps=1, norm_flag=True):
+        """
+        Turn the input set of time series into regression matrix.
+
+        :param nsteps: Number of times request is repeated in Y
+        :type nsteps: int
+        :param norm_flag: if False, time series are processed without normalisation
+        :type norm_flag: bool
+        :return: None. Updates attributes self.X, self.Y, self.n_requested_points, self.n_historical_points, self.feature_dict
+        """
         # define matrix dimensions:
         nsteps = int(nsteps)
         if nsteps < 1:
@@ -71,7 +119,7 @@ class RegMatrix:
         # standardize data:
         for i, ts in enumerate(self.ts):
             nnts = replace_nans(ts.s, ts.name)
-            self.ts[i] = tsMiniStruct(nnts, ts.norm_div, ts.norm_subt, ts.name, ts.index)
+            self.ts[i] = TsMiniStruct(nnts, ts.norm_div, ts.norm_subt, ts.name, ts.index)
 
         # init matrices
         self.X = np.zeros((n_rows, 0))
@@ -96,12 +144,18 @@ class RegMatrix:
 
 
     def add_ts_to_matrix(self, i_ts, norm_flag):
+        """
+        Adds time series to data matrix
+
+        :param i_ts: Number of ts to add
+        :param norm_flag: normalisation flag. Default=True, if False, time series are processed without normalisation
+        """
 
         # ts are not overwritten, only normalization constants
         if norm_flag:
             ts, norm_div, norm_subt = normalize_ts(self.ts[i_ts].s, self.ts[i_ts].name)
-            self.ts[i_ts] = tsMiniStruct(self.ts[i_ts].s, norm_div, norm_subt, self.ts[i_ts].name, self.ts[i_ts].index)
-            ts = tsMiniStruct(ts, norm_div, norm_subt, self.ts[i_ts].name, self.ts[i_ts].index)
+            self.ts[i_ts] = TsMiniStruct(self.ts[i_ts].s, norm_div, norm_subt, self.ts[i_ts].name, self.ts[i_ts].index)
+            ts = TsMiniStruct(ts, norm_div, norm_subt, self.ts[i_ts].name, self.ts[i_ts].index)
         else:
             ts = self.ts[i_ts]
 
@@ -115,59 +169,45 @@ class RegMatrix:
         time = np.flipud(ts.index)
         ts = np.flipud(ts.s)
 
-        # flat_idx = self.matrix_indices(n_hist, n_req, n_rows)
-        # matrix = np.fliplr(ts[flat_idx].reshape((n_rows, n_hist + n_req)))
-        #
-        # time = time[flat_idx].reshape((n_rows, n_hist + n_req))
-        #
-        # self.Y = np.hstack((self.Y, matrix[:, n_hist:]))
-        # self.X = np.hstack((self.X, matrix[:, :n_hist]))
-
-        idxX, idxY = self.matrix_idx(n_hist, n_req, n_rows)
+        idxX, idxY = matrix_idx(n_hist, n_req, n_rows)
         self.idxY[i_ts] = idxY
         self.Y = np.hstack((self.Y, ts[idxY]))
         self.X = np.hstack((self.X, ts[idxX]))
 
         return time[idxY[:, -1]], time[idxX[:, 0]]
 
-    def matrix_indices(self, n_hist, n_req, n_rows) :
+    # def matrix_indices(self, n_hist, n_req, n_rows) :
+    #
+    #     flat_idx = []
+    #     for i in xrange(n_rows):
+    #         flat_idx.extend(range(i * n_req, (i + 1) * n_req + n_hist))
+    #         # idx = np.unravel_index(flat_idx, (n_rows, n_hist + n_req))
+    #     return flat_idx
 
-        flat_idx = []
-        for i in xrange(n_rows):
-            flat_idx.extend(range(i * n_req, (i + 1) * n_req + n_hist))
-            # idx = np.unravel_index(flat_idx, (n_rows, n_hist + n_req))
 
-        return flat_idx
-
-
-    def matrix_idx(self, n_hist, n_req, n_rows) :
-
-        flat_idx = []
-        for i in xrange(n_rows):
-            flat_idx.extend(range(i * n_req, (i + 1) * n_req + n_hist))
-            # idx = np.unravel_index(flat_idx, (n_rows, n_hist + n_req))
-
-        idx_matrix = np.reshape(flat_idx, (n_rows, n_hist + n_req))
-        idxX = idx_matrix[:, n_req:]
-        idxY = idx_matrix[:, :n_req]
-
-        return idxX, idxY
-
-    def matrix_to_flat_by_ts(self, idx_rows, i_ts):
-        idx = ravel_idx(self.idxY[i_ts][idx_rows, :], len(self.forecasts[i_ts]))
+    def _matrix_to_flat_by_ts(self, idx_rows, i_ts):
+        idx = _ravel_idx(self.idxY[i_ts][idx_rows, :], len(self.forecasts[i_ts]))
         return np.flipud(idx)
 
     def matrix_to_flat(self, idx_rows):
+        """
+        Returns indices of TS entries stored in specific rows of regression matrix self.Y
+
+        :param idx_rows: rows of self.Y matrix
+        :type idx_rows: list
+        :return: self.nts lists of ts indices. Each list corresponds to one of the input time series
+        :rtype: list
+        """
         idx = []
         for i in range(self.nts):
-            idx.append(self.matrix_to_flat_by_ts(idx_rows, i))
+            idx.append(self._matrix_to_flat_by_ts(idx_rows, i))
         return idx
 
 
     def arrange_time_scales(self, method):
         for i, ts in enumerate(self.ts):
             ts_arranged, index = method(ts.s, ts.index)
-            self.ts[i] = tsMiniStruct(ts_arranged, ts.norm_div, ts.norm_subt, index)
+            self.ts[i] = TsMiniStruct(ts_arranged, ts.norm_div, ts.norm_subt, index)
 
 
     def train_test_split(self, train_test_ratio=0.75, splitter=None):
@@ -212,8 +252,8 @@ class RegMatrix:
 
         idx_flat = [0] * self.nts
         for i in xrange(self.nts):
-            #_, idxY = self.matrix_idx(self.n_hist_points[i], self.n_req_points[i], self.X.shape[0])
-            idx_flat[i] = ravel_idx(self.idxY[i][idx_rows, :], len(self.forecasts[i]))#self.n_hist_points[i], self.n_req_points[i], self.X.shape[0])
+            #_, idxY = matrix_idx(self.n_hist_points[i], self.n_req_points[i], self.X.shape[0])
+            idx_flat[i] = _ravel_idx(self.idxY[i][idx_rows, :], len(self.forecasts[i]))#self.n_hist_points[i], self.n_req_points[i], self.X.shape[0])
             # if not np.all(np.flipud(idx_flat[i]) == range(self.n_hist_points[i], len(self.forecasts[i]))):
             #     print("idx_flat =( ")
 
@@ -221,7 +261,7 @@ class RegMatrix:
             return idx_flat
 
         for i in xrange(self.nts):
-            self.forecasts[i][idx_flat[i]] = ravel_y(frc[:, :self.n_req_points[i]], self.ts[i].norm_div, self.ts[i].norm_subt)
+            self.forecasts[i][idx_flat[i]] = _ravel_y(frc[:, :self.n_req_points[i]], self.ts[i].norm_div, self.ts[i].norm_subt)
             # if not np.all(self.forecasts[i][self.n_hist_points[i]:] == self.ts[i].s[self.n_hist_points[i]:]):
             #     print("wrong frc", np.nonzero(self.forecasts[0] != self.ts[i].s)[self.n_hist_points[i]:])
             frc = frc[:, self.n_req_points[i]:]
@@ -231,6 +271,18 @@ class RegMatrix:
 
 
     def mae(self, idx_frc=None, idx_rows=None, out=None):
+        """
+        Mean Absolute Error calculation.
+
+        :param idx_frc: Indices of forecasted/target TS entries used to compute MAE
+        :type idx_frc: list
+        :param idx_rows: Alternatively, specify raw indices for matrix Y. If idx_frc is specified, idx_rows is ignored
+        :type idx_rows: list
+        :param out: Specification of out invokes printing MAE values. out string is printed before the output
+        :type out: string
+        :return: list of MAPE values, one for each input time series
+        :rtype: list
+        """
         idx = [0] * self.nts
         if idx_frc is None:
             if idx_rows is None:
@@ -239,7 +291,7 @@ class RegMatrix:
 
             else:
                 for i in range(self.nts):
-                    idx[i] = ravel_idx(self.idxY[i][idx_rows, :], len(self.forecasts[i]))
+                    idx[i] = _ravel_idx(self.idxY[i][idx_rows, :], len(self.forecasts[i]))
         else:
             idx = idx_frc
 
@@ -257,6 +309,19 @@ class RegMatrix:
         return errors
 
     def mape(self, idx_frc=None, idx_rows=None, out=None):
+        # type: (list, list, string) -> list
+        """
+        Mean Absolute Percentage Error calculation.
+
+        :param idx_frc: Indices of forecasted/target TS entries used to compute MAE
+        :type idx_frc: list
+        :param idx_rows: Alternatively, specify raw indices for matrix Y. If idx_frc is specified, idx_rows is ignored
+        :type idx_rows: list
+        :param out: Specification of out invokes printing MAPE values. out string is printed before the output
+        :type out: string
+        :return: list of MAPE values, one for each input time series
+        :rtype: list
+        """
         idx = [0] * self.nts
         if idx_frc is None:
             if idx_rows is None:
@@ -265,7 +330,7 @@ class RegMatrix:
 
             else:
                 for i in range(self.nts):
-                    idx[i] = ravel_idx(self.idxY[i][idx_rows], len(self.forecasts[i]))
+                    idx[i] = _ravel_idx(self.idxY[i][idx_rows], len(self.forecasts[i]))
         else:
             idx = idx_frc
 
@@ -293,7 +358,7 @@ class RegMatrix:
 
             else:
                 for i in range(self.nts):
-                    idx[i] = ravel_idx(self.idxY[i][idx_rows], len(self.forecasts[i]))
+                    idx[i] = _ravel_idx(self.idxY[i][idx_rows], len(self.forecasts[i]))
         else:
             idx = idx_frc
 
@@ -325,7 +390,7 @@ def truncate(ts_struct, n_hist, n_req, n_rows):
     n_points = n_hist + n_req*n_rows
 
     ts = ts[-n_points:]
-    ts_struct = tsMiniStruct(ts, ts_struct.norm_div, ts_struct.norm_subt, ts_struct.name, ts_struct.index[-n_points:])
+    ts_struct = TsMiniStruct(ts, ts_struct.norm_div, ts_struct.norm_subt, ts_struct.name, ts_struct.index[-n_points:])
     return ts_struct
 
 def check_time(y, x):
@@ -356,10 +421,46 @@ def replace_nans(ts, name=None):
     return ts
 
 
-def ravel_idx(idx_matr, m):
+def matrix_idx(n_hist, n_req, n_rows):
+    """
+    Returns indices of ts entries in matrices X and Y given forecast parameters, by rows. Ts are enumerated from the latest entry
+
+    :param n_hist: (X) row length
+    :type n_hist: int
+    :param n_req: (Y) row length
+    :type n_req: int
+    :param n_rows: number of rows
+    :type n_rows: int
+    :return: matrices idxX with shape (n_rows, n_hist) and idxY with shape (n_rows, n_req)
+    >>> idxX, idxY = matrix_idx(10, 2, 4)
+    >>> print idxX
+    [[ 2  3  4  5  6  7  8  9 10 11]
+    [ 4  5  6  7  8  9 10 11 12 13]
+    [ 6  7  8  9 10 11 12 13 14 15]
+    [ 8  9 10 11 12 13 14 15 16 17]]
+    >>> print idxY
+    [[0 1]
+     [2 3]
+     [4 5]
+     [6 7]]
+    """
+
+    flat_idx = []
+    for i in xrange(n_rows):
+        flat_idx.extend(range(i * n_req, (i + 1) * n_req + n_hist))
+        # idx = np.unravel_index(flat_idx, (n_rows, n_hist + n_req))
+
+    idx_matrix = np.reshape(flat_idx, (n_rows, n_hist + n_req))
+    idxX = idx_matrix[:, n_req:]
+    idxY = idx_matrix[:, :n_req]
+
+    return idxX, idxY
+
+
+def _ravel_idx(idx_matr, m):
     return m - 1 - np.ravel(idx_matr)#np.flipud(np.ravel(idx_matr))
 
 
-def ravel_y(Ymat, norm_div, norm_subt):
+def _ravel_y(Ymat, norm_div, norm_subt):
     y = np.ravel(Ymat) * norm_div + norm_subt
     return y #np.flipud(y)

@@ -40,7 +40,7 @@ def from_iot_to_struct(ts_list, idx, dataset):
         request.append(ts_list[i].index[1] - ts_list[i].index[0])
         ts.append(ts_list[i])
 
-    return tsStruct(ts, max(request), -1, dataset, "")
+    return tsStruct(ts, max(request), None, dataset, "")
 
 
 if __name__ == '__main__':
