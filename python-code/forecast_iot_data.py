@@ -26,7 +26,7 @@ def main(file_name, line_indices, header):
     data, metric_ids, host_ids, header_names = get_iot_data.get_data(file_name, line_indices, header)
 
     dataset = host_ids.keys()[0]
-    ts = write_data_to_iot_format.from_iot_to_struct(data, host_ids[dataset], dataset)
+    ts = load_time_series.from_iot_to_struct(data, host_ids[dataset], dataset)
 
     data = regression_matrix.RegMatrix(ts)
     # Create regression matrix

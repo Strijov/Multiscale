@@ -16,26 +16,7 @@ from collections import namedtuple
 import my_plots
 from Forecasting import frc_class
 
-
-TsStruct_ = namedtuple('TsStruct', 'data request history name readme')
-class TsStruct(TsStruct_):
-    """ This structure stores input data. The fields are:
-
-    :param data: input time series, each is pandas.Series
-    :type data: list
-    :param request: Time interval requested for forecast
-    :type request: int\ time delta ? #FIXIT
-    :param history: Time interval,  to define number of historical points.
-    :type history: int\ time delta ? #FIXIT
-    :param name: Dataset name
-    :type name: string
-    :param readme: Dataset info
-    :type readme: string
-    """
-    pass
-
-
-TsMiniStruct_ = namedtuple('TsMiniStruct_', 's norm_div norm_subt name index')
+TsMiniStruct_ = namedtuple('TsMiniStruct', 's norm_div norm_subt name index')
 class TsMiniStruct(TsMiniStruct_):
     """ This structure stores a particular time series. The fields are:
 
@@ -53,7 +34,7 @@ class TsMiniStruct(TsMiniStruct_):
     pass
 
 class RegMatrix:
-    """The main class for ts-to-matrix, matrix-to-ts convertions and other data operations. """
+    """The main class for ts-to-matrix, matrix-to-ts conversions and other data operations. """
 
     def __init__(self, ts_struct):
         """
