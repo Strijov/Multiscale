@@ -1,13 +1,29 @@
 from __future__ import division
 import os.path
 import glob
-from sklearn.externals import joblib
 import re
+
+from sklearn.externals import joblib
 from collections import namedtuple
 
-import load_energy_weather_data
+TsStruct_ = namedtuple('TsStruct', 'data request history name readme')
+class TsStruct(TsStruct_):
+    """ This structure stores input data. The fields are:
 
-tsStruct = namedtuple('tsStruct', 'data request history name readme')
+    :param data: input time series, each is pandas.Series
+    :type data: list
+    :param request: Time interval requested for forecast
+    :type request: int\ time delta ? #FIXIT
+    :param history: Time interval,  to define number of historical points.
+    :type history: int\ time delta ? #FIXIT
+    :param name: Dataset name
+    :type name: string
+    :param readme: Dataset info
+    :type readme: string
+    """
+    pass
+
+import load_energy_weather_data
 
 DIRNAME = 'ProcessedData' # directory to store data (.pkl) in
 
@@ -22,26 +38,20 @@ RAW_DIRS_DICT = {'EnergyWeather': '../code/data/EnergyWeatherTS/orig',
 
 def load_all_time_series(datasets=None, load_funcs=None, name_pattern='', load_raw=True):
     """
-    % Data loader
-    % Input: datasets - cell array, contains names of the folders inside data/
-    % directory
-    %
-    % Output: a cell array of ts structures
-    % Description of the time series structure:
-    %   t [T,1]  - Time in milliseconds since 1/1/1970 (UNIX format)
-    %   x [T, N] - Columns of the matrix are time series; missing values are NaNs
-    %   legend {1, N}  - Time series descriptions ts.x, e.g. ts.legend={?Consumption, ?Price?, ?Temperature?};
-    %   nsamples [1] - Number of samples per time series, relative to the target time series
-    %   deltaTp [1] - Number of local historical points
-    %   deltaTr [1] - Number of points to forecast
-    %   readme [string] -  Data information (source, formation time etc.)
-    %   dataset [string] - Reference name for the dataset
-    %   name [string] - Reference name for the time series
-    %   Optional:
-    %   type [1,N] (optional) Time series types ts.x, 1-real-valued, 2-binary, k ? k-valued
-    %   timegen [T,1]=func_timegen(timetick) (optional) Time ticks generator, may
-    %   contain the start (or end) time in UNIX format and a function to generate the vector t of the size [T,1]
+    Data loader
+
+    :param datasets: contains names datasets to download
+    :type datasets: list
+    :param load_funcs: contains callables for each dataset. Used if load_raw=True
+    :type load_funcs: list
+    :param name_pattern: expression to look for in loaded file names
+    :type name_pattern: string
+    :param load_raw: If set to True, the raw data is reloaded first
+    :type load_raw: boolean
+    :return:
+    :rtype:
     """
+
 
 
     if datasets is None:
@@ -54,7 +64,6 @@ def load_all_time_series(datasets=None, load_funcs=None, name_pattern='', load_r
         load_funcs = [LOAD_FUNCS_DICT[x] for x in datasets]
 
     if load_raw:
-        dirnames = [RAW_DIRS_DICT[x] for x in datasets]
         load_raw_data(load_funcs)
 
     # find all .pkl files in DIRNAME directory
@@ -75,6 +84,14 @@ def load_all_time_series(datasets=None, load_funcs=None, name_pattern='', load_r
     return all_ts
 
 def load_raw_data(load_funcs):
+    """
+    Loads and saves raw data in .pkl format
+
+    :param load_funcs: Each function (callable) is load_funcs loads some dataset
+    :type load_funcs: list
+    :return:
+    :rtype:  None
+    """
     # dirnames is a (list of) names of directory with raw data, passed to load_ts func
     # DIRNAME is the common directory for saving processed data
 
@@ -85,11 +102,44 @@ def load_raw_data(load_funcs):
 
 
 def save_ts_to_dir(ts, tsname, dirname):
+    """
+    Saves time series into specified directory
+
+    :param ts: time series
+    :type ts: list of TsStruct
+    :param tsname: Filename. Data will be saved as .pkl, do not specify any extensions
+    :type tsname: string
+    :param dirname: Directory that stores processed data
+    :type dirname: string
+    :return:
+    :rtype: None
+    """
     # save time series under the name dirname/tsname
     if not os.path.isdir(dirname):
         os.mkdir(dirname)
     tsname = os.path.join(dirname, tsname) + '.pkl'
     joblib.dump(ts, tsname)
+
+def from_iot_to_struct(ts_list, idx, dataset):
+    """
+    Converts data from IoT output to tsStruct. Request is single point for every ts and history is unknown
+
+    :param ts_list: stores data in pandas.Series format
+    :type ts_list: list
+    :param idx: indices of time series in ts_list correspondent to specific host/dataset
+    :type idx: list
+    :param dataset: host/dataset name
+    :type dataset: string
+    :return: data structure with selected time series
+    :rtype: TsStruct
+    """
+
+    request, ts = [], []
+    for i in idx:
+        request.append(ts_list[i].index[1] - ts_list[i].index[0])
+        ts.append(ts_list[i])
+
+    return TsStruct(ts, max(request), None, dataset, "")
 
 
 if __name__ == '__main__':

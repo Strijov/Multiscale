@@ -7,18 +7,22 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from datetime import timedelta
-from collections import namedtuple
 
-tsStruct = namedtuple('tsStruct', 'data request history name readme')
+from load_time_series import TsStruct
+
+
+
 DATASET = "EnergyWeather"
 DIRNAME = "../code/data/EnergyWeatherTS"
 
 def load_ts():
     """
-    Loads a set of time series and returns the cell array of ts structres.
-    :param dirname: [string] named of folder with the loaded data.
-    :return: time series, namedtuple tsStruct
+    Loads energy consumption and weather time series
+
+    :return: TsStructures with loaded data and reference names
+    :rtype: list, list
     """
+
     dirnames = ["orig", "missing_value", "varying_rates"]
 
     ts_list = []
@@ -31,7 +35,73 @@ def load_ts():
     return ts_list, name_list
 
 
-def load_train_test_csv(train, test, weather):
+def load_ts_by_dirname(dirname, folder_name):
+    """
+    Load time series of specific type from EnergyWeather dataset
+
+    :param dirname: path to directory with input data, ends with "orig", "missing_vale" or "varying_rates"
+    :type dirname: string
+    :param folder_name:
+    :type folder_name:
+    :return: sStructures with loaded data and reference names
+    :rtype: list, list
+    """
+    dirname = os.path.abspath(dirname + os.sep + folder_name)
+
+    # folders = os.path.split(dirname) #, os.sep
+    # folder_name = folders[-1]
+    # if len(folder_name) == 0:
+    #     folder_name = folders[-2]
+
+    readme = {'orig': 'Original time energy-weather series',
+              'missing_value': 'Energy-weather time series with artificially inserted missing values',
+              'varying_rates': 'Energy-weather time series with varying sampling rate'}
+    readme = readme[folder_name]
+
+    filename_train, filename_test, filename_weather = read_missing_value_dir(dirname)
+
+    ts = []
+    names = []
+    for i in range(len(filename_train)):
+        train_ts, test_ts, train_weather, test_weather = _load_train_test_csv(filename_train[i], filename_test[i],
+                                                                             filename_weather[i])
+        # train_ts, test_ts, train_weather, test_weather = load_train_test_weather(
+        #     filename_train[i], filename_test[i], filename_weather[i])
+
+        request = train_ts.index[24] - train_ts.index[0]  # by default, forecasts are requested for one day ahead
+        history = train_ts.index[7 * 24] - train_ts.index[0]  # by default, ts history is one week
+
+        train_ts = [train_ts]
+        train_ts.extend(train_weather)
+        test_ts = [test_ts]
+        test_ts.extend(test_weather)
+
+        name_train, _ = os.path.splitext(os.path.split(filename_train[i])[1])
+        name_train = DATASET + '_' + folder_name + '_' + name_train
+        name_test, _ = os.path.splitext(os.path.split(filename_test[i])[1])
+        name_test = DATASET + '_' + folder_name + '_' + name_test
+        names.extend([name_train, name_test])
+        ts.append(TsStruct(train_ts, request, history, name_train, readme))
+        ts.append(TsStruct(test_ts, request, history, name_test, readme))
+
+    return ts, names
+
+def _load_train_test_csv(train, test, weather):
+    """
+    Loads raw data from csv. The dataset contains 3-year daily observations for weather data and horly observations for
+    electricity consumption data.
+    Weather data headers: 'Date', 'Max Temperature', 'Min Temperature', 'Precipitation', 'Wind', 'Relative Humidity', 'Solar'
+    Electricity data headers: 'Day of the week', '1-workday, 2-Saturday, 3-Sunday, >4-untypical', 'Hour 1', ..., 'Hour 24'
+
+    :param train: filename for train data
+    :type train: string
+    :param test: filename for test data
+    :type test: string
+    :param weather: filename for weather data, both train and test
+    :type weather:
+    :return: train_set, test_set, train_weather, test_weather
+    :rtype: pandas.Series
+    """
     # reading CSV file
     print train
     reader = csv.reader(open(train, 'r'), delimiter=',')
@@ -90,8 +160,8 @@ def load_train_test_csv(train, test, weather):
     train_weather_time = weather_time[:1096]
     test_weather_time = weather_time[1096:]
 
-    train_time = add_hours_to_dates(train_time)
-    test_time = add_hours_to_dates(test_time)
+    train_time = _add_hours_to_dates(train_time)
+    test_time = _add_hours_to_dates(test_time)
     test_time = [(dt - min_date).total_seconds() for dt in test_time]
     train_time = [(dt - min_date).total_seconds() for dt in train_time]
 
@@ -107,7 +177,15 @@ def load_train_test_csv(train, test, weather):
 
     return train_set, test_set, train_weather, test_weather
 
-def add_hours_to_dates(dates):
+def _add_hours_to_dates(dates):
+    """
+    Adds hourly time ticks to daily ticks
+
+    :param dates: observed dates
+    :type dates: list
+    :return:
+    :rtype: list
+    """
 
     date_vec = []
     for date in dates:
@@ -115,52 +193,9 @@ def add_hours_to_dates(dates):
 
     return date_vec
 
-def load_ts_by_dirname(dirname, folder_name):
-    dirname = os.path.abspath(dirname + os.sep + folder_name)
-    
-    
-    # folders = os.path.split(dirname) #, os.sep
-    # folder_name = folders[-1]
-    # if len(folder_name) == 0:
-    #     folder_name = folders[-2]
-
-    readme = {'orig':'Original time energy-weather series',
-        'missing_value':'Energy-weather time series with artificially inserted missing values',
-        'varying_rates':'Energy-weather time series with varying sampling rate'}
-    readme = readme[folder_name]
-
-    filename_train, filename_test, filename_weather = read_missing_value_dir(dirname)
 
 
-    ts = []
-    names = []
-    for i in range(len(filename_train)):
-        train_ts, test_ts, train_weather, test_weather = load_train_test_csv(filename_train[i], filename_test[i], filename_weather[i])
-        # train_ts, test_ts, train_weather, test_weather = load_train_test_weather(
-        #     filename_train[i], filename_test[i], filename_weather[i])
-
-        request = train_ts.index[24] - train_ts.index[0] # by default, forecasts are requested for one day ahead
-        history = train_ts.index[7*24] - train_ts.index[0] # by default, ts history is one week
-
-
-        train_ts = [train_ts]
-        train_ts.extend(train_weather)
-        test_ts = [test_ts]
-        test_ts.extend(test_weather)
-
-        name_train, _ = os.path.splitext(os.path.split(filename_train[i])[1])
-        name_train = DATASET + '_' + folder_name + '_' + name_train
-        name_test, _ = os.path.splitext(os.path.split(filename_test[i])[1])
-        name_test = DATASET + '_' + folder_name + '_' + name_test
-        names.extend([name_train, name_test])
-        ts.append(tsStruct(train_ts, request, history, name_train, readme))
-        ts.append(tsStruct(test_ts, request, history, name_test, readme))
-
-    return ts, names
-
-
-
-def load_train_test_weather(train, test, weather):
+def _load_train_test_weather(train, test, weather):
     """
 
     :param train, test, weather: filenames
@@ -175,8 +210,8 @@ def load_train_test_weather(train, test, weather):
     weather_data = weather_data[['Date', 'Max Temperature', 'Min Temperature',
                                  'Precipitation', 'Wind', 'Relative Humidity', 'Solar']]
     weather_data['Date'] = pd.to_datetime(weather_data['Date'])
-    test_ts, test_time,_ = process_csv_output(test, weather_data['Date'][1096], 1096)
-    train_ts, train_time,_ = process_csv_output(train, weather_data['Date'][0], 1096)
+    test_ts, test_time,_ = _process_csv_output(test, weather_data['Date'][1096], 1096)
+    train_ts, train_time,_ = _process_csv_output(train, weather_data['Date'][0], 1096)
     hourly_time =  train_time + test_time # for pd.time use # train_time.append(test_time)
     weather_data['Date'] = range(0, 24*1096*2, 24) #pd.to_numeric(weather_data['Date'])
 
@@ -198,7 +233,7 @@ def load_train_test_weather(train, test, weather):
 
     return train_ts, test_ts, weather_train_ts, weather_test_ts
 
-def process_csv_output(filename, start_date, ndays):
+def _process_csv_output(filename, start_date, ndays):
 
     ts = pd.read_csv(filename, sep=',', encoding='latin1') #csvread(filename, 1, 0);
 

@@ -1,4 +1,8 @@
-# required packages
+# coding: utf-8
+"""
+Created on 30 September 2016
+@author: Parantapa Goswami, Yagmur Gizem Cinar
+"""
 
 import pandas as pd
 import linecache
@@ -15,6 +19,17 @@ get_data: method to read certain metrics from the data file.
 
 
 def get_data(file_name, line_indices="all", header=True):
+    """
+    Read data from InternetOfThings dataset.
+
+    :param file_name:  .csv filename with raw data
+    :type file_name: string
+    :param line_indices: indices of lines to read from file.  Lines are enumerated from 1. If "all", read the whole file
+    :param header: Specifies if the file contains a header row
+    :type header: bool
+    :return: data, metric_ids_dict, host_ids, header_names
+    :rtype: tuple
+    """
     if line_indices=="all":
         # read the whole file
         return read_all_lines(file_name, header)
@@ -25,6 +40,17 @@ def get_data(file_name, line_indices="all", header=True):
 
 
 def read_all_lines(file_name, header):
+    """
+    Read (all lines) from file in InternetOfThings format.
+
+    :param file_name:  .csv filename with raw data
+    :type file_name: string
+    :param header: Specifies if the file contains a header row
+    :type header: bool
+    :return: data - list of pandas.Series; metric_dict - dictionary, maps ts numbers device names; host_ids - dictionary,
+    maps host names to devices; header_names stores columns names, read from the header row
+    :rtype: tuple
+    """
     header_names = []
 
     if header:
@@ -61,14 +87,22 @@ def read_all_lines(file_name, header):
     metric_ids_dict = {k:v for k, v in enumerate(metric_ids)}
 
 
-    # # convert data to numpy format to be used later by sk-learn mathods
-    # data = np.array(data)
-    # data = np.transpose(data)
-    # # returned data matrix is in the size of [number of instances (n) , number of time series (length of line_indices)]
-    # # each column contains the sequence of a time series
-    return (data, metric_ids_dict, host_ids, header_names)
+    return data, metric_ids_dict, host_ids, header_names
 
 def read_random_lines(file_name, line_indices, header):
+    """
+    Read specific lines from file in InternetOfThings format.
+
+    :param file_name:  .csv filename with raw data
+    :type file_name: string
+    :param line_indices: indices of lines to read from file.  Lines are enumerated from 1
+    :type line_indices: list
+    :param header: Specifies if the file contains a header row
+    :type header: bool
+    :return: data - list of pandas.Series; metric_ids_dict - dictionary, maps ts numbers device names; host_ids - dictionary,
+    maps host names to devices; header_names stores columns names, read from the header row
+    :rtype: tuple
+    """
     # This block processes the header line, if it exits
     # header = True means the first line of the csv file in the columns 1 to 8 are variable names
     header_names = []
@@ -102,9 +136,5 @@ def read_random_lines(file_name, line_indices, header):
         # append current values to the data matrix
         data.append(pd.Series(V, index=T, name=b[0]))
 
-    # # convert data to numpy format to be used later by sk-learn mathods
-    # data = np.array(data)
-    # data = np.transpose(data)
-    # # returned data matrix is in the size of [number of instances (n) , number of time series (length of line_indices)]
-    # # each column contains the sequence of a time series
-    return (data, metric_ids, host_ids, header_names)
+
+    return data, metric_ids, host_ids, header_names

@@ -16,14 +16,13 @@ def drop_cols(model, X):
 
 def main(frc_model=None, generator=None, selector=None):
 
-
     # Experiment settings.
     TRAIN_TEST_RATIO = 0.75
     N_PREDICTIONS = 10 # plotting par
 
     # Load and prepare dataset.
     load_raw = not os.path.exists(os.path.join("ProcessedData", "EnergyWeather_orig_train.pkl"))
-    ts_struct_list = load_time_series.load_all_time_series(datasets='EnergyWeather', load_raw=load_raw, name_pattern="")
+    ts_struct_list = load_time_series.load_all_time_series(datasets='EnergyWeather', load_raw=True, name_pattern="")
 
     if generator is None:
         generator = frc_class.CustomModel(name='Poly', fitfunc=None, predictfunc=None, replace=True, ndegrees=3)
