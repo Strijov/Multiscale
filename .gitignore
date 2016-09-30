@@ -3,3 +3,8 @@
 *.log
 *.aux
 *.bbl
+*-eps-converted-to.pdf
+*_static
+*_templates
+*_build
+*.pyc
