@@ -226,7 +226,7 @@ class RegMatrix:
         if idx_rows is None:
             idx_rows = range(self.X.shape[0])
 
-        forecastedY =  model.predict(self.X[idx_rows, :])
+        forecastedY = model.predict(self.X[idx_rows, :])
 
         # ravel forecasts and, if replace=True, input new values to self.forecasts vector
         idx_frc = self.add_forecasts(forecastedY, idx_rows, replace)

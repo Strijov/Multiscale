@@ -22,15 +22,19 @@ def main(frc_model=None, generator=None, selector=None):
 
     # Load and prepare dataset.
     load_raw = not os.path.exists(os.path.join("ProcessedData", "EnergyWeather_orig_train.pkl"))
-    ts_struct_list = load_time_series.load_all_time_series(datasets='EnergyWeather', load_raw=True, name_pattern="")
+    ts_struct_list = load_time_series.load_all_time_series(datasets='EnergyWeather', load_raw=load_raw, name_pattern="")
+
+
+
 
     if generator is None:
-        generator = frc_class.CustomModel(name='Poly', fitfunc=None, predictfunc=None, replace=True, ndegrees=3)
+        #generator = frc_class.CustomModel(name='Poly', fitfunc=None, predictfunc=None, replace=True, ndegrees=3)
+        generator = frc_class.CustomModel(frc_class.IdentityGenerator, name="IdentityGenerator")
     if selector is None:
-        selector = frc_class.CustomModel(name="Identity", fitfunc=None, predictfunc=drop_cols)
-
+        #selector = frc_class.CustomModel(name="Identity", fitfunc=None, predictfunc=drop_cols)
+        selector = None
     if frc_model is None:
-        frc_model = Lasso(alpha=0.01) # LSTM.LSTM() #frc_class.IdenitityFrc() #LinearRegression()
+        frc_model = frc_class.CustomModel(Lasso, name="Lasso", alpha=0.01) # LSTM.LSTM() #frc_class.IdenitityFrc() #LinearRegression()
     # Create regression matrix
 
     results = []
@@ -40,13 +44,14 @@ def main(frc_model=None, generator=None, selector=None):
         # Create regression matrix
         data.create_matrix(nsteps=1, norm_flag=True)
 
+
         # Split data for training and testing
         data.train_test_split(TRAIN_TEST_RATIO)
-        model = data.train_model(frc_model=frc_model, generator=generator, selector=selector) # model parameters are changed inside
+        model, frc, gen, sel = data.train_model(frc_model=frc_model, generator=generator, selector=selector) # model parameters are changed inside
 
         # data.forecasts returns model obj, forecasted rows of Y matrix and a list [nts] of "flat"/ts indices of forecasted points
-        frc, idx_frc = data.forecast(model, data.idx_test, replace=True)
-        frc, idx_frc = data.forecast(model, data.idx_train, replace=True)
+        data.forecast(model, data.idx_test, replace=True)
+        data.forecast(model, data.idx_train, replace=True)
 
 
         train_mae = data.mae(idx_rows=data.idx_train)#, out="Training")
@@ -62,7 +67,7 @@ def main(frc_model=None, generator=None, selector=None):
         print(res)
 
         results.append(res)
-        res_text.append(ts.name + ": Lasso, feature generation: " + generator.name + ", " + selector.name)
+        #res_text.append(ts.name + frc.name + ":, feature generation: " + gen.name + ", " + sel.name)
 
         data.plot_frc(n_frc=N_PREDICTIONS)
 
