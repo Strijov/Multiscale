@@ -9,7 +9,7 @@ from sklearn.linear_model import Lasso
 
 from LoadAndSaveData import get_iot_data, write_data_to_iot_format, load_time_series
 from RegressionMatrix import regression_matrix
-from Forecasting import frc_class
+from Forecasting import frc_class, LSTM
 
 def main(file_name, line_indices, header):
 
@@ -32,7 +32,8 @@ def main(file_name, line_indices, header):
     # Create regression matrix
     data.create_matrix(nsteps=1, norm_flag=True)
 
-    frc_model = frc_class.CustomModel(Lasso, name="Lasso", alpha=0.01)
+    #frc_model = frc_class.CustomModel(Lasso, name="Lasso", alpha=0.01)
+    frc_model = frc_class.CustomModel(LSTM.LSTM, name="LSTM")
 
     # Split data for training and testing
     data.train_test_split(TRAIN_TEST_RATIO)
