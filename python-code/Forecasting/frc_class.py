@@ -1,14 +1,15 @@
 from __future__ import print_function
 
 import numpy as np
-from sklearn.base import  BaseEstimator
+from sklearn.base import BaseEstimator
 
 
 class IdentityModel(BaseEstimator):
-    # Base class for feature selection
+    """ Base class for prediction, feature selection and generation """
 
     def __init__(self, name=None):
         self.name = name
+        self.is_fitted = False
 
     def fit(self, X, Y):
         #override this module
@@ -28,7 +29,7 @@ class IdentityModel(BaseEstimator):
             print(k, ":", v)
 
 class IdentityFrc(IdentityModel):
-    # Base class for feature selection
+    """ Helper class, used for testing purposes"""
 
     def fit(self, X, Y):
         # check that X and Y are the same:
@@ -42,20 +43,12 @@ class IdentityFrc(IdentityModel):
         return X
 
 
-
-
-
 class IdentityGenerator(IdentityModel):
-    # Base class for feature selection
+    """ Helper class for feature generation"""
 
     def __init__(self, name=None, replace=True):
-        super(IdentityModel, self).__init__()
-        self.name = name
+        super(IdentityGenerator, self).__init__(name)
         self.replace = replace
-
-
-
-
 
 
 class MartingalFrc(IdentityModel):
@@ -69,33 +62,9 @@ class MartingalFrc(IdentityModel):
         return X[:, -self.n_out:]
 
 
-
-class CustomModel(IdentityModel):
-
-    def __init__(self, name=None, fitfunc=None, predictfunc=None, **kwargs):
-        super(IdentityModel, self).__init__()
-        self.name = name
-        self.fitfunc = fitfunc
-        self.predictfunc = predictfunc
-        for k, v in kwargs.items():
-            self.__setattr__(k, v)
-
-
-    def fit(self, X, Y):
-        if self.fitfunc is None:
-            return self
-
-        return self.fitfunc(self, X, Y)
-
-    def predict(self, X):
-        if self.predictfunc is None:
-            return X
-
-        return self.predictfunc(self, X)
-
-
-
 def print_pipeline_pars(model):
+    """ Formatted print for pipeline model  """
+
     # model.steps is a list of  tuples ('stepname', stepmodel)
     for _, step_model in model.steps:
         if hasattr(step_model, 'print_pars'):
@@ -104,7 +73,56 @@ def print_pipeline_pars(model):
             print(step_model.get_params())
 
 
+def CustomModel(parent, **kwargs):
+    """
+    Defines a new class with double inherirance
+
+    :param parent: Parent class
+    :param kwargs: Optional keyword arguments
+    :return: instance of CunstomModel class
+    """
+    class CustomModel(parent, IdentityModel):
+
+        def __init__(self, name=None):
+            IdentityModel.__init__(self, name)
+            parent.__init__(self)
+
+            for k, v in kwargs.items():
+                self.__setattr__(k, v)
+
+        def fit(self, X, Y):
+            IdentityModel.fit(self, X, Y)
+            parent.fit(self, X, Y)
+
+            return self
+
+        def predict(self, X):
+            IdentityModel.predict(self, X)
+            Y = parent.predict(self, X)
+
+            return Y
 
 
+    return CustomModel()
+
+# class parent():
+#
+#     def __init__(self):
+#         self.a = "a"
+#         self.b = 2
+#
+#     def fit(self, X, Y):
+#         self.is_fitted = "here"
+#         self.b += 2
+#
+#     def predict(self, X):
+#         self.my_print()
+#
+#     def my_print(self):
+#         print(self.a)
+
+# my_model = CustomModel(parent, c=1)
+# my_model.fit([], [])
+# my_model.predict([])
 
 

@@ -10,6 +10,7 @@ import pandas as pd
 import numpy as np
 import sklearn.pipeline as pipeline
 
+from sklearn.utils.validation import check_is_fitted
 from itertools import product
 from collections import namedtuple
 
@@ -47,7 +48,7 @@ class RegMatrix:
         self.history = ts_struct.history
         if self.history is None:
             self.history = ts_struct.request
-            print("Hiostory is not defined.  Do not forget to optimize it!") # FIXIT
+            print("History is not defined.  Do not forget to optimize it!") # FIXIT
 
         self.nts = len(ts_struct.data)
         self.ts = []
@@ -203,9 +204,10 @@ class RegMatrix:
         self.idx_train, self.idx_test = idx_train, idx_test
 
 
-    def train_model(self, frc_model, selector=None, generator=None, from_scratch=True):
+    def train_model(self, frc_model, selector=None, generator=None, retrain=True):
+
         if selector is None:
-            selector = frc_class.IdentityFrc()
+            selector = frc_class.IdentityModel()
             selector.feature_dict = copy.deepcopy(self.feature_dict)
         if generator is None:
             generator = frc_class.IdentityGenerator()
@@ -213,9 +215,11 @@ class RegMatrix:
 
         model = pipeline.Pipeline([('gen', generator), ('sel', selector), ('frc', frc_model)])
         #model = pipeline.make_pipeline(generator, selector, frc_model)
-        model.fit(self.trainX, self.trainY)
 
-        return model
+        if (not frc_model.is_fitted) or retrain:
+                model.fit(self.trainX, self.trainY)
+
+        return model, model.named_steps['frc'], model.named_steps['gen'], model.named_steps['sel']
 
     def forecast(self, model, idx_rows=None, replace=True):
         # idx are indices of rows to be forecasted
