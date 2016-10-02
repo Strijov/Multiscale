@@ -18,9 +18,6 @@ from LoadAndSaveData import load_time_series
 from Forecasting import frc_class
 
 
-TsStruct_ = namedtuple('TsStruct_', 'data request history name readme')
-
-
 def main(frc_model=None, selector=None, generator=None):
     # Experiment settings.
     MAX_NOIZE = 2
@@ -31,12 +28,12 @@ def main(frc_model=None, selector=None, generator=None):
     ts_struct_list = load_time_series.load_all_time_series(datasets='EnergyWeather', load_raw=load_raw, name_pattern="orig_train")
 
     if generator is None:
-        generator = frc_class.CustomModel(name="No generation", fitfunc=None, predictfunc=None)
+        generator = frc_class.CustomModel(frc_class.IdentityGenerator, name="No generation")
     if selector is None:
-        selector = frc_class.CustomModel(name="No selection", fitfunc=None, predictfunc=None)
+        selector = frc_class.IdentityModel(name="No selection")
 
     if frc_model is None:
-        frc_model = Lasso(alpha=0.01)  # frc_class.IdenitityFrc() #LinearRegression()
+        frc_model = frc_class.CustomModel(Lasso, name="Lasso", alpha=0.01)  # frc_class.IdenitityFrc() #LinearRegression()
     # Create regression matrix
 
     results = []
@@ -56,7 +53,7 @@ def main(frc_model=None, selector=None, generator=None):
 
         # Split data for training and testing
         data.train_test_split(TRAIN_TEST_RATIO)
-        model = data.train_model(frc_model=frc_model, generator=generator,
+        model, _, _, _ = data.train_model(frc_model=frc_model, generator=generator,
                                  selector=selector, from_scratch=True)  # model parameters are changed inside
 
         # data.forecasts returns model obj, forecasted rows of Y matrix and a list [nts] of "flat"/ts indices of forecasted points

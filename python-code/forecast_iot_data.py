@@ -32,11 +32,11 @@ def main(file_name, line_indices, header):
     # Create regression matrix
     data.create_matrix(nsteps=1, norm_flag=True)
 
-    frc_model = Lasso(alpha=0.01)
+    frc_model = frc_class.CustomModel(Lasso, name="Lasso", alpha=0.01)
 
     # Split data for training and testing
     data.train_test_split(TRAIN_TEST_RATIO)
-    model = data.train_model(frc_model=frc_model, generator=None,
+    model, _, _, _ = data.train_model(frc_model=frc_model, generator=None,
                              selector=None)  # model parameters are changed inside
 
     print("Features before generation:", data.feature_dict)
