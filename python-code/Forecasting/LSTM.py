@@ -1,35 +1,37 @@
 # coding: utf-8
 
 import numpy as np
-import matplotlib.pyplot as plt
 import theano
 import theano.tensor as T
 import lasagne
 import pickle
 import datetime
+import _special_layers
 
 class LSTM():
+    """ Regression models built on LSTM-network """
 
-
-    def __init__(self, name="LSTM", grad_clip=100, batch_size=10, l_out=None):
+    def __init__(self, name="LSTM", grad_clip=100, batch_size=50, l_out=None, n_epochs=100):
         self.name = name
-        self.grad_clip = 100
-        self.batch_size = 10
+        self.grad_clip = grad_clip
+        self.batch_size = batch_size
+        self.n_epochs = n_epochs
         self.l_out = l_out
 
-    def fit(self, trainX, trainY, seq_length=240, n_epochs=100, batch_size=500, name=None):
-        print("Training ...")
+    def fit(self, trainX, trainY, n_epochs=None, fname=None):
+        """ Train module for LSTM network """
+
         _, nX = trainX.shape
         _, nY = trainY.shape
 
-        trainX = trainX.ravel()
-        trainY = trainY.ravel()
-
         if self.l_out is None:
-            self.init_nn_structure(nX*batch_size, nY*batch_size)
+            self.init_nn_structure(int(nX*self.batch_size), int(nY*self.batch_size))
 
+        print("Training ...")
         loss = []
-        for epoch in xrange(n_epochs):
+        if not n_epochs is None:
+            self.n_epochs = n_epochs
+        for epoch in xrange(self.n_epochs):
             avg_cost = 0
             for batch in iterate_minibatches(trainX, trainY, self.batch_size):
                 x, y = batch
@@ -40,15 +42,15 @@ class LSTM():
             print("Epoch {} average loss = {}".format(epoch, avg_cost))
 
         self.weights = lasagne.layers.get_all_params(self.l_out,trainable=True)
-        self.checkpoint(name)
+        self.checkpoint(fname, loss=loss)
 
 
     def predict(self, X):
-        m, n = X.shape
+        #m, n = X.shape
 
         Y = self.forecast(X)
-        nY = int(Y.size/m)
-        return Y.reshape(m, nY)
+        #nY = int(Y.size/m)
+        return Y #.reshape(m, nY)
 
 
     def init_nn_structure(self, seq_length, pred_len):
@@ -57,14 +59,13 @@ class LSTM():
 
         l_in = lasagne.layers.InputLayer(shape=(None, seq_length),input_var=input_sequence)
 
-        l1 = lasagne.layers.ExpressionLayer(l_in, lambda X: T.repeat(X.mean(axis=1), pred_len), output_shape=(None, pred_len))
-        output_shape = l1._output_shape
-        l1 = lasagne.layers.ReshapeLayer(l1, shape=(output_shape, pred_len))
+        l1 = _special_layers.ExpressionLayer(l_in, lambda X: T.repeat(X.mean(axis=1), pred_len), output_shape=(None, pred_len))
+        l1 = lasagne.layers.ReshapeLayer(l1, shape=(-1, pred_len))
 
-        l2 = lasagne.layers.ExpressionLayer(l_in, lambda X: T.repeat(X.std(axis=1), pred_len), output_shape=(None, pred_len))
+        l2 = _special_layers.ExpressionLayer(l_in, lambda X: T.repeat(X.std(axis=1), pred_len), output_shape=(None, pred_len))
         l2 = lasagne.layers.ReshapeLayer(l2, shape=(-1, pred_len))
 
-        l3 = lasagne.layers.ExpressionLayer(l_in, lambda X:
+        l3 = _special_layers.ExpressionLayer(l_in, lambda X:
                                             ((X.reshape([1, X.shape[0]*X.shape[1]]) - T.repeat(X.mean(axis=1), seq_length))/
                                              T.repeat(X.std(axis=1), seq_length)).reshape(X.shape),
                                             output_shape=(None, seq_length))
@@ -104,24 +105,48 @@ class LSTM():
 
 
 
-    def checkpoint(self, name):
+    def checkpoint(self, fname, **kwargs):
+        results = {}
+        params_names = lasagne.layers.get_all_params(self.l_out, trainable=True)
         params = lasagne.layers.get_all_param_values(self.l_out)
 
-        if name is None:
-            name = "last_weights_" + str(datetime.date.today())
+        for name, par in zip(params_names, params):
+            results[name] = par
 
-        pickle.dump(params, open(name, 'wb'))
+        for k, v in kwargs:
+            results[k] = v
+
+        if fname is None:
+            fname = "last_weights_" + str(datetime.date.today())
+
+        pickle.dump(params, open(fname, 'wb'))
 
 
 
-def iterate_minibatches(X, Y, batch_size=10):
-    
+def iterate_minibatches(X, Y, batch_size):
+
     m = X.shape[0]
-    #n_batches = int(m/batch_size)
-    for i in range(m-batch_size):
-        X_batch = X[i:i+batch_size]
-        Y_batch = Y[i:i+batch_size]
-        yield (X_batch, Y_batch)
+    # n_batches = int(m/batch_size)
+    # for i in range(m-batch_size):
+    #     X_batch = X[i:i+batch_size]
+    #     Y_batch = Y[i:i+batch_size]
+    #     yield (X_batch, Y_batch)
+
+
+    ind = np.random.permutation(m).tolist()
+    k = 0
+    X_batch = np.zeros(shape=(batch_size, X.shape[1]))
+    y_batch = np.zeros(shape=(batch_size, Y.shape[1]))
+    for start_index in ind:
+        if k == batch_size:
+            yield (X_batch, y_batch)
+            X_batch = np.zeros(shape=(batch_size, X.shape[1]))
+            y_batch = np.zeros(shape=(batch_size, Y.shape[1]))
+            k = 0
+        else:
+            X_batch[k] = X[start_index, :]
+            y_batch[k] = Y[start_index, :]
+            k = k + 1
 
        
 
