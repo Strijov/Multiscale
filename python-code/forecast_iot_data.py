@@ -5,16 +5,17 @@ import os
 import optparse
 import pandas as pd
 
-from sklearn.linear_model import Lasso
+from sklearn.linear_model import Lasso, LinearRegression
 
 from LoadAndSaveData import get_iot_data, write_data_to_iot_format, load_time_series
 from RegressionMatrix import regression_matrix
-from Forecasting import frc_class, LSTM
+from Forecasting import frc_class, LSTM, GatingEnsemble
 
 def main(file_name, line_indices, header):
 
     TRAIN_TEST_RATIO = 0.75
     N_PREDICTIONS = 10
+    N_EXPERTS = 4
 
     if not os.path.exists(file_name):
         load_raw = not os.path.exists(os.path.join("ProcessedData", "EnergyWeather_orig_train.pkl"))
@@ -33,7 +34,7 @@ def main(file_name, line_indices, header):
     data.create_matrix(nsteps=1, norm_flag=True)
 
     #frc_model = frc_class.CustomModel(Lasso, name="Lasso", alpha=0.01)
-    frc_model = frc_class.CustomModel(LSTM.LSTM, name="LSTM")
+    frc_model = frc_class.CustomModel(GatingEnsemble.GatingEnsemble, estimators = [LinearRegression() for i in range(4)])#(LSTM.LSTM, name="LSTM")
 
     # Split data for training and testing
     data.train_test_split(TRAIN_TEST_RATIO)
@@ -48,10 +49,10 @@ def main(file_name, line_indices, header):
     # data.forecasts returns model obj, forecasted rows of Y matrix and a list [nts] of "flat"/ts indices of forecasted points
     data.forecast(model, replace=True)
 
-    train_mae = data.mae(idx_rows=data.idx_train, out=None)  # , out="Training")
-    train_mape = data.mape(idx_rows=data.idx_train, out=None)  # , out="Training")
-    test_mae = data.mae(idx_rows=data.idx_test, out=None)  # , out="Test")
-    test_mape = data.mape(idx_rows=data.idx_test, out=None)  # , out="Test")
+    train_mae = data.mae(idx_rows=data.idx_train)  # , out="Training")
+    train_mape = data.mape(idx_rows=data.idx_train)  # , out="Training")
+    test_mae = data.mae(idx_rows=data.idx_test)  # , out="Test")
+    test_mape = data.mape(idx_rows=data.idx_test)  # , out="Test")
 
     res1 = pd.DataFrame(train_mae, index=[t.name for t in ts.data], columns=[("MAE", "train")])
     res2 = pd.DataFrame(train_mape, index=[t.name for t in ts.data], columns=[("MAPE", "train")])
