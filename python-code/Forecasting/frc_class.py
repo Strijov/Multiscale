@@ -73,7 +73,7 @@ def print_pipeline_pars(model):
             print(step_model.get_params())
 
 
-def CustomModel(parent, **kwargs):
+def CustomModel(parent, *args, **kwargs):
     """
     Defines a new class with double inherirance
 
@@ -85,10 +85,10 @@ def CustomModel(parent, **kwargs):
 
         def __init__(self, name=None):
             IdentityModel.__init__(self, name)
-            parent.__init__(self)
+            parent.__init__(self, *args, **kwargs)
 
-            for k, v in kwargs.items():
-                self.__setattr__(k, v)
+            # for k, v in kwargs.items():
+            #     self.__setattr__(k, v)
 
         def fit(self, X, Y):
             IdentityModel.fit(self, X, Y)
