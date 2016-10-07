@@ -39,7 +39,7 @@ def main(file_name, line_indices, header):
 
     err_by_one = [train_mae, train_mape, test_mae, test_mape]
     res_by_one = data_frame_res(err_by_one, column_names, ts)
-    diff = [err1 - err2 for err1, err2 in zip(err_by_one, err_all) ]
+    diff = [np.divide(err1 - err2, err1)*100 for err1, err2 in zip(err_by_one, err_all) ]
     diff_res = data_frame_res(diff, column_names, ts)
 
     print("Simultaneous forecast")
@@ -47,7 +47,7 @@ def main(file_name, line_indices, header):
     print("\nIndividual forecasts")
     print(res_by_one)
 
-    print("\nPerformance increase")
+    print("\nPerformance increase (in percents of individual errors)")
     print(diff_res)
 
 
