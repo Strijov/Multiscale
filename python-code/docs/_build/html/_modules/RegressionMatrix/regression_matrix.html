@@ -55,10 +55,12 @@
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 
 <span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">sklearn.pipeline</span> <span class="k">as</span> <span class="nn">pipeline</span>
 
+<span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="k">import</span> <span class="n">check_is_fitted</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">product</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
 
@@ -85,32 +87,48 @@
 <div class="viewcode-block" id="RegMatrix"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.RegMatrix">[docs]</a><span class="k">class</span> <span class="nc">RegMatrix</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;The main class for ts-to-matrix, matrix-to-ts conversions and other data operations. &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ts_struct</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ts_struct</span><span class="p">,</span> <span class="n">x_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        :param ts_struct: input time series</span>
 <span class="sd">        :type ts_struct: named tuple TsStruct with fields, data, request, history, name, readme</span>
+<span class="sd">        :param x_idx: indices of time series if ts_struct.data to be used in X matrix</span>
+<span class="sd">        :type x_idx: list, int, None</span>
+<span class="sd">        :param y_idx: indices of time series if ts_struct.data to be used in Y matrix</span>
+<span class="sd">        :type y_idx: list, int, None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">ts_struct</span><span class="o">.</span><span class="n">request</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">ts_struct</span><span class="o">.</span><span class="n">history</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">ts_struct</span><span class="o">.</span><span class="n">request</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hiostory is not defined.  Do not forget to optimize it!&quot;</span><span class="p">)</span> <span class="c1"># FIXIT</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;History is not defined.  Do not forget to optimize it!&quot;</span><span class="p">)</span> <span class="c1"># FIXIT</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">nts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts_struct</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="c1"># check that data field contains a list:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ts_struct</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">ts_struct_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">ts_struct</span><span class="o">.</span><span class="n">data</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ts_struct_data</span> <span class="o">=</span> <span class="n">ts_struct</span><span class="o">.</span><span class="n">data</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">nts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts_struct_data</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ts</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># check arguments</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_idx</span> <span class="o">=</span> <span class="n">_check_input_ts_idx</span><span class="p">(</span><span class="n">x_idx</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nts</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_idx</span> <span class="o">=</span> <span class="n">_check_input_ts_idx</span><span class="p">(</span><span class="n">y_idx</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nts</span><span class="p">))</span>
+
+
 
         <span class="bp">self</span><span class="o">.</span><span class="n">forecasts</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nts</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">idxY</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nts</span>
         <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">ts_struct</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">ts_struct_data</span><span class="p">:</span>
             <span class="c1"># print(&quot;nans:&quot;, ts.name, np.sum(np.isnan(ts)))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">TsMiniStruct</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">(),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">)))</span>
             <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">feature_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
 
-<div class="viewcode-block" id="RegMatrix.create_matrix"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.RegMatrix.create_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">create_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">norm_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="RegMatrix.create_matrix"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.RegMatrix.create_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">create_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">norm_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">x_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Turn the input set of time series into regression matrix.</span>
 
@@ -118,6 +136,10 @@
 <span class="sd">        :type nsteps: int</span>
 <span class="sd">        :param norm_flag: if False, time series are processed without normalisation</span>
 <span class="sd">        :type norm_flag: bool</span>
+<span class="sd">        :param x_idx: indices of time series if ts_struct.data to be used in X matrix</span>
+<span class="sd">        :type x_idx: list, int, None</span>
+<span class="sd">        :param y_idx: indices of time series if ts_struct.data to be used in Y matrix</span>
+<span class="sd">        :type y_idx: list, int, None</span>
 <span class="sd">        :return: None. Updates attributes self.X, self.Y, self.n_requested_points, self.n_historical_points, self.feature_dict</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># define matrix dimensions:</span>
@@ -125,6 +147,8 @@
         <span class="k">if</span> <span class="n">nsteps</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;nsteps should be at least 1. Setting nsteps = 1&quot;</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_idx</span> <span class="o">=</span> <span class="n">_check_input_ts_idx</span><span class="p">(</span><span class="n">x_idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_idx</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_idx</span> <span class="o">=</span> <span class="n">_check_input_ts_idx</span><span class="p">(</span><span class="n">y_idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_idx</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">n_hist_points</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nts</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_req_points</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nts</span>
@@ -132,15 +156,20 @@
         <span class="n">hist</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="c1"># infer dimensions of X and Y</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">n_req_points</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span> <span class="o">&lt;</span> <span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span><span class="o">*</span><span class="n">nsteps</span> <span class="c1"># here we assume time stamps are uniform</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">n_hist_points</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span> <span class="o">&lt;</span> <span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">)</span>
-            <span class="n">n_rows</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">s</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_hist_points</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_req_points</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_idx</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_hist_points</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span> <span class="o">&lt;</span> <span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">)</span>
+            <span class="n">n_req_points</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span> <span class="o">&lt;</span> <span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span><span class="o">*</span><span class="n">nsteps</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_idx</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_req_points</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_req_points</span> <span class="c1"># here we assume time stamps are uniform</span>
+            <span class="n">n_rows</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">s</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_hist_points</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="n">n_req_points</span><span class="p">)</span>
+
             <span class="n">hist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hist</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_hist_points</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">feature_dict</span><span class="p">[</span><span class="n">ts</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">hist</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">hist</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_idx</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">feature_dict</span><span class="p">[</span><span class="n">ts</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">hist</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">hist</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
 
+        <span class="n">idx_included</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_idx</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_idx</span><span class="p">)</span>
+        <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">n_rows</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">idx_included</span><span class="p">])</span>
 
-
-        <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n_rows</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">n_rows</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of rows is &quot;</span><span class="p">,</span> <span class="n">n_rows</span><span class="p">,</span> <span class="s2">&quot;consider setting a lower value of nsteps or requested points&quot;</span><span class="p">)</span>
 
@@ -159,7 +188,10 @@
             <span class="c1"># truncate time series</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">truncate</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_hist_points</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_req_points</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">n_rows</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">forecasts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">s</span><span class="p">)</span><span class="c1">#pd.Series(np.zeros_like(self.ts[i].data), index=self.ts[i].data.index, name = self.ts[i].data.name)</span>
-            <span class="n">timey</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">timex</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_ts_to_matrix</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">norm_flag</span><span class="p">)</span>
+            <span class="n">add_x</span> <span class="o">=</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_idx</span>
+            <span class="n">add_y</span> <span class="o">=</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_idx</span>
+            <span class="k">if</span> <span class="n">add_x</span> <span class="ow">or</span> <span class="n">add_y</span><span class="p">:</span>
+                <span class="n">timey</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">timex</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_ts_to_matrix</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">norm_flag</span><span class="p">,</span> <span class="n">add_x</span><span class="o">=</span><span class="n">add_x</span><span class="p">,</span> <span class="n">add_y</span><span class="o">=</span><span class="n">add_y</span><span class="p">)</span>
 
 
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
@@ -168,22 +200,29 @@
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Y</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Targets contain NaNs&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">check_time</span><span class="p">(</span><span class="n">timey</span><span class="p">,</span> <span class="n">timex</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">check_time</span><span class="p">([</span><span class="n">timey</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_idx</span><span class="p">],</span> <span class="p">[</span><span class="n">timex</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_idx</span><span class="p">]):</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Time check failed&quot;</span><span class="p">)</span></div>
 
 
 
-<div class="viewcode-block" id="RegMatrix.add_ts_to_matrix"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.RegMatrix.add_ts_to_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">add_ts_to_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i_ts</span><span class="p">,</span> <span class="n">norm_flag</span><span class="p">):</span>
+<div class="viewcode-block" id="RegMatrix.add_ts_to_matrix"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.RegMatrix.add_ts_to_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">add_ts_to_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i_ts</span><span class="p">,</span> <span class="n">norm_flag</span><span class="p">,</span> <span class="n">add_x</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_y</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Adds time series to data matrix</span>
 
-<span class="sd">        :param i_ts: Number of ts to add</span>
+<span class="sd">        :param i_ts: Index of time series to add</span>
+<span class="sd">        :type i_ts: int</span>
 <span class="sd">        :param norm_flag: normalisation flag. Default=True, if False, time series are processed without normalisation</span>
+<span class="sd">        :type norm_flag: bool</span>
+<span class="sd">        :param add_x: Flag that indicates whether the time series should be added to X matrix</span>
+<span class="sd">        :type add_x: bool</span>
+<span class="sd">        :param add_y: Flag that indicates whether the time series should be added to Y matrix</span>
+<span class="sd">        :type add_y: bool</span>
+<span class="sd">        :return: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># ts are not overwritten, only normalization constants</span>
         <span class="k">if</span> <span class="n">norm_flag</span><span class="p">:</span>
-            <span class="n">ts</span><span class="p">,</span> <span class="n">norm_div</span><span class="p">,</span> <span class="n">norm_subt</span> <span class="o">=</span> <span class="n">normalize_ts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i_ts</span><span class="p">]</span><span class="o">.</span><span class="n">s</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i_ts</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">ts</span><span class="p">,</span> <span class="n">norm_div</span><span class="p">,</span> <span class="n">norm_subt</span> <span class="o">=</span> <span class="n">_normalize_ts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i_ts</span><span class="p">]</span><span class="o">.</span><span class="n">s</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i_ts</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i_ts</span><span class="p">]</span> <span class="o">=</span> <span class="n">TsMiniStruct</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i_ts</span><span class="p">]</span><span class="o">.</span><span class="n">s</span><span class="p">,</span> <span class="n">norm_div</span><span class="p">,</span> <span class="n">norm_subt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i_ts</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i_ts</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
             <span class="n">ts</span> <span class="o">=</span> <span class="n">TsMiniStruct</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">norm_div</span><span class="p">,</span> <span class="n">norm_subt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i_ts</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i_ts</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -201,8 +240,10 @@
 
         <span class="n">idxX</span><span class="p">,</span> <span class="n">idxY</span> <span class="o">=</span> <span class="n">matrix_idx</span><span class="p">(</span><span class="n">n_hist</span><span class="p">,</span> <span class="n">n_req</span><span class="p">,</span> <span class="n">n_rows</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">idxY</span><span class="p">[</span><span class="n">i_ts</span><span class="p">]</span> <span class="o">=</span> <span class="n">idxY</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Y</span><span class="p">,</span> <span class="n">ts</span><span class="p">[</span><span class="n">idxY</span><span class="p">]))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="n">ts</span><span class="p">[</span><span class="n">idxX</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">add_y</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Y</span><span class="p">,</span> <span class="n">ts</span><span class="p">[</span><span class="n">idxY</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">add_x</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="n">ts</span><span class="p">[</span><span class="n">idxX</span><span class="p">]))</span>
 
         <span class="k">return</span> <span class="n">time</span><span class="p">[</span><span class="n">idxY</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]],</span> <span class="n">time</span><span class="p">[</span><span class="n">idxX</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]]</span></div>
 
@@ -240,7 +281,18 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">TsMiniStruct</span><span class="p">(</span><span class="n">ts_arranged</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">norm_div</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">norm_subt</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span></div>
 
 
+
 <div class="viewcode-block" id="RegMatrix.train_test_split"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.RegMatrix.train_test_split">[docs]</a>    <span class="k">def</span> <span class="nf">train_test_split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_test_ratio</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">splitter</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Splits row indices of data matrix into train and test.</span>
+
+<span class="sd">        :param train_test_ratio: Train to all ratio</span>
+<span class="sd">        :type train_test_ratio: float</span>
+<span class="sd">        :param splitter: custom function. By default bottom m*train_test_ratio rows are used for training</span>
+<span class="sd">        :type splitter: callable</span>
+<span class="sd">        :return: Updates attributes: idx_train, idx_test, testX, testY, trainX, trainY</span>
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">splitter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">idx_test</span><span class="p">,</span> <span class="n">idx_train</span> <span class="o">=</span> <span class="n">splitter</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span> <span class="c1"># sequesntial split</span>
@@ -252,26 +304,57 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">idx_train</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_test</span> <span class="o">=</span> <span class="n">idx_train</span><span class="p">,</span> <span class="n">idx_test</span></div>
 
 
-<div class="viewcode-block" id="RegMatrix.train_model"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.RegMatrix.train_model">[docs]</a>    <span class="k">def</span> <span class="nf">train_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frc_model</span><span class="p">,</span> <span class="n">selector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">from_scratch</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="RegMatrix.train_model"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.RegMatrix.train_model">[docs]</a>    <span class="k">def</span> <span class="nf">train_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frc_model</span><span class="p">,</span> <span class="n">selector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">retrain</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes and train feature generation, selection and forecasting model in a pipeline</span>
+
+<span class="sd">        :param frc_model: Instance of CustomModel()</span>
+<span class="sd">        :param selector: Instance of model selection class</span>
+<span class="sd">        :param generator: Instance of model generation class</span>
+<span class="sd">        :param retrain: Flag that specifies if the model needs retraining</span>
+<span class="sd">        :type retrain: bool</span>
+<span class="sd">        :return: trained model, forecasting model, generator and selector</span>
+<span class="sd">        :rtype: tuple</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
         <span class="k">if</span> <span class="n">selector</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">selector</span> <span class="o">=</span> <span class="n">frc_class</span><span class="o">.</span><span class="n">IdentityFrc</span><span class="p">()</span>
+            <span class="n">selector</span> <span class="o">=</span> <span class="n">frc_class</span><span class="o">.</span><span class="n">IdentityModel</span><span class="p">()</span>
             <span class="n">selector</span><span class="o">.</span><span class="n">feature_dict</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_dict</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">generator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">generator</span> <span class="o">=</span> <span class="n">frc_class</span><span class="o">.</span><span class="n">IdentityGenerator</span><span class="p">()</span>
             <span class="n">generator</span><span class="o">.</span><span class="n">feature_dict</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_dict</span><span class="p">)</span>
 
+        <span class="c1"># create pipeline with named steps</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">Pipeline</span><span class="p">([(</span><span class="s1">&#39;gen&#39;</span><span class="p">,</span> <span class="n">generator</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;sel&#39;</span><span class="p">,</span> <span class="n">selector</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;frc&#39;</span><span class="p">,</span> <span class="n">frc_model</span><span class="p">)])</span>
-        <span class="c1">#model = pipeline.make_pipeline(generator, selector, frc_model)</span>
-        <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainX</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainY</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">model</span></div>
+        <span class="c1"># once fitted, the model is retrained only if retrain = True</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">frc_model</span><span class="o">.</span><span class="n">is_fitted</span><span class="p">)</span> <span class="ow">or</span> <span class="n">retrain</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainX</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainY</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">named_steps</span><span class="p">[</span><span class="s1">&#39;frc&#39;</span><span class="p">],</span> <span class="n">model</span><span class="o">.</span><span class="n">named_steps</span><span class="p">[</span><span class="s1">&#39;gen&#39;</span><span class="p">],</span> <span class="n">model</span><span class="o">.</span><span class="n">named_steps</span><span class="p">[</span><span class="s1">&#39;sel&#39;</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="RegMatrix.forecast"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.RegMatrix.forecast">[docs]</a>    <span class="k">def</span> <span class="nf">forecast</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">idx_rows</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="c1"># idx are indices of rows to be forecasted</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply trained model to forecast the data</span>
+
+<span class="sd">        :param model: Trained model</span>
+<span class="sd">        :type model: Pipeline</span>
+<span class="sd">        :param idx_rows: row indices of data matrix to be forecasted</span>
+<span class="sd">        :type idx_rows: list</span>
+<span class="sd">        :param replace: Flag that specifies is old forecast values should be replaced with new values</span>
+<span class="sd">        :type replace: bool</span>
+<span class="sd">        :return: Forecasted matrix, flat indices of forecasted values</span>
+<span class="sd">        :rtype: ndarray, list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
         <span class="k">if</span> <span class="n">idx_rows</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">idx_rows</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-        <span class="n">forecastedY</span> <span class="o">=</span>  <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="n">idx_rows</span><span class="p">,</span> <span class="p">:])</span>
+        <span class="n">forecastedY</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="n">idx_rows</span><span class="p">,</span> <span class="p">:])</span>
+        <span class="k">if</span> <span class="n">forecastedY</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">forecastedY</span> <span class="o">=</span> <span class="n">forecastedY</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
 
         <span class="c1"># ravel forecasts and, if replace=True, input new values to self.forecasts vector</span>
         <span class="n">idx_frc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_forecasts</span><span class="p">(</span><span class="n">forecastedY</span><span class="p">,</span> <span class="n">idx_rows</span><span class="p">,</span> <span class="n">replace</span><span class="p">)</span>
@@ -279,28 +362,34 @@
         <span class="k">return</span> <span class="n">forecastedY</span><span class="p">,</span> <span class="n">idx_frc</span></div>
 
 <div class="viewcode-block" id="RegMatrix.add_forecasts"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.RegMatrix.add_forecasts">[docs]</a>    <span class="k">def</span> <span class="nf">add_forecasts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frc</span><span class="p">,</span> <span class="n">idx_rows</span><span class="p">,</span> <span class="n">replace</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes flat indices of forecats and optionally replaces old forecast values new ones</span>
 
+<span class="sd">        :param frc: Forecasted matrix Y</span>
+<span class="sd">        :type frc: ndarray</span>
+<span class="sd">        :param idx_rows: row indices of forecasted Y columns in the data matrix</span>
+<span class="sd">        :type idx_rows: list</span>
+<span class="sd">        :param replace: If true, the old forecast values are replaced with new ones</span>
+<span class="sd">        :type replace: bool</span>
+<span class="sd">        :return: Flat indices of forecasted time series for each time series</span>
+<span class="sd">        :rtype: list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Infer ts flat indices from matrix structure</span>
         <span class="n">idx_flat</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nts</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nts</span><span class="p">):</span>
-            <span class="c1">#_, idxY = matrix_idx(self.n_hist_points[i], self.n_req_points[i], self.X.shape[0])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_idx</span><span class="p">:</span>
             <span class="n">idx_flat</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">_ravel_idx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idxY</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">idx_rows</span><span class="p">,</span> <span class="p">:],</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">forecasts</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span><span class="c1">#self.n_hist_points[i], self.n_req_points[i], self.X.shape[0])</span>
-            <span class="c1"># if not np.all(np.flipud(idx_flat[i]) == range(self.n_hist_points[i], len(self.forecasts[i]))):</span>
-            <span class="c1">#     print(&quot;idx_flat =( &quot;)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">replace</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">idx_flat</span>
-
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nts</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">forecasts</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">idx_flat</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">_ravel_y</span><span class="p">(</span><span class="n">frc</span><span class="p">[:,</span> <span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_req_points</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">norm_div</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">norm_subt</span><span class="p">)</span>
-            <span class="c1"># if not np.all(self.forecasts[i][self.n_hist_points[i]:] == self.ts[i].s[self.n_hist_points[i]:]):</span>
-            <span class="c1">#     print(&quot;wrong frc&quot;, np.nonzero(self.forecasts[0] != self.ts[i].s)[self.n_hist_points[i]:])</span>
-            <span class="n">frc</span> <span class="o">=</span> <span class="n">frc</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_req_points</span><span class="p">[</span><span class="n">i</span><span class="p">]:]</span>
+        <span class="k">if</span> <span class="n">replace</span><span class="p">:</span>  <span class="c1"># Replace previous forecast values with new forecasts</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_idx</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forecasts</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">idx_flat</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">_ravel_y</span><span class="p">(</span><span class="n">frc</span><span class="p">[:,</span> <span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_req_points</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">norm_div</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">norm_subt</span><span class="p">)</span>
+                <span class="n">frc</span> <span class="o">=</span> <span class="n">frc</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_req_points</span><span class="p">[</span><span class="n">i</span><span class="p">]:]</span>
 
         <span class="k">return</span> <span class="n">idx_flat</span></div>
 
 
 
-<div class="viewcode-block" id="RegMatrix.mae"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.RegMatrix.mae">[docs]</a>    <span class="k">def</span> <span class="nf">mae</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx_frc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">idx_rows</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="RegMatrix.mae"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.RegMatrix.mae">[docs]</a>    <span class="k">def</span> <span class="nf">mae</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx_frc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">idx_rows</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Mean Absolute Error calculation.</span>
 
@@ -310,36 +399,40 @@
 <span class="sd">        :type idx_rows: list</span>
 <span class="sd">        :param out: Specification of out invokes printing MAE values. out string is printed before the output</span>
 <span class="sd">        :type out: string</span>
+<span class="sd">        :param y_idx: Specifies time series to compute errors for</span>
+<span class="sd">        :type y_idx: list</span>
 <span class="sd">        :return: list of MAPE values, one for each input time series</span>
 <span class="sd">        :rtype: list</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">y_idx</span> <span class="o">=</span> <span class="n">_check_input_ts_idx</span><span class="p">(</span><span class="n">y_idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_idx</span><span class="p">)</span>
+
         <span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nts</span>
         <span class="k">if</span> <span class="n">idx_frc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">idx_rows</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nts</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">y_idx</span><span class="p">:</span>
                     <span class="n">idx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_hist_points</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">forecasts</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
 
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nts</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">y_idx</span><span class="p">:</span>
                     <span class="n">idx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">_ravel_idx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idxY</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">idx_rows</span><span class="p">,</span> <span class="p">:],</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">forecasts</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">idx</span> <span class="o">=</span> <span class="n">idx_frc</span>
 
 
         <span class="n">errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nts</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ind</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">idx</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">y_idx</span><span class="p">:</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">idx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
             <span class="n">ts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">s</span>
             <span class="n">errors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">forecasts</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">ind</span><span class="p">]))</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="s2">&quot;MAE&quot;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">err</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">errors</span><span class="p">):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">y_idx</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">errors</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
-        <span class="k">return</span> <span class="n">errors</span></div>
+        <span class="k">return</span> <span class="n">errors</span><span class="p">[</span><span class="n">y_idx</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="RegMatrix.mape"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.RegMatrix.mape">[docs]</a>    <span class="k">def</span> <span class="nf">mape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx_frc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">idx_rows</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="c1"># type: (list, list, string) -&gt; list</span>
+<div class="viewcode-block" id="RegMatrix.mape"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.RegMatrix.mape">[docs]</a>    <span class="k">def</span> <span class="nf">mape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx_frc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">idx_rows</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Mean Absolute Percentage Error calculation.</span>
 
@@ -349,35 +442,53 @@
 <span class="sd">        :type idx_rows: list</span>
 <span class="sd">        :param out: Specification of out invokes printing MAPE values. out string is printed before the output</span>
 <span class="sd">        :type out: string</span>
+<span class="sd">        :param y_idx: Specifies time series to compute errors for</span>
+<span class="sd">        :type y_idx: list</span>
 <span class="sd">        :return: list of MAPE values, one for each input time series</span>
 <span class="sd">        :rtype: list</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">y_idx</span> <span class="o">=</span> <span class="n">_check_input_ts_idx</span><span class="p">(</span><span class="n">y_idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_idx</span><span class="p">)</span>
+
         <span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nts</span>
         <span class="k">if</span> <span class="n">idx_frc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">idx_rows</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nts</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">y_idx</span><span class="p">:</span>
                     <span class="n">idx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_hist_points</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">forecasts</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
 
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nts</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">y_idx</span><span class="p">:</span>
                     <span class="n">idx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">_ravel_idx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idxY</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">idx_rows</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">forecasts</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">idx</span> <span class="o">=</span> <span class="n">idx_frc</span>
 
         <span class="n">errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nts</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ind</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">idx</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">y_idx</span><span class="p">:</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">idx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
             <span class="n">denom</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">s</span><span class="p">[</span><span class="n">ind</span><span class="p">])</span>
             <span class="n">denom</span><span class="p">[</span><span class="n">denom</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">s</span><span class="p">))</span>
             <span class="n">errors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">s</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">forecasts</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">ind</span><span class="p">]),</span> <span class="n">denom</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="s2">&quot;MAPE&quot;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">err</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">errors</span><span class="p">):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">y_idx</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">errors</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
-        <span class="k">return</span> <span class="n">errors</span></div>
+        <span class="k">return</span> <span class="n">errors</span><span class="p">[</span><span class="n">y_idx</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="RegMatrix.plot_frc"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.RegMatrix.plot_frc">[docs]</a>    <span class="k">def</span> <span class="nf">plot_frc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx_frc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">idx_rows</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_frc</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<div class="viewcode-block" id="RegMatrix.plot_frc"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.RegMatrix.plot_frc">[docs]</a>    <span class="k">def</span> <span class="nf">plot_frc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx_frc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">idx_rows</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_frc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plots forecasts along with time series</span>
+
+<span class="sd">        :param idx_frc: Flat indices of forecasts to plot. Dominates idx_rows and n_frc</span>
+<span class="sd">        :type idx_frc: list</span>
+<span class="sd">        :param idx_rows: Row indices to plot. Dominates n_frc</span>
+<span class="sd">        :type idx_rows: list</span>
+<span class="sd">        :param n_frc: number of requested intervals to plot</span>
+<span class="sd">        :type n_frc: int</span>
+<span class="sd">        :param n_hist: number of historical intervals to plot</span>
+<span class="sd">        :type n_hist: int</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nts</span>
         <span class="n">idx_ts</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nts</span>
         <span class="k">if</span> <span class="n">idx_frc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -395,7 +506,7 @@
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="p">):</span>
             <span class="n">my_plots</span><span class="o">.</span><span class="n">plot_forecast</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">forecasts</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">idx_frc</span><span class="o">=</span><span class="n">idx</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">idx_ts</span><span class="o">=</span><span class="n">idx_ts</span><span class="p">[</span><span class="n">i</span><span class="p">])</span></div></div>
 
-<div class="viewcode-block" id="normalize_ts"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.normalize_ts">[docs]</a><span class="k">def</span> <span class="nf">normalize_ts</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_normalize_ts</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
     <span class="n">norm_subt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
     <span class="n">norm_div</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span> <span class="o">-</span> <span class="n">norm_subt</span>
@@ -406,14 +517,14 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">ts</span> <span class="o">=</span> <span class="p">(</span><span class="n">ts</span> <span class="o">-</span> <span class="n">norm_subt</span><span class="p">)</span> <span class="o">/</span> <span class="n">norm_div</span>
 
-    <span class="k">return</span> <span class="n">ts</span><span class="p">,</span> <span class="n">norm_div</span><span class="p">,</span> <span class="n">norm_subt</span></div>
+    <span class="k">return</span> <span class="n">ts</span><span class="p">,</span> <span class="n">norm_div</span><span class="p">,</span> <span class="n">norm_subt</span>
 
 
-<div class="viewcode-block" id="denormalize"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.denormalize">[docs]</a><span class="k">def</span> <span class="nf">denormalize</span><span class="p">(</span><span class="n">ts_list</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_denormalize</span><span class="p">(</span><span class="n">ts_list</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ts_list</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">ts</span><span class="o">.</span><span class="n">norm_div</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">ts_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="p">(</span><span class="n">ts</span> <span class="o">+</span> <span class="n">ts</span><span class="o">.</span><span class="n">norm_subt</span><span class="p">)</span> <span class="o">*</span> <span class="n">ts</span><span class="o">.</span><span class="n">norm_div</span>
-    <span class="k">return</span> <span class="n">ts_list</span></div>
+    <span class="k">return</span> <span class="n">ts_list</span>
 
 <div class="viewcode-block" id="truncate"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.regression_matrix.truncate">[docs]</a><span class="k">def</span> <span class="nf">truncate</span><span class="p">(</span><span class="n">ts_struct</span><span class="p">,</span> <span class="n">n_hist</span><span class="p">,</span> <span class="n">n_req</span><span class="p">,</span> <span class="n">n_rows</span><span class="p">):</span>
     <span class="n">ts</span> <span class="o">=</span> <span class="n">ts_struct</span><span class="o">.</span><span class="n">s</span>
@@ -494,6 +605,19 @@
 <span class="k">def</span> <span class="nf">_ravel_y</span><span class="p">(</span><span class="n">Ymat</span><span class="p">,</span> <span class="n">norm_div</span><span class="p">,</span> <span class="n">norm_subt</span><span class="p">):</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">Ymat</span><span class="p">)</span> <span class="o">*</span> <span class="n">norm_div</span> <span class="o">+</span> <span class="n">norm_subt</span>
     <span class="k">return</span> <span class="n">y</span> <span class="c1">#np.flipud(y)</span>
+
+<span class="k">def</span> <span class="nf">_check_input_ts_idx</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">default</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">default</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">idx</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Unvalid argument idx in RegMatrix&quot;</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">)</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">default</span>
+        
+    <span class="k">return</span> <span class="n">idx</span>
 </pre></div>
 
           </div>

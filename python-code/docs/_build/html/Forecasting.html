@@ -59,66 +59,26 @@
 </div>
 <div class="section" id="module-Forecasting.LSTM">
 <span id="forecasting-lstm-module"></span><h2>Forecasting.LSTM module<a class="headerlink" href="#module-Forecasting.LSTM" title="Permalink to this headline">¶</a></h2>
-<p>Created on 30 September 2016
-&#64;author: Maria Popova, Anastasia Motrenko</p>
+<p>Created on 30 September 2016. Author: Maria Popova, Anastasia Motrenko</p>
 <dl class="class">
 <dt id="Forecasting.LSTM.LSTM">
-<em class="property">class </em><code class="descclassname">Forecasting.LSTM.</code><code class="descname">LSTM</code><span class="sig-paren">(</span><em>name='LSTM'</em>, <em>grad_clip=100</em>, <em>batch_size=50</em>, <em>l_out=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#LSTM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.LSTM" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#Forecasting.frc_class.IdentityModel" title="Forecasting.frc_class.IdentityModel"><code class="xref py py-class docutils literal"><span class="pre">Forecasting.frc_class.IdentityModel</span></code></a></p>
-<p>Regression models built on LSTM-network</p>
+<em class="property">class </em><code class="descclassname">Forecasting.LSTM.</code><code class="descname">LSTM</code><span class="sig-paren">(</span><em>name='LSTM'</em>, <em>grad_clip=100</em>, <em>batch_size=50</em>, <em>l_out=None</em>, <em>n_epochs=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#LSTM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.LSTM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Regression models built on LSTM-network</p>
 <dl class="method">
 <dt id="Forecasting.LSTM.LSTM.checkpoint">
-<code class="descname">checkpoint</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#LSTM.checkpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.LSTM.checkpoint" title="Permalink to this definition">¶</a></dt>
+<code class="descname">checkpoint</code><span class="sig-paren">(</span><em>fname</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#LSTM.checkpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.LSTM.checkpoint" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="Forecasting.LSTM.LSTM.fit">
-<code class="descname">fit</code><span class="sig-paren">(</span><em>trainX</em>, <em>trainY</em>, <em>n_epochs=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#LSTM.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.LSTM.fit" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fit</code><span class="sig-paren">(</span><em>trainX</em>, <em>trainY</em>, <em>n_epochs=None</em>, <em>fname=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#LSTM.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.LSTM.fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Train module for LSTM network</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>trainX</strong> (<em>ndarray</em>) &#8211; training data, inputs</li>
-<li><strong>trainY</strong> (<em>ndarray</em>) &#8211; training data, targets</li>
-<li><strong>n_epochs</strong> (<em>int</em>) &#8211; number of training epoches</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None</p>
-</td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="Forecasting.LSTM.LSTM.init_nn_structure">
 <code class="descname">init_nn_structure</code><span class="sig-paren">(</span><em>seq_length</em>, <em>pred_len</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#LSTM.init_nn_structure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.LSTM.init_nn_structure" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialization of the network structure, cost, train and forecast functions</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>seq_length</strong> (<em>int</em>) &#8211; dimensionality of input variables</li>
-<li><strong>pred_len</strong> (<em>int</em>) &#8211; dimensionality of target variables</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="Forecasting.LSTM.LSTM.predict">
@@ -129,52 +89,38 @@
 
 <dl class="function">
 <dt id="Forecasting.LSTM.iterate_minibatches">
-<code class="descclassname">Forecasting.LSTM.</code><code class="descname">iterate_minibatches</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em>, <em>batch_size=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#iterate_minibatches"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.iterate_minibatches" title="Permalink to this definition">¶</a></dt>
-<dd><p>Yields minibatches for training (n_observations, n_features)</p>
+<code class="descclassname">Forecasting.LSTM.</code><code class="descname">iterate_minibatches</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em>, <em>batch_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#iterate_minibatches"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.iterate_minibatches" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-Forecasting.frc_class">
+<span id="forecasting-frc-class-module"></span><h2>Forecasting.frc_class module<a class="headerlink" href="#module-Forecasting.frc_class" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="Forecasting.frc_class.CustomModel">
+<code class="descclassname">Forecasting.frc_class.</code><code class="descname">CustomModel</code><span class="sig-paren">(</span><em>parent</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#CustomModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.CustomModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines a new class with double inherirance</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>X</strong> (<em>ndarray</em>) &#8211; input data matrix</li>
-<li><strong>Y</strong> (<em>ndarray</em>) &#8211; target data matrix (n_observations, n_requested)</li>
-<li><strong>batch_size</strong> (<em>int</em>) &#8211; number of matrix rows - inputs in minibatch</li>
+<li><strong>parent</strong> &#8211; Parent class</li>
+<li><strong>kwargs</strong> &#8211; Optional keyword arguments</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">training batch</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple of ndarrays</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">instance of CunstomModel class</p>
 </td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
-</div>
-<div class="section" id="module-Forecasting.frc_class">
-<span id="forecasting-frc-class-module"></span><h2>Forecasting.frc_class module<a class="headerlink" href="#module-Forecasting.frc_class" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="Forecasting.frc_class.CustomModel">
-<em class="property">class </em><code class="descclassname">Forecasting.frc_class.</code><code class="descname">CustomModel</code><span class="sig-paren">(</span><em>name=None</em>, <em>fitfunc=None</em>, <em>predictfunc=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#CustomModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.CustomModel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#Forecasting.frc_class.IdentityModel" title="Forecasting.frc_class.IdentityModel"><code class="xref py py-class docutils literal"><span class="pre">Forecasting.frc_class.IdentityModel</span></code></a></p>
-<dl class="method">
-<dt id="Forecasting.frc_class.CustomModel.fit">
-<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#CustomModel.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.CustomModel.fit" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="Forecasting.frc_class.CustomModel.predict">
-<code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#CustomModel.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.CustomModel.predict" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
 <dl class="class">
 <dt id="Forecasting.frc_class.IdentityFrc">
 <em class="property">class </em><code class="descclassname">Forecasting.frc_class.</code><code class="descname">IdentityFrc</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#IdentityFrc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.IdentityFrc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#Forecasting.frc_class.IdentityModel" title="Forecasting.frc_class.IdentityModel"><code class="xref py py-class docutils literal"><span class="pre">Forecasting.frc_class.IdentityModel</span></code></a></p>
+<p>Helper class, used for testing purposes</p>
 <dl class="method">
 <dt id="Forecasting.frc_class.IdentityFrc.fit">
 <code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#IdentityFrc.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.IdentityFrc.fit" title="Permalink to this definition">¶</a></dt>
@@ -191,12 +137,14 @@
 <dt id="Forecasting.frc_class.IdentityGenerator">
 <em class="property">class </em><code class="descclassname">Forecasting.frc_class.</code><code class="descname">IdentityGenerator</code><span class="sig-paren">(</span><em>name=None</em>, <em>replace=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#IdentityGenerator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.IdentityGenerator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#Forecasting.frc_class.IdentityModel" title="Forecasting.frc_class.IdentityModel"><code class="xref py py-class docutils literal"><span class="pre">Forecasting.frc_class.IdentityModel</span></code></a></p>
+<p>Helper class for feature generation</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="Forecasting.frc_class.IdentityModel">
 <em class="property">class </em><code class="descclassname">Forecasting.frc_class.</code><code class="descname">IdentityModel</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#IdentityModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.IdentityModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sklearn.base.BaseEstimator</span></code></p>
+<p>Base class for prediction, feature selection and generation</p>
 <dl class="method">
 <dt id="Forecasting.frc_class.IdentityModel.fit">
 <code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#IdentityModel.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.IdentityModel.fit" title="Permalink to this definition">¶</a></dt>
@@ -239,7 +187,8 @@
 <dl class="function">
 <dt id="Forecasting.frc_class.print_pipeline_pars">
 <code class="descclassname">Forecasting.frc_class.</code><code class="descname">print_pipeline_pars</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#print_pipeline_pars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.print_pipeline_pars" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Formatted print for pipeline model</p>
+</dd></dl>
 
 </div>
 <div class="section" id="module-Forecasting">

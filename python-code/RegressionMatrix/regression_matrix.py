@@ -160,13 +160,20 @@ class RegMatrix:
         """
         Adds time series to data matrix
 
-        :param i_ts: Number of ts to add
+        :param i_ts: Index of time series to add
+        :type i_ts: int
         :param norm_flag: normalisation flag. Default=True, if False, time series are processed without normalisation
+        :type norm_flag: bool
+        :param add_x: Flag that indicates whether the time series should be added to X matrix
+        :type add_x: bool
+        :param add_y: Flag that indicates whether the time series should be added to Y matrix
+        :type add_y: bool
+        :return: None
         """
 
         # ts are not overwritten, only normalization constants
         if norm_flag:
-            ts, norm_div, norm_subt = normalize_ts(self.ts[i_ts].s, self.ts[i_ts].name)
+            ts, norm_div, norm_subt = _normalize_ts(self.ts[i_ts].s, self.ts[i_ts].name)
             self.ts[i_ts] = TsMiniStruct(self.ts[i_ts].s, norm_div, norm_subt, self.ts[i_ts].name, self.ts[i_ts].index)
             ts = TsMiniStruct(ts, norm_div, norm_subt, self.ts[i_ts].name, self.ts[i_ts].index)
         else:
@@ -227,6 +234,16 @@ class RegMatrix:
 
 
     def train_test_split(self, train_test_ratio=0.75, splitter=None):
+        """
+        Splits row indices of data matrix into train and test.
+
+        :param train_test_ratio: Train to all ratio
+        :type train_test_ratio: float
+        :param splitter: custom function. By default bottom m*train_test_ratio rows are used for training
+        :type splitter: callable
+        :return: Updates attributes: idx_train, idx_test, testX, testY, trainX, trainY
+        :rtype: None
+        """
         if not splitter is None:
             idx_test, idx_train = splitter()
         else: # sequesntial split
@@ -239,6 +256,17 @@ class RegMatrix:
 
 
     def train_model(self, frc_model, selector=None, generator=None, retrain=True):
+        """
+        Initializes and train feature generation, selection and forecasting model in a pipeline
+
+        :param frc_model: Instance of CustomModel()
+        :param selector: Instance of model selection class
+        :param generator: Instance of model generation class
+        :param retrain: Flag that specifies if the model needs retraining
+        :type retrain: bool
+        :return: trained model, forecasting model, generator and selector
+        :rtype: tuple
+        """
 
 
         if selector is None:
@@ -251,14 +279,25 @@ class RegMatrix:
         # create pipeline with named steps
         model = pipeline.Pipeline([('gen', generator), ('sel', selector), ('frc', frc_model)])
 
-
+        # once fitted, the model is retrained only if retrain = True
         if (not frc_model.is_fitted) or retrain:
-                model.fit(self.trainX, self.trainY)
+            model.fit(self.trainX, self.trainY)
 
         return model, model.named_steps['frc'], model.named_steps['gen'], model.named_steps['sel']
 
     def forecast(self, model, idx_rows=None, replace=True):
-        # idx are indices of rows to be forecasted
+        """
+        Apply trained model to forecast the data
+
+        :param model: Trained model
+        :type model: Pipeline
+        :param idx_rows: row indices of data matrix to be forecasted
+        :type idx_rows: list
+        :param replace: Flag that specifies is old forecast values should be replaced with new values
+        :type replace: bool
+        :return: Forecasted matrix, flat indices of forecasted values
+        :rtype: ndarray, list
+        """
 
 
         if idx_rows is None:
@@ -274,6 +313,18 @@ class RegMatrix:
         return forecastedY, idx_frc
 
     def add_forecasts(self, frc, idx_rows, replace):
+        """
+        Computes flat indices of forecats and optionally replaces old forecast values new ones
+
+        :param frc: Forecasted matrix Y
+        :type frc: ndarray
+        :param idx_rows: row indices of forecasted Y columns in the data matrix
+        :type idx_rows: list
+        :param replace: If true, the old forecast values are replaced with new ones
+        :type replace: bool
+        :return: Flat indices of forecasted time series for each time series
+        :rtype: list
+        """
 
         # Infer ts flat indices from matrix structure
         idx_flat = [0] * self.nts
@@ -299,6 +350,8 @@ class RegMatrix:
         :type idx_rows: list
         :param out: Specification of out invokes printing MAE values. out string is printed before the output
         :type out: string
+        :param y_idx: Specifies time series to compute errors for
+        :type y_idx: list
         :return: list of MAPE values, one for each input time series
         :rtype: list
         """
@@ -331,7 +384,6 @@ class RegMatrix:
         return errors[y_idx]
 
     def mape(self, idx_frc=None, idx_rows=None, out=None, y_idx=None):
-        # type: (list, list, string) -> list
         """
         Mean Absolute Percentage Error calculation.
 
@@ -341,6 +393,8 @@ class RegMatrix:
         :type idx_rows: list
         :param out: Specification of out invokes printing MAPE values. out string is printed before the output
         :type out: string
+        :param y_idx: Specifies time series to compute errors for
+        :type y_idx: list
         :return: list of MAPE values, one for each input time series
         :rtype: list
         """
@@ -372,7 +426,20 @@ class RegMatrix:
 
         return errors[y_idx]
 
-    def plot_frc(self, idx_frc=None, idx_rows=None, n_frc = 1, n_hist=3):
+    def plot_frc(self, idx_frc=None, idx_rows=None, n_frc=1, n_hist=3):
+        """
+        Plots forecasts along with time series
+
+        :param idx_frc: Flat indices of forecasts to plot. Dominates idx_rows and n_frc
+        :type idx_frc: list
+        :param idx_rows: Row indices to plot. Dominates n_frc
+        :type idx_rows: list
+        :param n_frc: number of requested intervals to plot
+        :type n_frc: int
+        :param n_hist: number of historical intervals to plot
+        :type n_hist: int
+        :return: None
+        """
         idx = [0] * self.nts
         idx_ts = [0] * self.nts
         if idx_frc is None:
@@ -390,7 +457,7 @@ class RegMatrix:
         for i, ts in enumerate(self.ts):
             my_plots.plot_forecast(ts, self.forecasts[i], idx_frc=idx[i], idx_ts=idx_ts[i])
 
-def normalize_ts(ts, name=None):
+def _normalize_ts(ts, name=None):
 
     norm_subt = np.min(ts)
     norm_div = np.max(ts) - norm_subt
@@ -404,7 +471,7 @@ def normalize_ts(ts, name=None):
     return ts, norm_div, norm_subt
 
 
-def denormalize(ts_list):
+def _denormalize(ts_list):
     for i, ts in enumerate(ts_list):
         if not ts.norm_div == 0:
             ts_list[i].s = (ts + ts.norm_subt) * ts.norm_div
@@ -422,7 +489,6 @@ def check_time(y, x):
     check = []
     # y stores earliest time for Y in each row, x stores latest time for X in each row. These two must not overlap
     for ty, tx in product(y, x):
-        #if not(type(ty) is int and type(tx) is int and ty==0 and tx==0):
         check.append(np.all(ty > tx))
 
 
