@@ -6,6 +6,7 @@ from __future__ import division
 from __future__ import print_function
 
 import copy
+import warnings
 import pandas as pd
 import numpy as np
 import sklearn.pipeline as pipeline
@@ -37,7 +38,7 @@ class TsMiniStruct(TsMiniStruct_):
 class RegMatrix:
     """The main class for ts-to-matrix, matrix-to-ts conversions and other data operations. """
 
-    def __init__(self, ts_struct):
+    def __init__(self, ts_struct, x_idx=None, y_idx=None):
         """
 
         :param ts_struct: input time series
@@ -50,19 +51,31 @@ class RegMatrix:
             self.history = ts_struct.request
             print("History is not defined.  Do not forget to optimize it!") # FIXIT
 
-        self.nts = len(ts_struct.data)
+        # check that data field contains a list:
+        if not isinstance(ts_struct.data, list):
+            ts_struct_data = [ts_struct.data]
+        else:
+            ts_struct_data = ts_struct.data
+
+        self.nts = len(ts_struct_data)
         self.ts = []
+
+        # check arguments
+        self.x_idx = _check_input_ts_idx(x_idx, range(self.nts))
+        self.y_idx = _check_input_ts_idx(y_idx, range(self.nts))
+
+
 
         self.forecasts = [0] * self.nts
         self.idxY = [0] * self.nts
         names = []
-        for ts in ts_struct.data:
+        for ts in ts_struct_data:
             # print("nans:", ts.name, np.sum(np.isnan(ts)))
             self.ts.append(TsMiniStruct(ts.as_matrix(), 1, 0, ts.name, np.array(ts.index)))
             names.append(ts.name)
         self.feature_dict = dict.fromkeys(names)
 
-    def create_matrix(self, nsteps=1, norm_flag=True):
+    def create_matrix(self, nsteps=1, norm_flag=True, x_idx=None, y_idx=None):
         """
         Turn the input set of time series into regression matrix.
 
@@ -77,6 +90,8 @@ class RegMatrix:
         if nsteps < 1:
             print("nsteps should be at least 1. Setting nsteps = 1")
 
+        self.x_idx = _check_input_ts_idx(x_idx, self.y_idx)
+        self.y_idx = _check_input_ts_idx(y_idx, self.y_idx)
 
         self.n_hist_points = [0] * self.nts
         self.n_req_points = [0] * self.nts
@@ -88,8 +103,8 @@ class RegMatrix:
             self.n_hist_points[i] = sum(ts.index < ts.index[0] + self.history)
             n_rows[i] = int(np.floor(len(ts.s) - self.n_hist_points[i]) / self.n_req_points[i])
             hist.append(hist[i] + self.n_hist_points[i])
-            self.feature_dict[ts.name] = range(hist[i], hist[i+1])
-
+            if i in self.x_idx:
+                self.feature_dict[ts.name] = range(hist[i], hist[i+1])
 
 
         n_rows = min(n_rows)
@@ -111,7 +126,10 @@ class RegMatrix:
             # truncate time series
             self.ts[i] = truncate(ts, self.n_hist_points[i], self.n_req_points[i], n_rows)
             self.forecasts[i] = np.zeros_like(self.ts[i].s)#pd.Series(np.zeros_like(self.ts[i].data), index=self.ts[i].data.index, name = self.ts[i].data.name)
-            timey[i], timex[i] = self.add_ts_to_matrix(i, norm_flag)
+            add_x = i in self.x_idx
+            add_y = i in self.y_idx
+            if add_x or add_y:
+                timey[i], timex[i] = self.add_ts_to_matrix(i, norm_flag, add_x=add_x, add_y=add_y)
 
 
         if np.isnan(self.X).any():
@@ -125,7 +143,7 @@ class RegMatrix:
 
 
 
-    def add_ts_to_matrix(self, i_ts, norm_flag):
+    def add_ts_to_matrix(self, i_ts, norm_flag, add_x=True, add_y=True):
         """
         Adds time series to data matrix
 
@@ -153,8 +171,10 @@ class RegMatrix:
 
         idxX, idxY = matrix_idx(n_hist, n_req, n_rows)
         self.idxY[i_ts] = idxY
-        self.Y = np.hstack((self.Y, ts[idxY]))
-        self.X = np.hstack((self.X, ts[idxX]))
+        if add_y:
+            self.Y = np.hstack((self.Y, ts[idxY]))
+        if add_x:
+            self.X = np.hstack((self.X, ts[idxX]))
 
         return time[idxY[:, -1]], time[idxX[:, 0]]
 
@@ -192,6 +212,7 @@ class RegMatrix:
             self.ts[i] = TsMiniStruct(ts_arranged, ts.norm_div, ts.norm_subt, index)
 
 
+
     def train_test_split(self, train_test_ratio=0.75, splitter=None):
         if not splitter is None:
             idx_test, idx_train = splitter()
@@ -206,6 +227,7 @@ class RegMatrix:
 
     def train_model(self, frc_model, selector=None, generator=None, retrain=True):
 
+
         if selector is None:
             selector = frc_class.IdentityModel()
             selector.feature_dict = copy.deepcopy(self.feature_dict)
@@ -213,8 +235,9 @@ class RegMatrix:
             generator = frc_class.IdentityGenerator()
             generator.feature_dict = copy.deepcopy(self.feature_dict)
 
+        # create pipeline with named steps
         model = pipeline.Pipeline([('gen', generator), ('sel', selector), ('frc', frc_model)])
-        #model = pipeline.make_pipeline(generator, selector, frc_model)
+
 
         if (not frc_model.is_fitted) or retrain:
                 model.fit(self.trainX, self.trainY)
@@ -223,10 +246,14 @@ class RegMatrix:
 
     def forecast(self, model, idx_rows=None, replace=True):
         # idx are indices of rows to be forecasted
+
+
         if idx_rows is None:
             idx_rows = range(self.X.shape[0])
 
         forecastedY = model.predict(self.X[idx_rows, :])
+        if forecastedY.ndim == 1:
+            forecastedY = forecastedY[:, None]
 
         # ravel forecasts and, if replace=True, input new values to self.forecasts vector
         idx_frc = self.add_forecasts(forecastedY, idx_rows, replace)
@@ -235,27 +262,21 @@ class RegMatrix:
 
     def add_forecasts(self, frc, idx_rows, replace):
 
+        # Infer ts flat indices from matrix structure
         idx_flat = [0] * self.nts
-        for i in xrange(self.nts):
-            #_, idxY = matrix_idx(self.n_hist_points[i], self.n_req_points[i], self.X.shape[0])
+        for i in self.y_idx:
             idx_flat[i] = _ravel_idx(self.idxY[i][idx_rows, :], len(self.forecasts[i]))#self.n_hist_points[i], self.n_req_points[i], self.X.shape[0])
-            # if not np.all(np.flipud(idx_flat[i]) == range(self.n_hist_points[i], len(self.forecasts[i]))):
-            #     print("idx_flat =( ")
 
-        if not replace:
-            return idx_flat
-
-        for i in xrange(self.nts):
-            self.forecasts[i][idx_flat[i]] = _ravel_y(frc[:, :self.n_req_points[i]], self.ts[i].norm_div, self.ts[i].norm_subt)
-            # if not np.all(self.forecasts[i][self.n_hist_points[i]:] == self.ts[i].s[self.n_hist_points[i]:]):
-            #     print("wrong frc", np.nonzero(self.forecasts[0] != self.ts[i].s)[self.n_hist_points[i]:])
-            frc = frc[:, self.n_req_points[i]:]
+        if replace:  # Replace previous forecast values with new forecasts
+            for i in self.y_idx:
+                self.forecasts[i][idx_flat[i]] = _ravel_y(frc[:, :self.n_req_points[i]], self.ts[i].norm_div, self.ts[i].norm_subt)
+                frc = frc[:, self.n_req_points[i]:]
 
         return idx_flat
 
 
 
-    def mae(self, idx_frc=None, idx_rows=None, out=None):
+    def mae(self, idx_frc=None, idx_rows=None, out=None, y_idx=None):
         """
         Mean Absolute Error calculation.
 
@@ -268,32 +289,35 @@ class RegMatrix:
         :return: list of MAPE values, one for each input time series
         :rtype: list
         """
+        y_idx = _check_input_ts_idx(y_idx, self.y_idx)
+
         idx = [0] * self.nts
         if idx_frc is None:
             if idx_rows is None:
-                for i in range(self.nts):
+                for i in y_idx:
                     idx[i] = range(self.n_hist_points[i], len(self.forecasts[i]))
 
             else:
-                for i in range(self.nts):
+                for i in y_idx:
                     idx[i] = _ravel_idx(self.idxY[i][idx_rows, :], len(self.forecasts[i]))
         else:
             idx = idx_frc
 
 
         errors = np.zeros((self.nts))
-        for i, ind in enumerate(idx):
+        for i in y_idx:
+            ind = idx[i]
             ts = self.ts[i].s
             errors[i] = np.mean(np.abs(ts[ind] - self.forecasts[i][ind]))
 
         if not out is None:
             print(out, "MAE")
-            for i, err in enumerate(errors):
-                print(self.ts[i].name, err)
+            for i in y_idx:
+                print(self.ts[i].name, errors[i])
 
-        return errors
+        return errors[y_idx]
 
-    def mape(self, idx_frc=None, idx_rows=None, out=None):
+    def mape(self, idx_frc=None, idx_rows=None, out=None, y_idx=None):
         # type: (list, list, string) -> list
         """
         Mean Absolute Percentage Error calculation.
@@ -307,30 +331,33 @@ class RegMatrix:
         :return: list of MAPE values, one for each input time series
         :rtype: list
         """
+        y_idx = _check_input_ts_idx(y_idx, self.y_idx)
+
         idx = [0] * self.nts
         if idx_frc is None:
             if idx_rows is None:
-                for i in range(self.nts):
+                for i in y_idx:
                     idx[i] = range(self.n_hist_points[i], len(self.forecasts[i]))
 
             else:
-                for i in range(self.nts):
+                for i in y_idx:
                     idx[i] = _ravel_idx(self.idxY[i][idx_rows], len(self.forecasts[i]))
         else:
             idx = idx_frc
 
         errors = np.zeros((self.nts))
-        for i, ind in enumerate(idx):
+        for i in y_idx:
+            ind = idx[i]
             denom = np.abs(self.ts[i].s[ind])
             denom[denom == 0] = np.mean(np.abs(self.ts[i].s))
             errors[i] = np.mean(np.divide(np.abs(self.ts[i].s[ind] - self.forecasts[i][ind]), denom))
 
         if not out is None:
             print(out, "MAPE")
-            for i, err in enumerate(errors):
-                print(self.ts[i].name, err)
+            for i in y_idx:
+                print(self.ts[i].name, errors[i])
 
-        return errors
+        return errors[y_idx]
 
     def plot_frc(self, idx_frc=None, idx_rows=None, n_frc = 1, n_hist=3):
         idx = [0] * self.nts
@@ -449,3 +476,16 @@ def _ravel_idx(idx_matr, m):
 def _ravel_y(Ymat, norm_div, norm_subt):
     y = np.ravel(Ymat) * norm_div + norm_subt
     return y #np.flipud(y)
+
+def _check_input_ts_idx(idx, default):
+    if idx is None:
+        idx = default
+    elif isinstance(idx, list):
+        idx = idx
+    elif isinstance(idx, int):
+        idx = [idx]
+    else:
+        warnings.warn("Unvalid argument idx in RegMatrix", UserWarning)
+        idx = default
+        
+    return idx
