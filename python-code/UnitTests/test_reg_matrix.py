@@ -142,6 +142,6 @@ class TestRegMatrix(unittest.TestCase):
 
 
 
-
-suite = unittest.TestLoader().loadTestsFromTestCase(TestRegMatrix)
-unittest.TextTestRunner(verbosity=2).run(suite)
+if __name__ == '__main__':
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestRegMatrix)
+    unittest.TextTestRunner(verbosity=2).run(suite)

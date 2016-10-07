@@ -2,7 +2,7 @@ import unittest
 import os
 
 from RegressionMatrix import regression_matrix, random_data
-from LoadAndSaveData import write_data_to_iot_format, get_iot_data
+from LoadAndSaveData import write_data_to_iot_format, get_iot_data, load_time_series
 
 FILE_NAME = "TestIot.csv"
 TOL = pow(10, -10)
@@ -14,7 +14,7 @@ class TestIotData(unittest.TestCase):
         for i, ts in enumerate(input_ts.data):
             data, metric_ids, host_ids, header_names = get_iot_data.get_data(FILE_NAME, [i+2], True)
             dataset = host_ids.keys()[0]
-            converted_ts = write_data_to_iot_format.from_iot_to_struct(data, host_ids[dataset], dataset)
+            converted_ts = load_time_series.from_iot_to_struct(data, host_ids[dataset], dataset)
             self.assertTrue((abs(ts - converted_ts.data[0]) < TOL).all())
             self.assertTrue(ts.name == converted_ts.data[0].name)
             self.assertTrue(input_ts.name == dataset)
@@ -35,7 +35,7 @@ class TestIotData(unittest.TestCase):
 
 
         dataset = host_ids.keys()[0]
-        converted_ts = write_data_to_iot_format.from_iot_to_struct(data, host_ids[dataset], dataset)
+        converted_ts = load_time_series.from_iot_to_struct(data, host_ids[dataset], dataset)
         #converted_data = regression_matrix.RegMatrix(converted_ts)
         #converted_data.create_matrix()
 
@@ -50,7 +50,6 @@ class TestIotData(unittest.TestCase):
 
 
 
-
-
-suite = unittest.TestLoader().loadTestsFromTestCase(TestIotData)
-unittest.TextTestRunner(verbosity=2).run(suite)
+if __name__ == '__main__':
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestIotData)
+    unittest.TextTestRunner(verbosity=2).run(suite)
