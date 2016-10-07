@@ -43,6 +43,10 @@ class RegMatrix:
 
         :param ts_struct: input time series
         :type ts_struct: named tuple TsStruct with fields, data, request, history, name, readme
+        :param x_idx: indices of time series if ts_struct.data to be used in X matrix
+        :type x_idx: list, int, None
+        :param y_idx: indices of time series if ts_struct.data to be used in Y matrix
+        :type y_idx: list, int, None
         """
 
         self.request = ts_struct.request
@@ -83,6 +87,10 @@ class RegMatrix:
         :type nsteps: int
         :param norm_flag: if False, time series are processed without normalisation
         :type norm_flag: bool
+        :param x_idx: indices of time series if ts_struct.data to be used in X matrix
+        :type x_idx: list, int, None
+        :param y_idx: indices of time series if ts_struct.data to be used in Y matrix
+        :type y_idx: list, int, None
         :return: None. Updates attributes self.X, self.Y, self.n_requested_points, self.n_historical_points, self.feature_dict
         """
         # define matrix dimensions:
@@ -99,15 +107,20 @@ class RegMatrix:
         hist = [0]
         # infer dimensions of X and Y
         for i, ts in enumerate(self.ts):
-            self.n_req_points[i] = sum(ts.index < ts.index[0] + self.request)*nsteps # here we assume time stamps are uniform
-            self.n_hist_points[i] = sum(ts.index < ts.index[0] + self.history)
-            n_rows[i] = int(np.floor(len(ts.s) - self.n_hist_points[i]) / self.n_req_points[i])
+            if i in self.x_idx:
+                self.n_hist_points[i] = sum(ts.index < ts.index[0] + self.history)
+            n_req_points = sum(ts.index < ts.index[0] + self.request)*nsteps
+            if i in self.y_idx:
+                self.n_req_points[i] = n_req_points # here we assume time stamps are uniform
+            n_rows[i] = int(np.floor(len(ts.s) - self.n_hist_points[i]) / n_req_points)
+
             hist.append(hist[i] + self.n_hist_points[i])
             if i in self.x_idx:
                 self.feature_dict[ts.name] = range(hist[i], hist[i+1])
 
+        idx_included = set(self.x_idx + self.y_idx)
+        n_rows = min([n_rows[i] for i in idx_included])
 
-        n_rows = min(n_rows)
         if n_rows < 4:
             print("Number of rows is ", n_rows, "consider setting a lower value of nsteps or requested points")
 
@@ -138,7 +151,7 @@ class RegMatrix:
         if np.isnan(self.Y).any():
             print("Targets contain NaNs")
 
-        if not check_time(timey, timex):
+        if not check_time([timey[i] for i in self.y_idx], [timex[i] for i in self.x_idx]):
             print("Time check failed")
 
 
@@ -409,6 +422,7 @@ def check_time(y, x):
     check = []
     # y stores earliest time for Y in each row, x stores latest time for X in each row. These two must not overlap
     for ty, tx in product(y, x):
+        #if not(type(ty) is int and type(tx) is int and ty==0 and tx==0):
         check.append(np.all(ty > tx))
 
 
