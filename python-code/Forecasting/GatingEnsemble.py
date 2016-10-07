@@ -1,3 +1,4 @@
+""" Created on 06 October 2016. Author: Radoslav Neychev """
 import lasagne
 import theano
 import theano.tensor as T
@@ -7,7 +8,7 @@ from sklearn.externals import joblib
 
 class GatingEnsemble:
     
-    def __init__(self, estimators = [],estimator_loss = lambda y,y_pred:((y - y_pred)**2)):
+    def __init__(self, estimators, estimator_loss = lambda y,y_pred:((y - y_pred)**2)):
         self.estimators = estimators
         self.estimator_loss = estimator_loss
     
