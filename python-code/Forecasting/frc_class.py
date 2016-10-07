@@ -12,14 +12,38 @@ class IdentityModel(BaseEstimator):
         self.is_fitted = False
 
     def fit(self, X, Y):
-        #override this module
+        """
+        Training method, override it in your model
+
+        :param X: training data, features
+        :type X: ndarray
+        :param Y: trainning data, targets
+        :type Y: ndarray
+        :return: self
+        """
         return self
 
     def predict(self, X):
-        # override this module
+        """
+        Prediction method, override it in your model
+
+        :param X: input data
+        :type X: ndarray
+        :return: forecasted data
+        :rtype: ndarray
+        """
+
         return X
 
     def transform(self, X):
+        """
+        Duplicates self.predict
+
+        :param X:
+        :type X:
+        :return:
+        :rtype:
+        """
         return self.predict(X)
 
     def print_pars(self):
@@ -75,15 +99,21 @@ def print_pipeline_pars(model):
 
 def CustomModel(parent, *args, **kwargs):
     """
-    Defines a new class with double inherirance
+    Defines a new class with double inheritance
 
     :param parent: Parent class
+    :param args: Sequential arguments
     :param kwargs: Optional keyword arguments
-    :return: instance of CunstomModel class
+    :return: instance of CustomModel class
     """
     class CustomModel(parent, IdentityModel):
 
-        def __init__(self, name=None):
+        def __init__(self):
+            if 'name' in kwargs.keys():
+                name = kwargs['name']
+                del kwargs['name']
+            else:
+                name = None
             IdentityModel.__init__(self, name)
             parent.__init__(self, *args, **kwargs)
 
