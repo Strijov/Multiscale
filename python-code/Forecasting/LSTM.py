@@ -1,4 +1,5 @@
 # coding: utf-8
+""" Created on 30 September 2016. Author: Maria Popova, Anastasia Motrenko """
 
 import numpy as np
 import theano
@@ -25,7 +26,7 @@ class LSTM():
         _, nY = trainY.shape
 
         if self.l_out is None:
-            self.init_nn_structure(int(nX*self.batch_size), int(nY*self.batch_size))
+            self.init_nn_structure(int(nX), int(nY))
 
         print("Training ...")
         loss = []
@@ -113,7 +114,7 @@ class LSTM():
         for name, par in zip(params_names, params):
             results[name] = par
 
-        for k, v in kwargs:
+        for k, v in kwargs.items():
             results[k] = v
 
         if fname is None:
