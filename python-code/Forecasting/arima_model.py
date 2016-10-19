@@ -130,6 +130,9 @@ def random_split_time_series(ts, nhist, nsteps, nsplits):
 
 
 def plot_acf_pacf(ts, title="_", folder="fig"):
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+        
     ts = pd.Series(ts)
     fig = plt.figure(figsize=(12, 8))
     fig.suptitle(title)

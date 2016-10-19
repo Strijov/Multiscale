@@ -77,6 +77,10 @@ def check_text_for_latex(text):
 
 
 def plot_seasonal_trend_decomposition(ts, trend, seasonal=None, residual=None, folder="fig"):
+
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+
     if seasonal is None:
         seasonal = np.zeros_like(ts)
     if residual is None:
