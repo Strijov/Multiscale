@@ -33,17 +33,19 @@ def main():
     train, test = ts.train_test_split(train_test_ratio=0.75)
 
     # Infer periodicity:
-    period, msg = arima_model.decompose(ts.data[0], nhist=500, folder=os.path.join(folder, "decompose"))
+    period, msg = arima_model.decompose(ts.data[0], nhist=500, folder=os.path.join(folder, "decompose"), nsplits=50)
     latex_str += msg
     latex_str += arima_model.make_report(os.path.join(folder, "decompose"), write=False)
 
 
     # select number of trees and history parameter:
-    #n_req, nr_tree, best_train_mse = train_model_CV(train, n_fold=2, windows=[5, 10], n_trees=[500])
-    n_req, nr_tree, best_train_mse = 10, 500, 0.006
+    n_req, nr_tree, best_train_mse = train_model_CV(train, n_fold=2, windows=[5, 10, 25, 50, 75, 100, 150])
+    #n_req, nr_tree, best_train_mse = 10, 500, 0.006
+    latex_str += "Estimated parameters: history = {0}, n. trees = {1} \\\\ \n".format(n_req, nr_tree)
+
 
     # use selected parameters to forecast trainning data:
-    ts.history = n_req
+    ts.history = n_req * ts.request
     data = regression_matrix.RegMatrix(ts)
     data.create_matrix()
     data.train_test_split()
@@ -57,7 +59,8 @@ def main():
     frc, _ = data.forecast(model, idx_rows=data.idx_test)
     test_mse = mean_squared_error(frc, data.testY)
 
-    print(best_train_mse, train_mse, test_mse)
+    latex_str += "Best CV error: {0}, train error for estimated parameters: {1}, " \
+                 "test error with estimated parameters {2} \\\\ \n".format(best_train_mse, train_mse, test_mse)
 
     err_all = forecasting_errors(data)
     column_names = [("MAE", "train"), ("MAPE", "train"), ("MAE", "test"), ("MAPE", "test")]
@@ -102,7 +105,7 @@ def train_model_CV(data, n_fold=5, windows=[5, 10, 25, 50, 75, 100, 150],
 
         for w_ind in range(0, len(windows)):
             # obtain the matrix from  the time series data with a given window-size
-            data.history = windows[w_ind]
+            data.history = windows[w_ind] * data.request
             mat = regression_matrix.RegMatrix(data)
             mat.create_matrix(f_horizon)
             w_train = mat.X
@@ -132,6 +135,7 @@ def train_model_CV(data, n_fold=5, windows=[5, 10, 25, 50, 75, 100, 150],
         window_size, nr_tree = windows[b_w_ind], n_trees[b_tree_ind]
 
         return (window_size, nr_tree, mse)
+
 
 
 def mean_squared_error(f, y):
