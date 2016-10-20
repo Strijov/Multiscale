@@ -3,11 +3,12 @@ import numpy as np
 from collections import namedtuple
 import re
 import os
+import glob
 
 tsMiniStruct = namedtuple('tsMiniStruct', 's norm_div norm_subt name index')
 
 
-def plot_forecast(ts, forecasts, idx_ts=None, idx_frc=None):
+def plot_forecast(ts, forecasts, idx_ts=None, idx_frc=None, filename=None, folder=""):
     if idx_frc is None:
         idx_frc = range(len(ts.s))
     if idx_ts is None:
@@ -28,7 +29,15 @@ def plot_forecast(ts, forecasts, idx_ts=None, idx_frc=None):
     plt.ylabel(ts.name)
     plt.title('Forecasting results')
     plt.xscale('linear')
-    plt.show()
+    if filename is None:
+        plt.show()
+    else:
+        if not os.path.exists(folder):
+            os.mkdir(folder)
+
+        filename = os.path.join(folder, filename)
+        plt.savefig(filename)
+        plt.close()
 
 
 def input_latex_headers():
@@ -42,7 +51,7 @@ def input_latex_headers():
                    '\\usepackage{amsmath, amsfonts, amssymb, amsthm, amscd}\n' + \
                    '\\usepackage{graphicx, epsfig, subfig, epstopdf}\n' + \
                    '\\usepackage{longtable}\n' + \
-                   '\\graphicspath{ {../fig/} {../} }\n' + \
+                   '\\graphicspath{ {../fig/} {../} {fig/} }\n' + \
                    '\\begin{document}\n\n'
     latex_end = "\\end{document}"
 
@@ -102,7 +111,7 @@ def plot_seasonal_trend_decomposition(ts, trend, seasonal=None, residual=None, f
     plt.close()
 
 
-def print_to_latex(inputs, file_name=None, check=True):
+def print_to_latex(inputs, file_name=None, check=True, folder=""):
     latex_header, latex_end = input_latex_headers()
     if check:
         inputs = check_text_for_latex(inputs)
@@ -111,7 +120,26 @@ def print_to_latex(inputs, file_name=None, check=True):
     if file_name is None:
         file_name = "test_latex_output"
     file_name = file_name + ".tex"
+    file_name = os.path.join(folder, file_name)
 
     with open(file_name, "w+") as f:
         f.write(latex_str)
         f.close()
+
+
+def include_figures_from_folder(folder):
+
+    fnames = glob.glob(os.path.join(folder, "*.png"))
+    latex_str = ""
+    for figname in fnames:
+        #figname = "p"+str(p)+"q"+str(q)
+        figname = figname.split(os.path.sep)[-1] #"/".join(figname.split(os.path.sep))
+        if " " in figname:
+            figname = "\"" + figname + "\""
+        latex_str += "\n"
+        latex_str += "\\begin{figure}\n"
+        latex_str += "\includegraphics[width=0.7\\textwidth]{" + figname + "}\n"
+        latex_str += "\caption{"+ check_text_for_latex(figname) + ".} \label{fg:"+figname+"}\n"
+        latex_str += "\end{figure}\n"
+
+    return latex_str

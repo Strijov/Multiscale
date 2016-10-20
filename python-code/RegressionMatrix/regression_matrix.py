@@ -10,13 +10,14 @@ import warnings
 import pandas as pd
 import numpy as np
 import sklearn.pipeline as pipeline
+from sklearn.cross_validation import KFold
 
 from sklearn.utils.validation import check_is_fitted
 from itertools import product
 from collections import namedtuple
 
 import my_plots
-from Forecasting import frc_class
+#from Forecasting import frc_class, preprocess_time_series
 
 TsMiniStruct_ = namedtuple('TsMiniStruct', 's norm_div norm_subt name index')
 class TsMiniStruct(TsMiniStruct_):
@@ -95,8 +96,10 @@ class RegMatrix:
         """
         # define matrix dimensions:
         nsteps = int(nsteps)
+
         if nsteps < 1:
-            print("nsteps should be at least 1. Setting nsteps = 1")
+            print("Parameter 'nsteps' should be at least 1. Setting nsteps = 1")
+            nsteps = 1
 
         self.x_idx = _check_input_ts_idx(x_idx, self.y_idx)
         self.y_idx = _check_input_ts_idx(y_idx, self.y_idx)
@@ -108,20 +111,30 @@ class RegMatrix:
         # infer dimensions of X and Y
         for i, ts in enumerate(self.ts):
             if i in self.x_idx:
-                self.n_hist_points[i] = sum(ts.index < ts.index[0] + self.history)
-            n_req_points = sum(ts.index < ts.index[0] + self.request)*nsteps
+                self.n_hist_points[i] = sum(ts.index < (ts.index[0] + self.history))
+            n_req_points = sum(ts.index < (ts.index[0] + self.request) )*nsteps
+
             if i in self.y_idx:
                 self.n_req_points[i] = n_req_points # here we assume time stamps are uniform
+
+            # if self.n_hist_points[i] >= len(ts):
+            #     raise ValueError("The length of time series " +ts.name+ "is shorter the number of historical points:" +
+            #                      str(len(ts)) + " <= " + str(self.n_hist_points[i]))
+            # if self.n_req_points[i] >= len(ts):
+            #     raise ValueError("The length of time series " +ts.name+ "is shorter the number of requested points:" +
+            #                      str(len(ts)) + " <= " + str(self.n_req_points[i]))
+
             n_rows[i] = int(np.floor(len(ts.s) - self.n_hist_points[i]) / n_req_points)
 
             hist.append(hist[i] + self.n_hist_points[i])
             if i in self.x_idx:
                 self.feature_dict[ts.name] = range(hist[i], hist[i+1])
 
+
         idx_included = set(self.x_idx + self.y_idx)
         n_rows = min([n_rows[i] for i in idx_included])
 
-        if n_rows < 4:
+        if n_rows < 5:
             print("Number of rows is ", n_rows, "consider setting a lower value of nsteps or requested points")
 
 
@@ -233,7 +246,7 @@ class RegMatrix:
 
 
 
-    def train_test_split(self, train_test_ratio=0.75, splitter=None):
+    def train_test_split(self, train_test_ratio=0.75, splitter=None, idx_train=None, idx_test=None):
         """
         Splits row indices of data matrix into train and test.
 
@@ -246,10 +259,15 @@ class RegMatrix:
         """
         if not splitter is None:
             idx_test, idx_train = splitter()
+        elif not idx_train is None:
+            idx_train = np.sort(idx_train)
+        elif not idx_test is None:
+            idx_test = np.sort(idx_test)
         else: # sequesntial split
             n_train= int(self.X.shape[0]*train_test_ratio)
             idx_test = range(self.X.shape[0] - n_train)
             idx_train = range(self.X.shape[0] - n_train, self.X.shape[0])
+
         self.trainX, self.trainY = self.X[idx_train, :], self.Y[idx_train]
         self.testX, self.testY = self.X[idx_test, :], self.Y[idx_test]
         self.idx_train, self.idx_test = idx_train, idx_test
@@ -268,7 +286,7 @@ class RegMatrix:
         :rtype: tuple
         """
 
-
+        from Forecasting import frc_class
         if selector is None:
             selector = frc_class.IdentityModel()
             selector.feature_dict = copy.deepcopy(self.feature_dict)
@@ -426,7 +444,7 @@ class RegMatrix:
 
         return errors[y_idx]
 
-    def plot_frc(self, idx_frc=None, idx_rows=None, n_frc=1, n_hist=3):
+    def plot_frc(self, idx_frc=None, idx_rows=None, n_frc=1, n_hist=3, folder="fig", save=True):
         """
         Plots forecasts along with time series
 
@@ -455,7 +473,43 @@ class RegMatrix:
             idx = idx_frc
 
         for i, ts in enumerate(self.ts):
-            my_plots.plot_forecast(ts, self.forecasts[i], idx_frc=idx[i], idx_ts=idx_ts[i])
+            if save:
+                filename = ts.name + ".png"
+                filename = "_".join(filename.split(" "))
+            else:
+                filename = None
+            my_plots.plot_forecast(ts, self.forecasts[i], idx_frc=idx[i], idx_ts=idx_ts[i], folder=folder, filename=filename)
+
+
+    def optimize_history(self, frc_model, sel_model=None, gen_model=None,  hist_range=None, n_fold=5):
+        """
+        Selects the optimal value of parameter history from the given range
+
+        :param frc_model: forecasting model
+        :type frc_model: callable
+        :param sel_model: feature selection model
+        :type sel_model: callable
+        :param gen_model: feature generation model
+        :type gen_model: callable
+        :param hist_range: range of history values to evaluate
+        :type hist_range: list
+        :return: history
+        :rtype: int
+        """
+        if hist_range is None:
+            hist_range = range(self.request, self.request*10, self.request)
+
+        mse = []
+        for hist in hist_range:
+            self.history = hist
+            self.create_matrix()
+            kf = KFold(self.X.shape[0], n_folds=n_fold)
+            for idx_train, idx_test in kf:
+                self.train_test_split(idx_train=idx_train, idx_test=idx_test)
+                self.train_model(frc_model=frc_model, selector=sel_model, generator=gen_model)
+                frc, _  = self.forecast()
+                mse.append(((abs(frc - self.Y)+ 0.0000001)/(abs(self.Y) + 0.0000001))^2)
+
 
 def _normalize_ts(ts, name=None):
 
@@ -508,7 +562,7 @@ def replace_nans(ts, name=None):
 
     ts_prop = pd.Series(ts).fillna(method="pad")
     ts_back = pd.Series(ts_prop).fillna(method="bfill")
-    ts =  ts_back.as_matrix() # (ts_back + ts_prop)[pd.isnull(ts)] / 2
+    ts = ts_back.as_matrix() # (ts_back + ts_prop)[pd.isnull(ts)] / 2
 
     return ts
 
@@ -569,3 +623,11 @@ def _check_input_ts_idx(idx, default):
         idx = default
         
     return idx
+
+
+def history_from_periods(ts_list, n_periods=3):
+    import Forecasting
+    history = []
+    for ts in ts_list:
+        print(ts.name)
+        history.append(n_periods*Forecasting.preprocess_time_series.find_period(ts))
