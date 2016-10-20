@@ -2,12 +2,13 @@ from __future__ import division
 import os.path
 import glob
 import re
+import numpy as np
 
 from sklearn.externals import joblib
 from collections import namedtuple
 
 TsStruct_ = namedtuple('TsStruct', 'data request history name readme')
-class TsStruct(TsStruct_):
+class TsStruct():
     """ This structure stores input data. The fields are:
 
     :param data: input time series, each is pandas.Series
@@ -21,7 +22,37 @@ class TsStruct(TsStruct_):
     :param readme: Dataset info
     :type readme: string
     """
-    pass
+    def __init__(self, data, request, history, name, readme):
+        self.data = data
+        self.request = request
+        self.history = history
+        self.name = name
+        self.readme = readme
+        self.intervals = self.ts_frequencies()
+
+
+    def ts_frequencies(self):
+        freqs = [min(np.diff(ts.index)) for ts in self.data]
+
+        return freqs
+
+    def train_test_split(self, train_test_ratio=0.75):
+
+        max_freq = np.argmin(self.intervals) #
+        n_train = int(len(self.data[max_freq]) * train_test_ratio)
+        max_train_index = self.data[max_freq].index[n_train]
+
+        train_ts, test_ts = [], []
+        for ts in self.data:
+            train_idx = ts.index <= max_train_index
+            test_idx = ts.index > max_train_index
+            train_ts.append(ts[train_idx])
+            test_ts.append(ts[test_idx])
+        train = TsStruct(train_ts, self.request, self.history, self.name, self.readme)
+        test = TsStruct(test_ts, self.request, self.history, self.name, self.readme)
+
+        return train, test
+
 
 import load_energy_weather_data
 
