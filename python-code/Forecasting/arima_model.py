@@ -68,20 +68,25 @@ def adjust_arima_model(sd, max_p_lags=20, max_q_lags=20, nsplits=0, nhist=100, n
     return p, q, rss
 
 def decompose(ts, log_detrend=False, try_arima=False, alpha=0.01, max_p_lags=20, max_q_lags=20, nsplits=0, nhist=100, nsteps=1, folder="fig"):
-    ts = np.array(ts)
+
+    if isinstance(ts, pd.Series):
+        ts = ts.as_matrix()
+    if isinstance(ts, list):
+        ts = np.array(ts)
+
     ts = np.squeeze(ts)
-    #ts = ts.as_matrix()
     detrended = signal.detrend(ts)
 
     # Compute ACF with alpha-confidence intervals
     acf, confint, qstat, p = tsa.stattools.acf(detrended, nlags=100, alpha=alpha, qstat=True)
 
     # Infer periodicity from ACF
-    period = find_fft_period(acf, window_size=len(acf))
+    period = find_fft_period(acf, window_size=len(acf), folder=folder)
     msg = "Estimated period {0} with std {1} \\\\ \n".format(np.mean(period), np.std(period))
     period = np.mean(period)
+    period = max([1, int(period)])
 
-    sd = seasonal_decompose(ts, freq=int(period), model="additive")
+    sd = seasonal_decompose(ts, freq=period, model="additive")
 
     sd.resid = signal.detrend(ts - sd.seasonal)
     sd.trend = ts - sd.resid - sd.seasonal
@@ -107,18 +112,26 @@ def decompose(ts, log_detrend=False, try_arima=False, alpha=0.01, max_p_lags=20,
 
 
 
-def find_fft_period(ts, window_size=1024, step = 100):
+def find_fft_period(ts, window_size=1024, step = 100, folder=None):
 
     i = 0
     period = []
     while i + window_size <= len(ts):
         X = fft(ts[i:i+window_size], window_size)
         max_freq = abs(X[1:window_size//2]).argmax() + 1
-        period.append(window_size/max_freq)
+        period.append(window_size/max_freq - 1)
         i += step
+        plt.plot(np.divide(window_size, range(1, window_size // 2)) - 1, abs(X[1:window_size // 2]))
 
 
     #period = np.mean(period)
+
+    if not folder is None:
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        plt.savefig(os.path.join(folder, "fft.png"))
+    else:
+        plt.close()
 
     return period
 
@@ -150,8 +163,7 @@ def plot_acf_pacf(ts, title="_", folder="fig"):
     ax2 = fig.add_subplot(212)
     fig = sm.graphics.tsa.plot_pacf(ts, lags=40, ax=ax2)
     fig.savefig(os.path.join(folder, "acf_"+title+".png"))
-
-    return fig
+    plt.close()
 
 
 
@@ -249,12 +261,14 @@ def make_report(folder="fig/sine+trend/", fname="ts_arima_analisys", write=True)
 
 
 
-
-
-
 if __name__ == '__main__':
-    make_report()
     ts = random_data.create_sine_ts(n_ts=1, period=24, min_length=2000, max_length=2000).data[0]
     ts = np.log(ts + np.arange(ts.shape[0])*abs(np.max(ts))/ts.shape[0])
     ts[np.isnan(ts)] = np.mean(ts)
     adjust_arima_model(ts, nhist = 500, nsteps=1, nsplits=50)
+    # for period in range(10, 100, 10):
+    #     ts = random_data.create_sine_ts(n_ts=1, period=period, min_length=2000, max_length=2000).data[0]
+    #     ts = np.log(ts + np.arange(ts.shape[0])*abs(np.max(ts))/ts.shape[0])
+    #     ts[np.isnan(ts)] = np.mean(ts)
+    #     decompose(ts)
+    #     find_fft_period(ts)
