@@ -8,3 +8,4 @@ To try the code on IoT data, do the following:
 
 ## Documentation
 To see documentation, open docs/_build/html/index.html
+To udate documentation, go to docs and run "make html"
