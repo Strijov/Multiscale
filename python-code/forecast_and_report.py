@@ -51,7 +51,7 @@ def main(file_name=None, line_indices="all", header=True):
 
 
     # Select only data from first dataset in host_ids:
-    dataset = host_ids.keys()[0] # select the first dataset
+    dataset = list(host_ids.keys())[0] # select the first dataset
     ts = load_time_series.from_iot_to_struct(data, host_ids[dataset], dataset) # get all time series from dataset in TsStruct format
     ts.replace_nans()
     ts.align_time_series() # truncate time series to align starting and ending points
@@ -107,13 +107,14 @@ def main(file_name=None, line_indices="all", header=True):
         #n_req, nr_tree, best_train_mse = 10, 500, 0.00658112163657  # previously estimated
 
         opt_string = model.name + ". Best CV error: {0}, estimated parameters: history = {1}, {2} = {3} " \
-                     "\\\\ \n".format(best_train_mse, n_req, my_plots.check_text_for_latex(params.keys()[0]), params.values()[0])
+                     "\\\\ \n".format(best_train_mse, n_req, my_plots.check_text_for_latex(list(params.keys())[0]),
+                                      list(params.values())[0])
         print(opt_string)
         latex_str += opt_string
 
         # use selected parameters to forecast trainning data:
         if not len(params) == 0:
-            model.__setattr__(params.keys()[0], params.values()[0])
+            model.__setattr__(list(params.keys())[0], list(params.values())[0])
         data = regression_matrix.RegMatrix(ts)
         data.history = n_req * data.request
 
