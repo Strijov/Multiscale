@@ -1,19 +1,26 @@
+"""
+
+"""
 from __future__ import print_function
 import numpy as np
 import pandas as pd
 import os
 import time
+import copy
+import optparse
 import my_plots
 
 from sklearn.cross_validation import KFold
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import RidgeCV, Lasso
 from LoadAndSaveData import get_iot_data, load_time_series
 from RegressionMatrix import regression_matrix
 from Forecasting import frc_class, arima_model
+from Forecasting import GatingEnsemble, LSTM
 
+N_EXPERTS = 4
 
-
-def main():
+def main(file_name=None, line_indices="all", header=True):
     # Init string for latex results:
     latex_str = ""
     folder = os.path.join("fig", str(int(time.time())))
@@ -22,60 +29,111 @@ def main():
 
     # Load data in IoT format
     file_name = os.path.join('..', 'code','data', 'IotTemplate', 'data.csv')
-    line_indices = range(2, 9) # FIXIT
-    data, metric_ids, host_ids, header_names = get_iot_data.get_data(file_name, line_indices, True)
+    data, metric_ids, host_ids, header_names = get_iot_data.get_data(file_name, line_indices, header)
+
 
     # Select only data from first dataset in host_ids:
-    dataset = host_ids.keys()[0] # Dataset name
-    ts = load_time_series.from_iot_to_struct(data, host_ids[dataset], dataset) #
+    dataset = host_ids.keys()[0] # select the first dataset
+    ts = load_time_series.from_iot_to_struct(data, host_ids[dataset], dataset) # get all time series from dataset in TsStruct format
+    ts.align_time_series() # truncate time series to align starting and ending points
+    latex_str += ts.summarize_ts(latex=True)
 
     # split time series into train and validation
-    train, test = ts.train_test_split(train_test_ratio=0.75)
+    train, test = ts.train_test_split(train_test_ratio=0.75) # split raw time series into train and test parts
 
-    # Infer periodicity:
-    period, msg = arima_model.decompose(ts.data[0], nhist=500, folder=os.path.join(folder, "decompose"), nsplits=50)
-    latex_str += msg
-    latex_str += arima_model.make_report(os.path.join(folder, "decompose"), write=False)
-
-
-    # select number of trees and history parameter:
-    n_req, nr_tree, best_train_mse = train_model_CV(train, n_fold=2, windows=[5, 10, 25, 50, 75, 100, 150])
-    #n_req, nr_tree, best_train_mse = 10, 500, 0.006
-    latex_str += "Estimated parameters: history = {0}, n. trees = {1} \\\\ \n".format(n_req, nr_tree)
+    # Plot periodics:
+    # for i, tsi in enumerate(ts.data):
+    #     save_to = os.path.join(folder, "decompose", "_".join(tsi.name.split(" ")))
+    #     # infer periodicity and try to decompose ts into tend, seasonality and resid:
+    #     period, msg = arima_model.decompose(tsi, nhist=500, folder=save_to, nsplits=50)
+    #     latex_str += my_plots.check_text_for_latex(tsi.name) + ": "
+    #     latex_str += msg
+    #     latex_str += arima_model.make_report(os.path.join(save_to), write=False) # adds figures from "save_to" to latex_str
 
 
-    # use selected parameters to forecast trainning data:
-    ts.history = n_req * ts.request
-    data = regression_matrix.RegMatrix(ts)
-    data.create_matrix()
-    data.train_test_split()
 
-    model = frc_class.CustomModel(RandomForestRegressor, n_estimators=nr_tree, n_jobs=24)
-    model, _,_,_ = data.train_model(frc_model=model)
 
-    frc, _ = data.forecast(model, idx_rows=data.idx_train)
-    train_mse = mean_squared_error(frc, data.trainY)
 
-    frc, _ = data.forecast(model, idx_rows=data.idx_test)
-    test_mse = mean_squared_error(frc, data.testY)
+    # Declare models to compare:
+    random_forest = frc_class.CustomModel(RandomForestRegressor, n_jobs=24, name="RandomForest")
+    # mixture_experts = frc_class.CustomModel(GatingEnsemble.GatingEnsemble, name="Mixture",
+    #                                          estimators=[RidgeCV(), LassoCV()])
+    lstm = frc_class.CustomModel(LSTM.LSTM, name="LSTM", n_epochs=70, plot_loss=True)
+    lasso = frc_class.CustomModel(Lasso, name="Lasso", fit_intercept=True, alpha=2.0)
+    model_list = [lstm] # random_forest, mixture_experts, lstm
 
-    latex_str += "Best CV error: {0}, train error for estimated parameters: {1}, " \
-                 "test error with estimated parameters {2} \\\\ \n".format(best_train_mse, train_mse, test_mse)
+    params_range ={}
+    params_range["RandomForest"] = {"n_estimators": [3000]}
+    params_range["Mixture"] = {"n_hidden_units":[10, 20, 30, 50, 100]}
+    params_range["LSTM"] = {"batch_size":[20, 30, 50, 100]}
+    params_range["Lasso"] = {"alpha": [1.0, 2.0, 5.0, 10.0]}  # [20, 30, 50, 100]} #[1.0, 1.25, 1.5, 1.75, 2.0]
 
-    err_all = forecasting_errors(data)
-    column_names = [("MAE", "train"), ("MAPE", "train"), ("MAE", "test"), ("MAPE", "test")]
-    res_all = data_frame_res(err_all, column_names, ts)
-    print(res_all)
 
-    latex_str += res_all.to_latex()
+    WINDOWS = [2, 5, 7, 10, 15, 20]
+    N_FOLDS = 5
 
-    data.plot_frc(n_frc=10, n_hist=10, folder=folder)
-    latex_str += my_plots.include_figures_from_folder(folder)
+    for model in model_list:
+        model_save_path = os.path.join(folder, model.name)
+        if not os.path.exists(model_save_path):
+            os.makedirs(model_save_path)
 
-    my_plots.print_to_latex(latex_str, check=False, file_name="IoT_trees", folder=folder)
+        # select number of trees and history parameter:
+        # (history parameter is divisible by request)
+        n_req, params, best_train_mse, plt = train_model_CV(train, model, n_fold=N_FOLDS, windows=WINDOWS,
+                                        params=params_range[model.name], plot=True)#windows=[5, 10, 25, 50, 75, 100, 150])
 
-    return train_mse, test_mse
+        plt.savefig(os.path.join(model_save_path, "cv_optimization.png"))
+        plt.clf()
 
+        #n_req, nr_tree, best_train_mse = 10, 500, 0.00658112163657  # previously estimated
+
+        opt_string = model.name + ". Best CV error: {0}, estimated parameters: history = {1}, {2} = {3} " \
+                     "\\\\ \n".format(best_train_mse, n_req, my_plots.check_text_for_latex(params.keys()[0]), params.values()[0])
+        print(opt_string)
+        latex_str += opt_string
+
+        # use selected parameters to forecast trainning data:
+        if not len(params) == 0:
+            model.__setattr__(params.keys()[0], params.values()[0])
+        data = regression_matrix.RegMatrix(ts)
+        data.history = n_req * data.request
+
+        data.create_matrix()
+        data.train_test_split()
+
+        model, frc, _, _ = data.train_model(frc_model=model)
+
+        # if hasattr(frc, "msg"):
+        #     latex_str += msg
+        if hasattr(frc, "fig"):
+            frc.fig.savefig(os.path.join(model_save_path, "fitting.png"))
+
+        train_frc, _ = data.forecast(model, idx_rows=data.idx_train)
+        train_mse = mean_squared_error(train_frc, data.trainY)
+
+        test_frc, _ = data.forecast(model, idx_rows=data.idx_test)
+        test_mse = mean_squared_error(test_frc, data.testY)
+
+        latex_str += my_plots.check_text_for_latex(model.name) + "\\\\ \n"
+        latex_str += "Train error for estimated parameters: {0}, " \
+                     "test error with estimated parameters {1} \\\\ \n".format(train_mse, test_mse)
+
+        err_all = forecasting_errors(data)
+        column_names = [("MAE", "train"), ("MAPE", "train"), ("MAE", "test"), ("MAPE", "test")]
+        res_all = data_frame_res(err_all, column_names, ts)
+
+        print(model.name)
+        print(res_all)
+
+        latex_str += res_all.to_latex()
+        latex_str += "\\bigskip \n \\\\"
+
+        data.plot_frc(n_frc=10, n_hist=10, folder=model_save_path)
+        latex_str += my_plots.include_figures_from_folder(model_save_path)
+
+    my_plots.print_to_latex(latex_str, check=False, file_name="IoT_example", folder=folder)
+
+    return latex_str
 
 
 
@@ -98,43 +156,94 @@ def forecasting_errors(data):
     return train_mae, train_mape, test_mae, test_mape
 
 
-def train_model_CV(data, n_fold=5, windows=[5, 10, 25, 50, 75, 100, 150],
-                       n_trees=[500, 1000, 2000, 3000], f_horizon=1):
+def train_model_CV(data, model, n_fold=5, windows=[5, 10, 25, 50, 75, 100, 150],
+                   params={}, f_horizon=1, plot=False):
 
-        scores = np.zeros((len(windows), len(n_trees), n_fold))
+    if len(params) == 0:
+        par_name, params_range = None, []
+    else:
+        par_name, params_range = params.items()[0]
+    params_range = params[par_name]
+    scores = np.zeros((len(windows), len(params_range), n_fold))
 
-        for w_ind in range(0, len(windows)):
-            # obtain the matrix from  the time series data with a given window-size
-            data.history = windows[w_ind] * data.request
-            mat = regression_matrix.RegMatrix(data)
-            mat.create_matrix(f_horizon)
-            w_train = mat.X
-            y_wtrain = mat.Y
-            #(w_train, y_wtrain) = windowize(data, windows[w_ind], f_horizon=f_horizon)
+    for w_ind in range(0, len(windows)):
+        # obtain the matrix from  the time series data with a given window-size
+        data.history = windows[w_ind] * data.request
+        mat = regression_matrix.RegMatrix(data)
+        mat.create_matrix(f_horizon)
+        w_train = mat.X
+        y_wtrain = mat.Y
+        # (w_train, y_wtrain) = windowize(data, windows[w_ind], f_horizon=f_horizon)
 
-            # cross-validation
-            r, c = w_train.shape
-            kf = KFold(r, n_folds=n_fold)
-            for tree_ind in range(0, len(n_trees)):
-                reg = RandomForestRegressor(n_estimators=n_trees[tree_ind], n_jobs=24)
-                n = 0
-                for train_index, val_index in kf:
-                    # getting training and validation data
-                    X_train, X_val = w_train[train_index, :], w_train[val_index, :]
-                    y_train, y_val = y_wtrain[train_index], y_wtrain[val_index]
-                    # train the model and predict the MSE
-                    reg.fit(X_train, y_train)
-                    pred_val = reg.predict(X_val)
-                    scores[w_ind, tree_ind, n] = mean_squared_error(pred_val, y_val)
-                    n += 1
-        m_scores = np.average(scores, axis=2)
-        mse = m_scores.min()
+        # cross-validation
+        r, c = w_train.shape
+        kf = KFold(r, n_folds=n_fold)
+        for par_ind in range(0, len(params_range)):
+            model.__setattr__(par_name, params_range[par_ind])
+            n = 0
+            for train_index, val_index in kf:
+                # getting training and validation data
+                X_train, X_val = w_train[train_index, :], w_train[val_index, :]
+                y_train, y_val = y_wtrain[train_index], y_wtrain[val_index]
+                # train the model and predict the MSE
+                model.fit(X_train, y_train)
+                pred_val = model.predict(X_val)
+                scores[w_ind, par_ind, n] = mean_squared_error(pred_val, y_val)
+                n += 1
+    m_scores = np.average(scores, axis=2)
+    mse = m_scores.min()
 
-        # select best window_size and best n_tree with smallest MSE
-        (b_w_ind, b_tree_ind) = np.where(m_scores == mse)
-        window_size, nr_tree = windows[b_w_ind], n_trees[b_tree_ind]
+    # select best window_size and best n_tree with smallest MSE
+    (b_w_ind, b_tree_ind) = np.where(m_scores == mse)
+    b_w_ind, b_tree_ind = b_w_ind[0], b_tree_ind[0]
+    window_size, best_par = windows[b_w_ind], params_range[b_tree_ind]
+    best_par = {par_name:best_par}
 
-        return (window_size, nr_tree, mse)
+    if not plot:
+        return (window_size, best_par, mse)
+
+    plt = my_plots.imagesc(m_scores, xlabel=par_name, ylabel="n_req", yticks=windows, xticks=params_range)
+    return window_size, best_par, mse, plt
+
+
+
+# def train_model_CV(data, n_fold=5, windows=[5, 10, 25, 50, 75, 100, 150],
+#                        n_trees=[500, 1000, 2000, 3000], f_horizon=1):
+#
+#         scores = np.zeros((len(windows), len(n_trees), n_fold))
+#
+#         for w_ind in range(0, len(windows)):
+#             # obtain the matrix from  the time series data with a given window-size
+#             data.history = windows[w_ind] * data.request
+#             mat = regression_matrix.RegMatrix(data)
+#             mat.create_matrix(f_horizon)
+#             w_train = mat.X
+#             y_wtrain = mat.Y
+#             #(w_train, y_wtrain) = windowize(data, windows[w_ind], f_horizon=f_horizon)
+#
+#             # cross-validation
+#             r, c = w_train.shape
+#             kf = KFold(r, n_folds=n_fold)
+#             for tree_ind in range(0, len(n_trees)):
+#                 reg = RandomForestRegressor(n_estimators=n_trees[tree_ind], n_jobs=24)
+#                 n = 0
+#                 for train_index, val_index in kf:
+#                     # getting training and validation data
+#                     X_train, X_val = w_train[train_index, :], w_train[val_index, :]
+#                     y_train, y_val = y_wtrain[train_index], y_wtrain[val_index]
+#                     # train the model and predict the MSE
+#                     reg.fit(X_train, y_train)
+#                     pred_val = reg.predict(X_val)
+#                     scores[w_ind, tree_ind, n] = mean_squared_error(pred_val, y_val)
+#                     n += 1
+#         m_scores = np.average(scores, axis=2)
+#         mse = m_scores.min()
+#
+#         # select best window_size and best n_tree with smallest MSE
+#         (b_w_ind, b_tree_ind) = np.where(m_scores == mse)
+#         window_size, nr_tree = windows[b_w_ind], n_trees[b_tree_ind]
+#
+#         return (window_size, nr_tree, mse)
 
 
 
@@ -142,12 +251,36 @@ def mean_squared_error(f, y):
     return np.mean((f-y)**2)
 
 
+def parse_options():
+    """Parses the command line options."""
+    usage = "usage: %prog [options]"
+    parser = optparse.OptionParser(usage=usage)
+
+    parser.add_option('-f', '--filename',
+                      type='string',
+                      default=os.path.join('..', 'code','data', 'IotTemplate', 'data.csv'),
+                      help='.csv file with input data. Default: %default')
+    parser.add_option('-l', '--line-indices',
+                      type='string', default='all',
+                      help='Line indices to be read from file. Default: %default')
+    parser.add_option('-d', '--header',
+                      type='string', default='True',
+                      help='Header flag. True means the first line of the csv file in the columns 1 to 8 are variable names.\
+                       Default: %default')
+
+    opts, args = parser.parse_args()
+    opts.__dict__['header'] = bool(opts.__dict__['header'])
+
+    if opts.__dict__['line_indices'] == "all":
+        ln = opts.__dict__['line_indices']
+    else:
+        ln = opts.__dict__['line_indices'].split(",")
+        for i, idx in enumerate(ln):
+            ln[i] = int(idx)
+
+    return opts.__dict__['filename'], ln, opts.__dict__['header']
+
 if __name__ == '__main__':
-    main()
-    # for period in range(10, 100, 10):
-    #     ts = random_data.create_sine_ts(n_ts=1, period=period, min_length=2000, max_length=2000).data[0]
-    #     ts = np.log(ts + np.arange(ts.shape[0])*abs(np.max(ts))/ts.shape[0])
-    #     ts[np.isnan(ts)] = np.mean(ts)
-    #     decompose(ts)
-    #     find_fft_period(ts)
+    main(*parse_options())
+
 
