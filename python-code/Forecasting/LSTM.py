@@ -8,16 +8,19 @@ import lasagne
 import pickle
 import datetime
 import _special_layers
+import my_plots
 
 class LSTM():
     """ Regression models built on LSTM-network """
 
-    def __init__(self, name="LSTM", grad_clip=100, batch_size=50, l_out=None, n_epochs=100):
+    def __init__(self, name="LSTM", grad_clip=100, batch_size=50, l_out=None, n_epochs=100, plot_loss=False):
         self.name = name
         self.grad_clip = grad_clip
         self.batch_size = batch_size
         self.n_epochs = n_epochs
         self.l_out = l_out
+        self.plot_loss = plot_loss
+
 
     def fit(self, trainX, trainY, n_epochs=None, fname=None):
         """ Train module for LSTM network """
@@ -30,6 +33,7 @@ class LSTM():
 
         print("Training ...")
         loss = []
+        loss_msg = ""
         if not n_epochs is None:
             self.n_epochs = n_epochs
         for epoch in xrange(self.n_epochs):
@@ -40,10 +44,17 @@ class LSTM():
 
             loss.append(avg_cost)
 
-            print("Epoch {} average loss = {}".format(epoch, avg_cost))
+            msg = "Epoch {} average loss = {}".format(epoch, avg_cost)
+            loss_msg += msg + "\n \\\\"
+            print(msg)
 
         self.weights = lasagne.layers.get_all_params(self.l_out,trainable=True)
         self.checkpoint(fname, loss=loss)
+        self.msg = loss_msg
+
+        if self.plot_loss:
+            self.fig = my_plots.formatted_plot(loss, xlabel="Epoch", ylabel="Average loss (mse)")
+
 
 
     def predict(self, X):

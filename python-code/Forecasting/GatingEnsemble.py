@@ -8,9 +8,10 @@ from sklearn.externals import joblib
 
 class GatingEnsemble:
     
-    def __init__(self, estimators, estimator_loss = lambda y,y_pred:((y - y_pred)**2)):
+    def __init__(self, estimators, estimator_loss = lambda y,y_pred:((y - y_pred)**2), n_hidden_units=50):
         self.estimators = estimators
         self.estimator_loss = estimator_loss
+        self.n_hidden_units = n_hidden_units # number of hidden units in gate1
     
     def fit(self,X,y,n_iter=100):
         
@@ -21,7 +22,7 @@ class GatingEnsemble:
             self.refit_estimators(X,y)
             if i%10 == 0:
                 print i, 'iteration done'
-            self.refit_gf(X,y,10)
+            self.refit_gf(X,y,n_iter=10)
 
         #print "i want a better implementation"
         
@@ -56,7 +57,7 @@ class GatingEnsemble:
         #fully connected layer, that takes input layer and applies 50 neurons to it.
         # nonlinearity here is sigmoid as in logistic regression
         # you can give a name to each layer (optional)
-        dense_1 = lasagne.layers.DenseLayer(input_layer,num_units=50, W=lasagne.init.Normal(0.01),
+        dense_1 = lasagne.layers.DenseLayer(input_layer,num_units=self.n_hidden_units, W=lasagne.init.Normal(0.01),
                                           nonlinearity = lasagne.nonlinearities.sigmoid,
                                           name = "hidden_dense_layer")
 
@@ -74,7 +75,7 @@ class GatingEnsemble:
         
         target_W_of_x = T.ivector("W(x) target - probability that i-th estimator is best")
         
-        nn = self.nn = self.build_gating_function(x_shape,len(self.estimators))
+        nn = self.nn = self.build_gating_function(x_shape, n_gates=len(self.estimators))
         
         w_predicted = lasagne.layers.get_output(nn,inputs=input_X)
         
