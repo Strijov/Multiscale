@@ -185,7 +185,7 @@ def train_model_CV(data, model, n_fold=5, windows=[5, 10, 25, 50, 75, 100, 150],
     if len(params) == 0:
         par_name, params_range = None, []
     else:
-        par_name, params_range = params.items()[0]
+        par_name, params_range = list(params.items())[0]
     params_range = params[par_name]
     scores = np.zeros((len(windows), len(params_range), n_fold))
 
