@@ -3,8 +3,7 @@ import lasagne
 import theano
 import theano.tensor as T
 import numpy as np
-from sklearn.cross_validation import train_test_split
-from sklearn.externals import joblib
+
 
 class GatingEnsemble:
     
