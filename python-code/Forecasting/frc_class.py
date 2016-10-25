@@ -116,7 +116,6 @@ def CustomModel(parent, *args, **kwargs):
                 name = None
             IdentityModel.__init__(self, name)
             parent.__init__(self, *args, **kwargs)
-
             # for k, v in kwargs.items():
             #     self.__setattr__(k, v)
 
