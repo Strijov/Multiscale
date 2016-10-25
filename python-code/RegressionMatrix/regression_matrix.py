@@ -10,14 +10,13 @@ import warnings
 import pandas as pd
 import numpy as np
 import sklearn.pipeline as pipeline
-from sklearn.cross_validation import KFold
 
-from sklearn.utils.validation import check_is_fitted
+
 from itertools import product
 from collections import namedtuple
 
 import my_plots
-#from Forecasting import frc_class, preprocess_time_series
+
 
 TsMiniStruct_ = namedtuple('TsMiniStruct', 's norm_div norm_subt name index')
 class TsMiniStruct(TsMiniStruct_):
@@ -487,34 +486,34 @@ class RegMatrix:
             my_plots.plot_forecast(ts, self.forecasts[i], idx_frc=idx[i], idx_ts=idx_ts[i], folder=folder, filename=filename)
 
 
-    def optimize_history(self, frc_model, sel_model=None, gen_model=None,  hist_range=None, n_fold=5):
-        """
-        Selects the optimal value of parameter history from the given range
-
-        :param frc_model: forecasting model
-        :type frc_model: callable
-        :param sel_model: feature selection model
-        :type sel_model: callable
-        :param gen_model: feature generation model
-        :type gen_model: callable
-        :param hist_range: range of history values to evaluate
-        :type hist_range: list
-        :return: history
-        :rtype: int
-        """
-        if hist_range is None:
-            hist_range = range(self.request, self.request*10, self.request)
-
-        mse = []
-        for hist in hist_range:
-            self.history = hist
-            self.create_matrix()
-            kf = KFold(self.X.shape[0], n_folds=n_fold)
-            for idx_train, idx_test in kf:
-                self.train_test_split(idx_train=idx_train, idx_test=idx_test)
-                self.train_model(frc_model=frc_model, selector=sel_model, generator=gen_model)
-                frc, _  = self.forecast()
-                mse.append(((abs(frc - self.Y)+ 0.0000001)/(abs(self.Y) + 0.0000001))^2)
+    # def optimize_history(self, frc_model, sel_model=None, gen_model=None,  hist_range=None, n_fold=5):
+    #     """
+    #     Selects the optimal value of parameter history from the given range
+    #
+    #     :param frc_model: forecasting model
+    #     :type frc_model: callable
+    #     :param sel_model: feature selection model
+    #     :type sel_model: callable
+    #     :param gen_model: feature generation model
+    #     :type gen_model: callable
+    #     :param hist_range: range of history values to evaluate
+    #     :type hist_range: list
+    #     :return: history
+    #     :rtype: int
+    #     """
+    #     if hist_range is None:
+    #         hist_range = range(self.request, self.request*10, self.request)
+    #
+    #     mse = []
+    #     for hist in hist_range:
+    #         self.history = hist
+    #         self.create_matrix()
+    #         kf = KFold(self.X.shape[0], n_folds=n_fold)
+    #         for idx_train, idx_test in kf:
+    #             self.train_test_split(idx_train=idx_train, idx_test=idx_test)
+    #             self.train_model(frc_model=frc_model, selector=sel_model, generator=gen_model)
+    #             frc, _  = self.forecast()
+    #             mse.append(((abs(frc - self.Y)+ 0.0000001)/(abs(self.Y) + 0.0000001))^2)
 
 
 def _normalize_ts(ts, name=None):

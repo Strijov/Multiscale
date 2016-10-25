@@ -8,7 +8,7 @@ import pandas as pd
 from datetime import datetime
 from datetime import timedelta
 
-from raw_time_series import TsStruct
+from .raw_time_series import TsStruct
 
 DATASET = "EnergyWeather"
 DIRNAME = "../code/data/EnergyWeatherTS"

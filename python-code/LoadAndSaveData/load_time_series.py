@@ -1,12 +1,13 @@
 from __future__ import division
+from __future__ import print_function
 import os.path
 import glob
 import re
 
 from sklearn.externals import joblib
-from raw_time_series import TsStruct
+from .raw_time_series import TsStruct
 
-import load_energy_weather_data
+from . import load_energy_weather_data
 DIRNAME = 'ProcessedData' # directory to store data (.pkl) in
 
 # Define a dict of func names for data loading
