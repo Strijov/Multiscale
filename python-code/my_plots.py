@@ -1,12 +1,35 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from collections import namedtuple
+
 import re
 import os
 import glob
 
-tsMiniStruct = namedtuple('tsMiniStruct', 's norm_div norm_subt name index')
 
+
+
+def formatted_plot(y, x=None, ls=None, title=None, legend=None, xlabel=None, ylabel=None):
+    if ls is None:
+        ls = "-"
+    if legend is None:
+        label = ""
+    else:
+        label = legend
+    if x is None:
+        plt.plot(y, ls=ls, label=label)
+    else:
+        plt.plot(x, y, ls=ls, label=label)
+
+    if not title is None:
+        plt.title(title)
+    if not legend is None:
+        plt.legend(loc='best', prop={'size': 16})
+    if not xlabel is None:
+        plt.xlabel(xlabel)
+    if not ylabel is None:
+        plt.ylabel(ylabel)
+
+    return plt
 
 def plot_forecast(ts, forecasts, idx_ts=None, idx_frc=None, filename=None, folder=""):
     if idx_frc is None:
@@ -40,6 +63,21 @@ def plot_forecast(ts, forecasts, idx_ts=None, idx_frc=None, filename=None, folde
         plt.close()
 
 
+def imagesc(matrix, xlabel="", ylabel="", xticks=None, yticks=None):
+
+    plt.imshow(matrix, interpolation='none')
+    plt.colorbar()
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    if not xticks is None:
+        plt.gca().set_xticklabels(xticks)
+    if not yticks is None:
+        plt.gca().set_yticklabels(yticks)
+
+
+    return plt
+
+
 def input_latex_headers():
     latex_header = '\\documentclass[12pt]{article}\n' + \
                    '\\extrafloats{100}\n' + \
@@ -51,7 +89,7 @@ def input_latex_headers():
                    '\\usepackage{amsmath, amsfonts, amssymb, amsthm, amscd}\n' + \
                    '\\usepackage{graphicx, epsfig, subfig, epstopdf}\n' + \
                    '\\usepackage{longtable}\n' + \
-                   '\\graphicspath{ {../fig/} {../} {fig/} }\n' + \
+                   '\\graphicspath{ {../fig/} {../} {fig/} {decompose/}}\n' + \
                    '\\begin{document}\n\n'
     latex_end = "\\end{document}"
 
@@ -88,7 +126,7 @@ def check_text_for_latex(text):
 def plot_seasonal_trend_decomposition(ts, trend, seasonal=None, residual=None, folder="fig"):
 
     if not os.path.exists(folder):
-        os.mkdir(folder)
+        os.makedirs(folder)
 
     if seasonal is None:
         seasonal = np.zeros_like(ts)
@@ -129,11 +167,14 @@ def print_to_latex(inputs, file_name=None, check=True, folder=""):
 
 def include_figures_from_folder(folder):
 
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+
     fnames = glob.glob(os.path.join(folder, "*.png"))
     latex_str = ""
     for figname in fnames:
         #figname = "p"+str(p)+"q"+str(q)
-        figname = figname.split(os.path.sep)[-1] #"/".join(figname.split(os.path.sep))
+        figname = "/".join(figname.split(os.path.sep)[1:]) #join(figname.split(os.path.sep))
         if " " in figname:
             figname = "\"" + figname + "\""
         latex_str += "\n"
