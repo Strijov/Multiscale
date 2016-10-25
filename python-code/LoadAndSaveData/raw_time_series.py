@@ -58,6 +58,24 @@ class TsStruct():
         return train, test
 
 
+    def replace_nans(self):
+        for i, ts in enumerate(self.data):
+            if not np.isnan(ts).any():
+                continue
+
+            print("Filling NaNs for TS", ts.name)
+            if np.isnan(ts).all():
+                print("All inputs are NaN", "replacing with zeros")
+                self.data[i] = pd.Series(np.zeros_like(ts), index=ts.index, name=ts.name)
+                continue
+
+            ts_prop = pd.Series(ts).fillna(method="pad")
+            ts_back = pd.Series(ts_prop).fillna(method="bfill")
+            self.data[i] = ts_back  # (ts_back + ts_prop)[pd.isnull(ts)] / 2
+
+
+
+
     def align_time_series(self):
         """
         Truncates time series in self.data so that the end points of all times series belong to the same requested interval
