@@ -112,11 +112,13 @@ def read_random_lines(file_name, line_indices, header):
         header_names = b[0:7]
 
     # dictionaries to store metric ids and host ids against the line indices
-    metric_ids = dict.fromkeys([i - (1 + header) for i in line_indices]) # since lines are enumerated from 1
+    #metric_ids = dict.fromkeys([i - (1 + header) for i in line_indices]) # since lines are enumerated from 1
     host_ids = defaultdict(list)
+    metric_ids = {}
 
 
     data = [] # empty matrix to store data
+    line = 0
     for line_index in line_indices: # line_indices: input the time series correspond to the same device
         # retrieve  different fields of a line
         a = linecache.getline(file_name, line_index)
@@ -125,14 +127,15 @@ def read_random_lines(file_name, line_indices, header):
         # stores the metricID and hostID against line numbers
         #if header == True:
         metric_ids[line_index] = b[0]
-        host_ids[b[1]].append(line_index - (1 + header))
+        host_ids[b[1]].append(line)  #(line_index - (1 + header))
+        line += 1
         # values of the current metric, v1..vn
         V, T, = [], []
         for i in range(8, len(b)):
             c = b[i]
             v, s, t = c.split(":")  # value:status:time
             V.append(float(v))
-            T.append(float(t))
+            T.append(float(t)) # time is in unix format
         # append current values to the data matrix
         data.append(pd.Series(V, index=T, name=b[0]))
 

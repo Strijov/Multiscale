@@ -2,60 +2,11 @@ from __future__ import division
 import os.path
 import glob
 import re
-import numpy as np
 
 from sklearn.externals import joblib
-from collections import namedtuple
-
-TsStruct_ = namedtuple('TsStruct', 'data request history name readme')
-class TsStruct():
-    """ This structure stores input data. The fields are:
-
-    :param data: input time series, each is pandas.Series
-    :type data: list
-    :param request: Time interval requested for forecast
-    :type request: int\ time delta ? #FIXIT
-    :param history: Time interval,  to define number of historical points.
-    :type history: int\ time delta ? #FIXIT
-    :param name: Dataset name
-    :type name: string
-    :param readme: Dataset info
-    :type readme: string
-    """
-    def __init__(self, data, request, history, name, readme):
-        self.data = data
-        self.request = request
-        self.history = history
-        self.name = name
-        self.readme = readme
-        self.intervals = self.ts_frequencies()
-
-
-    def ts_frequencies(self):
-        freqs = [min(np.diff(ts.index)) for ts in self.data]
-
-        return freqs
-
-    def train_test_split(self, train_test_ratio=0.75):
-
-        max_freq = np.argmin(self.intervals) #
-        n_train = int(len(self.data[max_freq]) * train_test_ratio)
-        max_train_index = self.data[max_freq].index[n_train]
-
-        train_ts, test_ts = [], []
-        for ts in self.data:
-            train_idx = ts.index <= max_train_index
-            test_idx = ts.index > max_train_index
-            train_ts.append(ts[train_idx])
-            test_ts.append(ts[test_idx])
-        train = TsStruct(train_ts, self.request, self.history, self.name, self.readme)
-        test = TsStruct(test_ts, self.request, self.history, self.name, self.readme)
-
-        return train, test
-
+from raw_time_series import TsStruct
 
 import load_energy_weather_data
-
 DIRNAME = 'ProcessedData' # directory to store data (.pkl) in
 
 # Define a dict of func names for data loading
@@ -66,6 +17,9 @@ LOAD_FUNCS_DICT = {'EnergyWeather': load_energy_weather_data,
 # Define a dict for raw data directories
 RAW_DIRS_DICT = {'EnergyWeather': '../code/data/EnergyWeatherTS/orig',
               'NNcompetition': '../code/data/NNcompetition'} #FIXIT
+
+
+
 
 def load_all_time_series(datasets=None, load_funcs=None, name_pattern='', load_raw=True):
     """
@@ -170,7 +124,7 @@ def from_iot_to_struct(ts_list, idx, dataset):
         request.append(ts_list[i].index[1] - ts_list[i].index[0])
         ts.append(ts_list[i])
 
-    return TsStruct(ts, max(request), None, dataset, "")
+    return TsStruct(ts, None, None, dataset, "")
 
 
 if __name__ == '__main__':
