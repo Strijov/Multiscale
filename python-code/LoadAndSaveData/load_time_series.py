@@ -42,7 +42,7 @@ def load_all_time_series(datasets=None, load_funcs=None, name_pattern='', load_r
     if datasets is None:
         datasets = 'EnergyWeather'#['NNcompetition', 'EnergyWeather']
     # make it a list of datasets
-    if not datasets is list:
+    if not isinstance(datasets, list):
         datasets = [datasets]
 
     if load_funcs is None:
