@@ -1,3 +1,4 @@
+""" Created on 23 September 2016. Author: Anastasia Motrenko"""
 from __future__ import print_function
 
 import numpy as np

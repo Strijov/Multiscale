@@ -94,7 +94,7 @@ def read_random_lines(file_name, line_indices, header):
     Read specific lines from file in InternetOfThings format.
 
     :param file_name:  .csv filename with raw data
-    :type file_name: string
+    :type file_name: str
     :param line_indices: indices of lines to read from file.  Lines are enumerated from 1
     :type line_indices: list
     :param header: Specifies if the file contains a header row

@@ -33,6 +33,14 @@ class TsStruct():
         return freqs
 
     def train_test_split(self, train_test_ratio=0.75):
+        """
+        Splits time series sequentially into train and test time series
+
+        :param train_test_ratio: ratio of train objects to original ts length
+        :type train_test_ratio: float
+        :return: TsStructs with train and test time series
+        :rtype: tuple
+        """
 
         max_freq = np.argmin(self.intervals) #
         n_train = int(len(self.data[max_freq]) * train_test_ratio)
@@ -53,6 +61,7 @@ class TsStruct():
     def align_time_series(self):
         """
         Truncates time series in self.data so that the end points of all times series belong to the same requested interval
+
         :return: truncated time series in pd.Series format
         :rtype: list
         """
@@ -94,6 +103,14 @@ class TsStruct():
         return res
 
 def assign_one_step_requests(intervals):
+    """
+    Assigns request as the lowest common multiple of one step requests for each time series
+
+    :param intervals: time deltas in unix format
+    :type intervals: list
+    :return: common request
+    :rtype: time delta, unix format
+    """
 
     request = 1
     for intv in intervals:
