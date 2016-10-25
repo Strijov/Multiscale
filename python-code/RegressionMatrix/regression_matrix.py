@@ -291,10 +291,13 @@ class RegMatrix:
         from Forecasting import frc_class
         if selector is None:
             selector = frc_class.IdentityModel()
-            selector.feature_dict = copy.deepcopy(self.feature_dict)
+
         if generator is None:
             generator = frc_class.IdentityGenerator()
-            generator.feature_dict = copy.deepcopy(self.feature_dict)
+
+
+        selector.feature_dict = copy.deepcopy(self.feature_dict)
+        generator.feature_dict = copy.deepcopy(self.feature_dict)
 
         # create pipeline with named steps
         model = pipeline.Pipeline([('gen', generator), ('sel', selector), ('frc', frc_model)])
