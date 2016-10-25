@@ -627,7 +627,7 @@ def _check_input_ts_idx(idx, default):
         warnings.warn("Unvalid argument idx in RegMatrix", UserWarning)
         idx = default
         
-    return idx
+    return list(idx)
 
 
 
