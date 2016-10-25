@@ -53,27 +53,9 @@
 <span class="kn">import</span> <span class="nn">re</span>
 
 <span class="kn">from</span> <span class="nn">sklearn.externals</span> <span class="k">import</span> <span class="n">joblib</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
-
-<span class="n">TsStruct_</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;TsStruct&#39;</span><span class="p">,</span> <span class="s1">&#39;data request history name readme&#39;</span><span class="p">)</span>
-<div class="viewcode-block" id="TsStruct"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.load_time_series.TsStruct">[docs]</a><span class="k">class</span> <span class="nc">TsStruct</span><span class="p">(</span><span class="n">TsStruct_</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; This structure stores input data. The fields are:</span>
-
-<span class="sd">    :param data: input time series, each is pandas.Series</span>
-<span class="sd">    :type data: list</span>
-<span class="sd">    :param request: Time interval requested for forecast</span>
-<span class="sd">    :type request: int\ time delta ? #FIXIT</span>
-<span class="sd">    :param history: Time interval,  to define number of historical points.</span>
-<span class="sd">    :type history: int\ time delta ? #FIXIT</span>
-<span class="sd">    :param name: Dataset name</span>
-<span class="sd">    :type name: string</span>
-<span class="sd">    :param readme: Dataset info</span>
-<span class="sd">    :type readme: string</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">pass</span></div>
+<span class="kn">from</span> <span class="nn">raw_time_series</span> <span class="k">import</span> <span class="n">TsStruct</span>
 
 <span class="kn">import</span> <span class="nn">load_energy_weather_data</span>
-
 <span class="n">DIRNAME</span> <span class="o">=</span> <span class="s1">&#39;ProcessedData&#39;</span> <span class="c1"># directory to store data (.pkl) in</span>
 
 <span class="c1"># Define a dict of func names for data loading</span>
@@ -84,6 +66,9 @@
 <span class="c1"># Define a dict for raw data directories</span>
 <span class="n">RAW_DIRS_DICT</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;EnergyWeather&#39;</span><span class="p">:</span> <span class="s1">&#39;../code/data/EnergyWeatherTS/orig&#39;</span><span class="p">,</span>
               <span class="s1">&#39;NNcompetition&#39;</span><span class="p">:</span> <span class="s1">&#39;../code/data/NNcompetition&#39;</span><span class="p">}</span> <span class="c1">#FIXIT</span>
+
+
+
 
 <div class="viewcode-block" id="load_all_time_series"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.load_time_series.load_all_time_series">[docs]</a><span class="k">def</span> <span class="nf">load_all_time_series</span><span class="p">(</span><span class="n">datasets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">load_funcs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name_pattern</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">load_raw</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -106,7 +91,7 @@
     <span class="k">if</span> <span class="n">datasets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">datasets</span> <span class="o">=</span> <span class="s1">&#39;EnergyWeather&#39;</span><span class="c1">#[&#39;NNcompetition&#39;, &#39;EnergyWeather&#39;]</span>
     <span class="c1"># make it a list of datasets</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">datasets</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">datasets</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
         <span class="n">datasets</span> <span class="o">=</span> <span class="p">[</span><span class="n">datasets</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="n">load_funcs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -188,7 +173,7 @@
         <span class="n">request</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ts_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ts_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="n">ts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ts_list</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
-    <span class="k">return</span> <span class="n">TsStruct</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">request</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">TsStruct</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span></div>
 
 
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>

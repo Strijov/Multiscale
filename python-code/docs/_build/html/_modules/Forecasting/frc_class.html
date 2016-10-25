@@ -47,7 +47,8 @@
           <div class="body" role="main">
             
   <h1>Source code for Forecasting.frc_class</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span></span><span class="sd">&quot;&quot;&quot; Created on 23 September 2016. Author: Anastasia Motrenko&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">BaseEstimator</span>
@@ -61,21 +62,46 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">is_fitted</span> <span class="o">=</span> <span class="kc">False</span>
 
 <div class="viewcode-block" id="IdentityModel.fit"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.IdentityModel.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">):</span>
-        <span class="c1">#override this module</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Training method, override it in your model</span>
+
+<span class="sd">        :param X: training data, features</span>
+<span class="sd">        :type X: ndarray</span>
+<span class="sd">        :param Y: trainning data, targets</span>
+<span class="sd">        :type Y: ndarray</span>
+<span class="sd">        :return: self</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 <div class="viewcode-block" id="IdentityModel.predict"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.IdentityModel.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-        <span class="c1"># override this module</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prediction method, override it in your model</span>
+
+<span class="sd">        :param X: input data</span>
+<span class="sd">        :type X: ndarray</span>
+<span class="sd">        :return: forecasted data</span>
+<span class="sd">        :rtype: ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">return</span> <span class="n">X</span></div>
 
 <div class="viewcode-block" id="IdentityModel.transform"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.IdentityModel.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Duplicates self.predict</span>
+
+<span class="sd">        :param X:</span>
+<span class="sd">        :type X:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        :rtype:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="IdentityModel.print_pars"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.IdentityModel.print_pars">[docs]</a>    <span class="k">def</span> <span class="nf">print_pars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_params</span><span class="p">()</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span>
         <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span></div></div>
+        <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+            <span class="c1">#if not &quot;__&quot; in par:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">par</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__getattribute__</span><span class="p">(</span><span class="n">par</span><span class="p">))</span></div></div>
 
 <div class="viewcode-block" id="IdentityFrc"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.IdentityFrc">[docs]</a><span class="k">class</span> <span class="nc">IdentityFrc</span><span class="p">(</span><span class="n">IdentityModel</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Helper class, used for testing purposes&quot;&quot;&quot;</span>
@@ -124,18 +150,23 @@
 
 <div class="viewcode-block" id="CustomModel"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.CustomModel">[docs]</a><span class="k">def</span> <span class="nf">CustomModel</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Defines a new class with double inherirance</span>
+<span class="sd">    Defines a new class with double inheritance</span>
 
 <span class="sd">    :param parent: Parent class</span>
+<span class="sd">    :param args: Sequential arguments</span>
 <span class="sd">    :param kwargs: Optional keyword arguments</span>
-<span class="sd">    :return: instance of CunstomModel class</span>
+<span class="sd">    :return: instance of CustomModel class</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">class</span> <span class="nc">CustomModel</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">IdentityModel</span><span class="p">):</span>
 
-        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+                <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">IdentityModel</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
             <span class="n">parent</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
             <span class="c1"># for k, v in kwargs.items():</span>
             <span class="c1">#     self.__setattr__(k, v)</span>
 
