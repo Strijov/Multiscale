@@ -51,9 +51,10 @@ class RegMatrix:
         """
 
         self.request = ts_struct.request
+
         self.history = ts_struct.history
         if self.history is None:
-            self.history = ts_struct.request
+            self.history = self.request
             print("History is not defined.  Do not forget to optimize it!") # FIXIT
 
         # check that data field contains a list:
@@ -117,12 +118,13 @@ class RegMatrix:
             if i in self.y_idx:
                 self.n_req_points[i] = n_req_points # here we assume time stamps are uniform
 
-            # if self.n_hist_points[i] >= len(ts):
-            #     raise ValueError("The length of time series " +ts.name+ "is shorter the number of historical points:" +
-            #                      str(len(ts)) + " <= " + str(self.n_hist_points[i]))
-            # if self.n_req_points[i] >= len(ts):
-            #     raise ValueError("The length of time series " +ts.name+ "is shorter the number of requested points:" +
-            #                      str(len(ts)) + " <= " + str(self.n_req_points[i]))
+            if self.n_req_points[i] >= ts.s.shape[0]:
+                raise ValueError("The length of time series {0} is smaller than the number of requested points: {1} <= {2}"
+                                 .format(ts.name, ts.s.shape[0], self.n_req_points[i]))
+            if self.n_hist_points[i] >= ts.s.shape[0]:
+                raise ValueError("The length of time series {0} is smaller than the number of historical points: {1} <= {2}"
+                                 .format(ts.name, ts.s.shape[0], self.n_hist_points[i]))
+
 
             n_rows[i] = int(np.floor(len(ts.s) - self.n_hist_points[i]) / n_req_points)
 
@@ -296,6 +298,7 @@ class RegMatrix:
 
         # create pipeline with named steps
         model = pipeline.Pipeline([('gen', generator), ('sel', selector), ('frc', frc_model)])
+        model.name = "_".join([str(frc_model.name), str(generator.name), str(selector.name)])
 
         # once fitted, the model is retrained only if retrain = True
         if (not frc_model.is_fitted) or retrain:
@@ -623,6 +626,8 @@ def _check_input_ts_idx(idx, default):
         idx = default
         
     return idx
+
+
 
 
 def history_from_periods(ts_list, n_periods=3):
