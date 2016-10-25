@@ -215,7 +215,7 @@ class RegMatrix:
     # def matrix_indices(self, n_hist, n_req, n_rows) :
     #
     #     flat_idx = []
-    #     for i in xrange(n_rows):
+    #     for i in range(n_rows):
     #         flat_idx.extend(range(i * n_req, (i + 1) * n_req + n_hist))
     #         # idx = np.unravel_index(flat_idx, (n_rows, n_hist + n_req))
     #     return flat_idx
@@ -597,7 +597,7 @@ def matrix_idx(n_hist, n_req, n_rows):
     """
 
     flat_idx = []
-    for i in xrange(n_rows):
+    for i in range(n_rows):
         flat_idx.extend(range(i * n_req, (i + 1) * n_req + n_hist))
         # idx = np.unravel_index(flat_idx, (n_rows, n_hist + n_req))
 
