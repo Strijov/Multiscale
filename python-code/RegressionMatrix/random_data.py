@@ -3,7 +3,8 @@ import numpy as np
 
 from LoadAndSaveData.load_time_series import TsStruct
 
-def create_sine_ts(n_ts = 3, n_req = 10, n_hist=20, max_length=5000, min_length = 200):
+PERIOD = 15
+def create_sine_ts(n_ts = 3, n_req = 10, n_hist=20, max_length=5000, min_length = 200, period=PERIOD):
     """
     Creates artificial "Multiscale" data (noised sines)
 
@@ -22,10 +23,11 @@ def create_sine_ts(n_ts = 3, n_req = 10, n_hist=20, max_length=5000, min_length 
     """
 
     end_time = np.random.randint(min_length, max_length + 1)
-    index = range(end_time)  # frequency is the same for all FIXIT
+
+    index = np.arange(end_time)  # frequency is the same for all FIXIT
     ts = [0] * n_ts
     for n in range(n_ts):
-        ts[n] = pd.Series(np.sin(index) + np.random.randn(len(index))*0.2, index=index, name=str(n))
+        ts[n] = pd.Series(np.sin(index*2*np.pi/period) + np.random.randn(len(index))*0.2, index=index, name=str(n))
 
     ts = TsStruct(ts, n_req, n_hist, 'Sine', 'Artificial data for testing purposes')
     return ts
