@@ -51,6 +51,7 @@ def main(file_name=None, line_indices="all", header=True):
     # Select only data from first dataset in host_ids:
     dataset = host_ids.keys()[0] # select the first dataset
     ts = load_time_series.from_iot_to_struct(data, host_ids[dataset], dataset) # get all time series from dataset in TsStruct format
+    ts.replace_nans()
     ts.align_time_series() # truncate time series to align starting and ending points
     latex_str += ts.summarize_ts(latex=True)
 
