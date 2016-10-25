@@ -1,16 +1,15 @@
 """
-
+Created on Oct 20, 2016.
 """
 from __future__ import print_function
 import numpy as np
 import pandas as pd
 import os
 import time
-import copy
 import optparse
 import my_plots
 
-from sklearn.cross_validation import KFold
+from sklearn.model_selection import KFold
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import RidgeCV, Lasso
 from LoadAndSaveData import get_iot_data, load_time_series
@@ -21,6 +20,17 @@ from Forecasting import GatingEnsemble, LSTM
 N_EXPERTS = 4
 
 def main(file_name=None, line_indices="all", header=True):
+    """
+    Runs forecasting models and reports results in latex file
+
+    :param file_name: file name (.csv) with data in IoT format
+    :type file_name: str
+    :param line_indices: indices of lines to read from file.  Lines are enumerated from 1. If "all", read the whole file
+    :param header: Specifies if the file contains a header row
+    :type header: bool
+    :return: latex report
+    :rtype: str
+    """
     # Init string for latex results:
     latex_str = ""
     folder = os.path.join("fig", str(int(time.time())))
@@ -28,7 +38,6 @@ def main(file_name=None, line_indices="all", header=True):
         os.mkdir(folder)
 
     # Load data in IoT format
-    file_name = os.path.join('..', 'code','data', 'IotTemplate', 'data.csv')
     data, metric_ids, host_ids, header_names = get_iot_data.get_data(file_name, line_indices, header)
 
 
@@ -42,13 +51,13 @@ def main(file_name=None, line_indices="all", header=True):
     train, test = ts.train_test_split(train_test_ratio=0.75) # split raw time series into train and test parts
 
     # Plot periodics:
-    # for i, tsi in enumerate(ts.data):
-    #     save_to = os.path.join(folder, "decompose", "_".join(tsi.name.split(" ")))
-    #     # infer periodicity and try to decompose ts into tend, seasonality and resid:
-    #     period, msg = arima_model.decompose(tsi, nhist=500, folder=save_to, nsplits=50)
-    #     latex_str += my_plots.check_text_for_latex(tsi.name) + ": "
-    #     latex_str += msg
-    #     latex_str += arima_model.make_report(os.path.join(save_to), write=False) # adds figures from "save_to" to latex_str
+    for i, tsi in enumerate(ts.data):
+        save_to = os.path.join(folder, "decompose", "_".join(tsi.name.split(" ")))
+        # infer periodicity and try to decompose ts into tend, seasonality and resid:
+        period, msg = arima_model.decompose(tsi, nhist=500, folder=save_to, nsplits=50)
+        latex_str += my_plots.check_text_for_latex(tsi.name) + ": "
+        latex_str += msg
+        latex_str += arima_model.make_report(os.path.join(save_to), write=False) # adds figures from "save_to" to latex_str
 
 
 
@@ -204,47 +213,6 @@ def train_model_CV(data, model, n_fold=5, windows=[5, 10, 25, 50, 75, 100, 150],
 
     plt = my_plots.imagesc(m_scores, xlabel=par_name, ylabel="n_req", yticks=windows, xticks=params_range)
     return window_size, best_par, mse, plt
-
-
-
-# def train_model_CV(data, n_fold=5, windows=[5, 10, 25, 50, 75, 100, 150],
-#                        n_trees=[500, 1000, 2000, 3000], f_horizon=1):
-#
-#         scores = np.zeros((len(windows), len(n_trees), n_fold))
-#
-#         for w_ind in range(0, len(windows)):
-#             # obtain the matrix from  the time series data with a given window-size
-#             data.history = windows[w_ind] * data.request
-#             mat = regression_matrix.RegMatrix(data)
-#             mat.create_matrix(f_horizon)
-#             w_train = mat.X
-#             y_wtrain = mat.Y
-#             #(w_train, y_wtrain) = windowize(data, windows[w_ind], f_horizon=f_horizon)
-#
-#             # cross-validation
-#             r, c = w_train.shape
-#             kf = KFold(r, n_folds=n_fold)
-#             for tree_ind in range(0, len(n_trees)):
-#                 reg = RandomForestRegressor(n_estimators=n_trees[tree_ind], n_jobs=24)
-#                 n = 0
-#                 for train_index, val_index in kf:
-#                     # getting training and validation data
-#                     X_train, X_val = w_train[train_index, :], w_train[val_index, :]
-#                     y_train, y_val = y_wtrain[train_index], y_wtrain[val_index]
-#                     # train the model and predict the MSE
-#                     reg.fit(X_train, y_train)
-#                     pred_val = reg.predict(X_val)
-#                     scores[w_ind, tree_ind, n] = mean_squared_error(pred_val, y_val)
-#                     n += 1
-#         m_scores = np.average(scores, axis=2)
-#         mse = m_scores.min()
-#
-#         # select best window_size and best n_tree with smallest MSE
-#         (b_w_ind, b_tree_ind) = np.where(m_scores == mse)
-#         window_size, nr_tree = windows[b_w_ind], n_trees[b_tree_ind]
-#
-#         return (window_size, nr_tree, mse)
-
 
 
 def mean_squared_error(f, y):
