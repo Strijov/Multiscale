@@ -15,7 +15,9 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import RidgeCV, Lasso
 from LoadAndSaveData import get_iot_data, load_time_series
 from RegressionMatrix import regression_matrix
-from Forecasting import frc_class, arima_model, LSTM, GatingEnsemble
+from Forecasting import frc_class, arima_model
+#from Forecasting import LSTM
+#from Forecasting import GatingEnsemble
 
 N_EXPERTS = 4
 
@@ -75,7 +77,7 @@ def main(file_name=None, line_indices="all", header=True):
     random_forest = frc_class.CustomModel(RandomForestRegressor, n_jobs=24, name="RandomForest")
     # mixture_experts = frc_class.CustomModel(GatingEnsemble.GatingEnsemble, name="Mixture",
     #                                          estimators=[RidgeCV(), LassoCV()])
-    lstm = frc_class.CustomModel(LSTM.LSTM, name="LSTM", n_epochs=50, plot_loss=True)
+    #lstm = frc_class.CustomModel(LSTM.LSTM, name="LSTM", n_epochs=50, plot_loss=True)
     lasso = frc_class.CustomModel(Lasso, name="Lasso", fit_intercept=True, alpha=2.0)
     model_list = [lasso] # random_forest, mixture_experts, lstm
 
@@ -87,7 +89,7 @@ def main(file_name=None, line_indices="all", header=True):
 
 
     WINDOWS = [2, 5, 7, 10, 15, 20]
-    N_FOLDS = 5
+    N_FOLDS = 2
 
     for model in model_list:
         model_save_path = os.path.join(folder, model.name)

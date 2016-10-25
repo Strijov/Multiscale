@@ -20,7 +20,7 @@ class GatingEnsemble:
         for i in range(n_iter):
             self.refit_estimators(X,y)
             if i%10 == 0:
-                print i, 'iteration done'
+                print(i, 'iteration done')
             self.refit_gf(X,y,n_iter=10)
 
         #print "i want a better implementation"
