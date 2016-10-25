@@ -5,6 +5,7 @@ from __future__ import print_function
 import numpy as np
 import pandas as pd
 import os
+import sys
 import time
 import optparse
 import my_plots
@@ -14,8 +15,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import RidgeCV, Lasso
 from LoadAndSaveData import get_iot_data, load_time_series
 from RegressionMatrix import regression_matrix
-from Forecasting import frc_class, arima_model
-from Forecasting import GatingEnsemble, LSTM
+from Forecasting import frc_class, arima_model, LSTM, GatingEnsemble
 
 N_EXPERTS = 4
 
@@ -33,12 +33,19 @@ def main(file_name=None, line_indices="all", header=True):
     """
     # Init string for latex results:
     latex_str = ""
+    time_at_start = time.time()
     folder = os.path.join("fig", str(int(time.time())))
     if not os.path.exists(folder):
         os.mkdir(folder)
 
     # Load data in IoT format
-    data, metric_ids, host_ids, header_names = get_iot_data.get_data(file_name, line_indices, header)
+    try:
+        data, metric_ids, host_ids, header_names = get_iot_data.get_data(file_name, line_indices, header)
+    except BaseException as e:
+        print(e)
+        print("Line indices: ", line_indices)
+        print("Fileame: ", file_name)
+        return None
 
 
     # Select only data from first dataset in host_ids:
@@ -67,15 +74,15 @@ def main(file_name=None, line_indices="all", header=True):
     random_forest = frc_class.CustomModel(RandomForestRegressor, n_jobs=24, name="RandomForest")
     # mixture_experts = frc_class.CustomModel(GatingEnsemble.GatingEnsemble, name="Mixture",
     #                                          estimators=[RidgeCV(), LassoCV()])
-    lstm = frc_class.CustomModel(LSTM.LSTM, name="LSTM", n_epochs=70, plot_loss=True)
+    lstm = frc_class.CustomModel(LSTM.LSTM, name="LSTM", n_epochs=50, plot_loss=True)
     lasso = frc_class.CustomModel(Lasso, name="Lasso", fit_intercept=True, alpha=2.0)
-    model_list = [lstm] # random_forest, mixture_experts, lstm
+    model_list = [lasso] # random_forest, mixture_experts, lstm
 
     params_range ={}
     params_range["RandomForest"] = {"n_estimators": [3000]}
     params_range["Mixture"] = {"n_hidden_units":[10, 20, 30, 50, 100]}
-    params_range["LSTM"] = {"batch_size":[20, 30, 50, 100]}
-    params_range["Lasso"] = {"alpha": [1.0, 2.0, 5.0, 10.0]}  # [20, 30, 50, 100]} #[1.0, 1.25, 1.5, 1.75, 2.0]
+    params_range["LSTM"] = {"batch_size": [20, 30, 50, 100]}
+    params_range["Lasso"] = {"alpha": [float(i) / 10000 for i in  range(1, 11, 1)]  + [0.01, 0.05]}  # [20, 30, 50, 100]} #[1.0, 1.25, 1.5, 1.75, 2.0]
 
 
     WINDOWS = [2, 5, 7, 10, 15, 20]
@@ -140,6 +147,8 @@ def main(file_name=None, line_indices="all", header=True):
         data.plot_frc(n_frc=10, n_hist=10, folder=model_save_path)
         latex_str += my_plots.include_figures_from_folder(model_save_path)
 
+    total_time = time.time() - time_at_start
+    latex_str += "\n Total time: {0}\n \\".format(total_time)
     my_plots.print_to_latex(latex_str, check=False, file_name="IoT_example", folder=folder)
 
     return latex_str
@@ -186,18 +195,28 @@ def train_model_CV(data, model, n_fold=5, windows=[5, 10, 25, 50, 75, 100, 150],
 
         # cross-validation
         r, c = w_train.shape
-        kf = KFold(r, n_folds=n_fold)
+        kf = KFold(n_splits=n_fold)
+        kf.get_n_splits(w_train)
         for par_ind in range(0, len(params_range)):
             model.__setattr__(par_name, params_range[par_ind])
             n = 0
-            for train_index, val_index in kf:
+            for train_index, val_index in kf.split(w_train):
+                print("\rWindow size: {0}, {1} = {2}, kfold = {3}".format(windows[w_ind], par_name, params_range[par_ind], n), end="")
+                sys.stdout.flush()
                 # getting training and validation data
                 X_train, X_val = w_train[train_index, :], w_train[val_index, :]
                 y_train, y_val = y_wtrain[train_index], y_wtrain[val_index]
                 # train the model and predict the MSE
-                model.fit(X_train, y_train)
-                pred_val = model.predict(X_val)
-                scores[w_ind, par_ind, n] = mean_squared_error(pred_val, y_val)
+                try:
+                    model.fit(X_train, y_train)
+                    pred_val = model.predict(X_val)
+                    scores[w_ind, par_ind, n] = mean_squared_error(pred_val, y_val)
+                except BaseException as e:
+                    print(e)
+                    if n > 0:
+                        scores[w_ind, par_ind, n] = scores[w_ind, par_ind, n-1]
+                    else:
+                        scores[w_ind, par_ind, n] = 0
                 n += 1
     m_scores = np.average(scores, axis=2)
     mse = m_scores.min()
@@ -229,7 +248,7 @@ def parse_options():
                       default=os.path.join('..', 'code','data', 'IotTemplate', 'data.csv'),
                       help='.csv file with input data. Default: %default')
     parser.add_option('-l', '--line-indices',
-                      type='string', default='all',
+                      type='string', default="15, 16",
                       help='Line indices to be read from file. Default: %default')
     parser.add_option('-d', '--header',
                       type='string', default='True',
@@ -242,6 +261,7 @@ def parse_options():
     if opts.__dict__['line_indices'] == "all":
         ln = opts.__dict__['line_indices']
     else:
+
         ln = opts.__dict__['line_indices'].split(",")
         for i, idx in enumerate(ln):
             ln[i] = int(idx)
