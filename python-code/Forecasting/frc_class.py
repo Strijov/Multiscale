@@ -48,10 +48,11 @@ class IdentityModel(BaseEstimator):
         return self.predict(X)
 
     def print_pars(self):
-        params = self.get_params()
+        params = self.__dict__
         print(self.name)
-        for k, v in params.items():
-            print(k, ":", v)
+        for par in params:
+            #if not "__" in par:
+            print(par, ":", self.__getattribute__(par))
 
 class IdentityFrc(IdentityModel):
     """ Helper class, used for testing purposes"""
