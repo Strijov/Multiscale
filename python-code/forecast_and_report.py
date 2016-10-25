@@ -38,7 +38,7 @@ def main(file_name=None, line_indices="all", header=True):
     time_at_start = time.time()
     folder = os.path.join("fig", str(int(time.time())))
     if not os.path.exists(folder):
-        os.mkdir(folder)
+        os.makedirs(folder)
 
     # Load data in IoT format
     try:
