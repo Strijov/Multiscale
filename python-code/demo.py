@@ -42,6 +42,7 @@ def demo_compare_forecasts(ts_struct_list=None, model=None, generators=None, fea
 
 
     # Load and prepare dataset.
+
     try:
         ts_struct_list = load_time_series.load_all_time_series(datasets=['EnergyWeather'], load_raw=False, name_pattern="")
     except:

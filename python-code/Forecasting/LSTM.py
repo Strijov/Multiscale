@@ -22,7 +22,7 @@ class LSTM():
         self.plot_loss = plot_loss
 
 
-    def fit(self, trainX, trainY, n_epochs=None, fname=None):
+    def fit(self, trainX, trainY, n_epochs=None, fname=None, verbose=False):
         """ Train module for LSTM network """
 
         _, nX = trainX.shape
@@ -31,7 +31,7 @@ class LSTM():
         if self.l_out is None:
             self.init_nn_structure(int(nX), int(nY))
 
-        print("Training ...")
+        #print("Training ...")
         loss = []
         loss_msg = ""
         if not n_epochs is None:
@@ -42,11 +42,14 @@ class LSTM():
                 x, y = batch
                 avg_cost += self.trainT(x, y)
 
+
             loss.append(avg_cost)
 
             msg = "Epoch {} average loss = {}".format(epoch, avg_cost)
             loss_msg += msg + "\n \\\\"
-            print(msg)
+
+            if verbose:
+                print(msg)
 
         self.weights = lasagne.layers.get_all_params(self.l_out,trainable=True)
         self.checkpoint(fname, loss=loss)

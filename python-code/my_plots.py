@@ -117,6 +117,7 @@ def save_to_latex(df_list, df_names=None, file_name=None):
         f.close()
 
 
+
 def check_text_for_latex(text):
 
     text = re.sub("_", "\_", text)
