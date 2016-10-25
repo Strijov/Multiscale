@@ -80,8 +80,12 @@ def load_ts_by_dirname(dirname, folder_name):
         name_test, _ = os.path.splitext(os.path.split(filename_test[i])[1])
         name_test = DATASET + '_' + folder_name + '_' + name_test
         names.extend([name_train, name_test])
-        ts.append(TsStruct(train_ts, request, history, name_train, readme))
-        ts.append(TsStruct(test_ts, request, history, name_test, readme))
+        ts_train, ts_test = TsStruct(train_ts, request, history, name_train, readme), TsStruct(test_ts, request, history, name_test, readme)
+        ts.append(ts_train)
+        ts.append(ts_test)
+
+        print(ts_train.summarize_ts())
+        print(ts_test.summarize_ts())
 
     return ts, names
 
@@ -102,7 +106,6 @@ def _load_train_test_csv(train, test, weather):
     :rtype: pandas.Series
     """
     # reading CSV file
-    print train
     reader = csv.reader(open(train, 'r'), delimiter=',')
     train = np.array(list(reader))
     reader = csv.reader(open(test, 'r'), delimiter=',')
@@ -111,7 +114,6 @@ def _load_train_test_csv(train, test, weather):
     weather = np.array(list(reader))
 
     labels = test[0, :]
-    print labels
 
     train = np.delete(train, [0], 0) # remove labels
     train_time = train[:, 0]
@@ -131,7 +133,7 @@ def _load_train_test_csv(train, test, weather):
     test_set = np.array(test_set, dtype='float32')
     test_set = np.reshape(test_set, (1096*24))
 
-    print weather[0, :]
+    #print weather[0, :]
     if "Longitude" in weather[0, :]:
         weather_labels = list(weather[0, 4:])
         idx_del = range(4)
@@ -172,7 +174,7 @@ def _load_train_test_csv(train, test, weather):
     for i in range(len(weather_labels)):
         train_weather[i] = pd.Series(weather[:1096, i], index=train_weather_time, name=weather_labels[i])
         test_weather[i] = pd.Series(weather[1096:, i], index=test_weather_time, name=weather_labels[i])
-        print "nans:", weather_labels[i], np.sum(np.isnan(weather[:, i])), np.sum(train_weather[i].isnull()), np.sum(test_weather[i].isnull())
+        #print "nans:", weather_labels[i], np.sum(np.isnan(weather[:, i])), np.sum(train_weather[i].isnull()), np.sum(test_weather[i].isnull())
 
     return train_set, test_set, train_weather, test_weather
 
@@ -224,8 +226,8 @@ def _load_train_test_weather(train, test, weather):
         weather_test_ts.append(series)
 
 
-    if not len(weather_data) == 2192:
-        print weather, ': Data size: ', str(len(weather_data)),' does not match the expected size 2192 = 2*1096'
+    # if not len(weather_data) == 2192:
+    #     print weather, ': Data size: ', str(len(weather_data)),' does not match the expected size 2192 = 2*1096'
 
 
 
@@ -248,10 +250,6 @@ def _process_csv_output(filename, start_date, ndays):
     ts = pd.Series(ts[keys].as_matrix().reshape(24*1096), index=time_stamps, name="Energy")
 
 
-    """
-    if not len(ts) == 24*1096:
-        print filename, ': Data size: ', str(len(ts)), ' does not match the expected size 26304 = 24x1096'
-    """
 
     return ts, time_stamps, other
 
