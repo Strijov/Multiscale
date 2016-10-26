@@ -55,7 +55,7 @@ def main(file_name=None, line_indices="all", header=True):
     dataset = list(host_ids.keys())[0] # select the first dataset
     ts = load_time_series.from_iot_to_struct(data, host_ids[dataset], dataset) # get all time series from dataset in TsStruct format
     ts.replace_nans()
-    ts.align_time_series() # truncate time series to align starting and ending points
+    ts.align_time_series(max_history=50000) # truncate time series to align starting and ending points
     latex_str += ts.summarize_ts(latex=True)
 
     # split time series into train and validation

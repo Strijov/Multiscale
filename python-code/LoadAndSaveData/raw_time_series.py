@@ -77,7 +77,45 @@ class TsStruct():
 
 
 
-    def align_time_series(self):
+    def truncate(self, max_history=50000, max_total = None):
+        """
+        Truncate time series so that number of observations in any time series or\and in toltal do not exceed the given values
+
+        :param max_history: Max number of observations per time series
+        :type max_history: int
+        :param max_history: Max total number of observations in the set (ignored!)
+        :type max_history: int
+        :return:
+        :rtype:
+        """
+
+        for i, ts in enumerate(self.data):
+            self.data[i] = ts.iloc[-max_history:]
+
+        self.align_time_series()
+
+
+        # ts_len = [len(ts) for ts in self.data]
+        #
+        # if not np.any(ts_len > max_history):
+        #     return None
+        #
+        # freqs = [0] * len(self.data)
+        # n_steps = [0] * len(self.data)
+        # for i,ts in enumerate(self.data):
+        #     freqs[i] = int(self.request // self.intervals[i])
+        #     n_steps[i] = int(max_history // freqs[i])
+        #
+        # n_steps = min(n_steps)
+        # for i, ts in enumerate(self.data):
+        #     self.data[i] = ts.iloc[-freqs[i]*n_steps:]
+
+
+
+
+
+
+    def align_time_series(self, max_history=None):
         """
         Truncates time series in self.data so that the end points of all times series belong to the same requested interval
 
@@ -86,11 +124,28 @@ class TsStruct():
         """
 
 
-        min_end_T = min([ts.index[-1] for ts in self.data]) # find earliest end-point index
-        max_start_T = max([ts.index[0] for ts in self.data]) # find latest start-point index
+        #min_end_T = min([ts.index[-1] for ts in self.data]) # find earliest end-point index
+        #max_start_T = max([ts.index[0] for ts in self.data]) # find latest start-point index
+
+        if not max_history is None:
+            self.truncate(max_history)
+            return None
+
+        common_T = set(self.data[0].index)
+        common_T.add(self.data[0].index[-1] + self.intervals[0])
+        for i, ts in enumerate(self.data[1:]):
+            common_T = common_T.intersection(set(ts.index))
+            #ending_T = ending_T.intersection(set(ts.index[np.logical_and(ts.index <= min_end_T, ts.index >= min_end_T - self.request)]))
+            #self.data[i] = ts.iloc[np.logical_and(ts.index < min_end_T + self.request, ts.index >= max_start_T)]
+            #self.data[i] = ts.iloc[ts.index < min_end_T + self.request]
+
+        min_end_T = max(common_T)
+        max_start_T = min(common_T)
+
         for i, ts in enumerate(self.data):
-            ts = ts[ts.index >= max_start_T]
-            self.data[i] = ts[ts.index < min_end_T + self.request]
+            self.data[i] = ts.iloc[np.logical_and(ts.index < min_end_T, ts.index >= max_start_T)]
+
+
 
         return self.data
 
