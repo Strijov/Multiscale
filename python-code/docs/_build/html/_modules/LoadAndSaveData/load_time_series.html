@@ -47,15 +47,17 @@
           <div class="body" role="main">
             
   <h1>Source code for LoadAndSaveData.load_time_series</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span></span><span class="c1"># coding: utf-8</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 <span class="kn">import</span> <span class="nn">os.path</span>
 <span class="kn">import</span> <span class="nn">glob</span>
 <span class="kn">import</span> <span class="nn">re</span>
 
 <span class="kn">from</span> <span class="nn">sklearn.externals</span> <span class="k">import</span> <span class="n">joblib</span>
-<span class="kn">from</span> <span class="nn">raw_time_series</span> <span class="k">import</span> <span class="n">TsStruct</span>
+<span class="kn">from</span> <span class="nn">.raw_time_series</span> <span class="k">import</span> <span class="n">TsStruct</span>
 
-<span class="kn">import</span> <span class="nn">load_energy_weather_data</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">load_energy_weather_data</span>
 <span class="n">DIRNAME</span> <span class="o">=</span> <span class="s1">&#39;ProcessedData&#39;</span> <span class="c1"># directory to store data (.pkl) in</span>
 
 <span class="c1"># Define a dict of func names for data loading</span>

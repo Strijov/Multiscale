@@ -321,32 +321,6 @@
 </dd></dl>
 
 <dl class="method">
-<dt id="RegressionMatrix.regression_matrix.RegMatrix.optimize_history">
-<code class="descname">optimize_history</code><span class="sig-paren">(</span><em>frc_model</em>, <em>sel_model=None</em>, <em>gen_model=None</em>, <em>hist_range=None</em>, <em>n_fold=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#RegMatrix.optimize_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.RegMatrix.optimize_history" title="Permalink to this definition">¶</a></dt>
-<dd><p>Selects the optimal value of parameter history from the given range</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>frc_model</strong> (<em>callable</em>) &#8211; forecasting model</li>
-<li><strong>sel_model</strong> (<em>callable</em>) &#8211; feature selection model</li>
-<li><strong>gen_model</strong> (<em>callable</em>) &#8211; feature generation model</li>
-<li><strong>hist_range</strong> (<em>list</em>) &#8211; range of history values to evaluate</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">history</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">int</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
 <dt id="RegressionMatrix.regression_matrix.RegMatrix.plot_frc">
 <code class="descname">plot_frc</code><span class="sig-paren">(</span><em>idx_frc=None</em>, <em>idx_rows=None</em>, <em>n_frc=1</em>, <em>n_hist=3</em>, <em>folder='fig'</em>, <em>save=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#RegMatrix.plot_frc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.RegMatrix.plot_frc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots forecasts along with time series</p>
