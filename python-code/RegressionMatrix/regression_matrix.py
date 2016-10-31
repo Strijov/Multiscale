@@ -291,7 +291,7 @@ class RegMatrix:
         generator.feature_dict = copy.deepcopy(self.feature_dict)
 
         # create pipeline with named steps
-        model = pipeline.Pipeline([('gen', generator), ('sel', selector), ('frc', frc_model)])
+        model = frc_class.PipelineModel([('gen', generator), ('sel', selector), ('frc', frc_model)]) # pipeline.Pipeline([('gen', generator), ('sel', selector), ('frc', frc_model)])
         model.name = "_".join([str(frc_model.name), str(generator.name), str(selector.name)])
 
         # once fitted, the model is retrained only if retrain = True
