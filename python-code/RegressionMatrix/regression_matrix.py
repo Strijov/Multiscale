@@ -212,14 +212,6 @@ class RegMatrix:
 
         return time[idxY[:, -1]], time[idxX[:, 0]]
 
-    # def matrix_indices(self, n_hist, n_req, n_rows) :
-    #
-    #     flat_idx = []
-    #     for i in range(n_rows):
-    #         flat_idx.extend(range(i * n_req, (i + 1) * n_req + n_hist))
-    #         # idx = np.unravel_index(flat_idx, (n_rows, n_hist + n_req))
-    #     return flat_idx
-
 
     def _matrix_to_flat_by_ts(self, idx_rows, i_ts):
         idx = _ravel_idx(self.idxY[i_ts][idx_rows, :], len(self.forecasts[i_ts]))
@@ -449,7 +441,7 @@ class RegMatrix:
 
         return errors[y_idx]
 
-    def plot_frc(self, idx_frc=None, idx_rows=None, n_frc=1, n_hist=3, folder="fig", save=True):
+    def plot_frc(self, idx_frc=None, idx_rows=None, n_frc=1, n_hist=3, folder="fig", save=True, y_idx=None):
         """
         Plots forecasts along with time series
 
@@ -465,25 +457,26 @@ class RegMatrix:
         """
         idx = [0] * self.nts
         idx_ts = [0] * self.nts
+        y_idx = _check_input_ts_idx(y_idx, self.y_idx)
         if idx_frc is None:
             if idx_rows is None:
-                for i in range(self.nts):
+                for i in y_idx:
                     idx[i] = range(len(self.forecasts[i]) - self.n_req_points[i]*n_frc, len(self.forecasts[i]))
                     idx_ts[i] = range(len(self.forecasts[i]) - self.n_req_points[i]*(n_frc + n_hist), len(self.forecasts[i]))
 
             else:
-                for i in range(self.nts):
+                for i in y_idx:
                     idx[i] = _ravel_idx(self.idxY[i][idx_rows], len(self.forecasts[i]))
         else:
             idx = idx_frc
 
-        for i, ts in enumerate(self.ts):
+        for i in y_idx:
             if save:
-                filename = ts.name + ".png"
+                filename = self.ts[i].name + ".png"
                 filename = "_".join(filename.split(" "))
             else:
                 filename = None
-            my_plots.plot_forecast(ts, self.forecasts[i], idx_frc=idx[i], idx_ts=idx_ts[i], folder=folder, filename=filename)
+            my_plots.plot_forecast(self.ts[i], self.forecasts[i], idx_frc=idx[i], idx_ts=idx_ts[i], folder=folder, filename=filename)
 
 
     # def optimize_history(self, frc_model, sel_model=None, gen_model=None,  hist_range=None, n_fold=5):
@@ -559,9 +552,9 @@ def replace_nans(ts, name=None):
     if not np.isnan(ts).any():
         return ts
 
-    print("Filling NaNs for TS", name)
+    #print("Filling NaNs for TS", name)
     if np.isnan(ts).all():
-        print("All inputs are NaN", "replacing with zeros")
+        print("All inputs if {} are NaN, replacing with zeros".format(name))
         ts = np.zeros_like(ts)
         return ts
 
