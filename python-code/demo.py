@@ -42,12 +42,13 @@ def demo_compare_forecasts(ts_struct_list=None, model=None, generators=None, fea
 
 
     # Load and prepare dataset.
-
+    load_raw = not os.path.exists(os.path.join("ProcessedData", "EnergyWeather_orig_train.pkl"))
     try:
-        ts_struct_list = load_time_series.load_all_time_series(datasets=['EnergyWeather'], load_raw=False, name_pattern="")
+        ts_struct_list = load_time_series.load_all_time_series(datasets=['EnergyWeather'], load_raw=load_raw, name_pattern="", verbose=VERBOSE)
     except:
-        ts_struct_list = load_time_series.load_all_time_series(datasets=['EnergyWeather'], load_raw=True, name_pattern="")
+        ts_struct_list = load_time_series.load_all_time_series(datasets=['EnergyWeather'], load_raw=True, name_pattern="", verbose=VERBOSE)
 
+    print(ts_struct_list)
 
 
     results = []
