@@ -95,11 +95,13 @@ def input_latex_headers():
 
     return latex_header, latex_end
 
-def save_to_latex(df_list, df_names=None, file_name=None):
+def save_to_latex(df_list, df_names=None, file_name=None, folder=""):
 
+    if not os.path.exists(folder):
+        os.mkdir(folder)
     if file_name is None:
         file_name = "test_latex_output"
-    file_name = file_name + ".tex"
+    file_name = os.path.join(folder, file_name + ".tex")
 
     latex_header, latex_end = input_latex_headers()
 
