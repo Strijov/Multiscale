@@ -1,7 +1,7 @@
 from __future__ import division
 from __future__ import print_function
 
-
+import os
 import pandas as pd
 from collections import namedtuple
 from RegressionMatrix import regression_matrix, random_data
