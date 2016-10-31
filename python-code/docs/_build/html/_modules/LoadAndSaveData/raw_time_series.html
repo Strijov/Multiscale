@@ -1,0 +1,293 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>LoadAndSaveData.raw_time_series &#8212; MultiscaleForecasting 0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="MultiscaleForecasting 0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for LoadAndSaveData.raw_time_series</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<div class="viewcode-block" id="TsStruct"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.TsStruct">[docs]</a><span class="k">class</span> <span class="nc">TsStruct</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; This structure stores input data. The fields are:</span>
+
+<span class="sd">    :param data: input time series, each is pandas.Series</span>
+<span class="sd">    :type data: list</span>
+<span class="sd">    :param request: Time interval requested for forecast</span>
+<span class="sd">    :type request: int\ time delta ? #FIXIT</span>
+<span class="sd">    :param history: Time interval,  to define number of historical points.</span>
+<span class="sd">    :type history: int\ time delta ? #FIXIT</span>
+<span class="sd">    :param name: Dataset name</span>
+<span class="sd">    :type name: string</span>
+<span class="sd">    :param readme: Dataset info</span>
+<span class="sd">    :type readme: string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">readme</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">request</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">history</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readme</span> <span class="o">=</span> <span class="n">readme</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_frequencies</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">request</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">assign_one_step_requests</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="TsStruct.ts_frequencies"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.TsStruct.ts_frequencies">[docs]</a>    <span class="k">def</span> <span class="nf">ts_frequencies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">freqs</span> <span class="o">=</span> <span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">))</span> <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">freqs</span></div>
+
+<div class="viewcode-block" id="TsStruct.train_test_split"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.TsStruct.train_test_split">[docs]</a>    <span class="k">def</span> <span class="nf">train_test_split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_test_ratio</span><span class="o">=</span><span class="mf">0.75</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Splits time series sequentially into train and test time series</span>
+
+<span class="sd">        :param train_test_ratio: ratio of train objects to original ts length</span>
+<span class="sd">        :type train_test_ratio: float</span>
+<span class="sd">        :return: TsStructs with train and test time series</span>
+<span class="sd">        :rtype: tuple</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">max_freq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">)</span> <span class="c1">#</span>
+        <span class="n">n_train</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">max_freq</span><span class="p">])</span> <span class="o">*</span> <span class="n">train_test_ratio</span><span class="p">)</span>
+        <span class="n">max_train_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">max_freq</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">n_train</span><span class="p">]</span>
+
+        <span class="n">train_ts</span><span class="p">,</span> <span class="n">test_ts</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="n">train_idx</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">index</span> <span class="o">&lt;=</span> <span class="n">max_train_index</span>
+            <span class="n">test_idx</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">index</span> <span class="o">&gt;</span> <span class="n">max_train_index</span>
+            <span class="n">train_ts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="n">train_idx</span><span class="p">])</span>
+            <span class="n">test_ts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="n">test_idx</span><span class="p">])</span>
+        <span class="n">train</span> <span class="o">=</span> <span class="n">TsStruct</span><span class="p">(</span><span class="n">train_ts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">readme</span><span class="p">)</span>
+        <span class="n">test</span> <span class="o">=</span> <span class="n">TsStruct</span><span class="p">(</span><span class="n">test_ts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">readme</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">train</span><span class="p">,</span> <span class="n">test</span></div>
+
+
+<div class="viewcode-block" id="TsStruct.replace_nans"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.TsStruct.replace_nans">[docs]</a>    <span class="k">def</span> <span class="nf">replace_nans</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="k">continue</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Filling NaNs for TS&quot;</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;All inputs are NaN&quot;</span><span class="p">,</span> <span class="s2">&quot;replacing with zeros&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">ts</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">ts</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="n">ts_prop</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;pad&quot;</span><span class="p">)</span>
+            <span class="n">ts_back</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">ts_prop</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;bfill&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ts_back</span>  <span class="c1"># (ts_back + ts_prop)[pd.isnull(ts)] / 2</span></div>
+
+
+
+
+<div class="viewcode-block" id="TsStruct.truncate"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.TsStruct.truncate">[docs]</a>    <span class="k">def</span> <span class="nf">truncate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_history</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">max_total</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Truncate time series so that number of observations in any time series or\and in toltal do not exceed the given values</span>
+
+<span class="sd">        :param max_history: Max number of observations per time series</span>
+<span class="sd">        :type max_history: int</span>
+<span class="sd">        :param max_history: Max total number of observations in the set (ignored!)</span>
+<span class="sd">        :type max_history: int</span>
+<span class="sd">        :return:</span>
+<span class="sd">        :rtype:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="n">max_history</span><span class="p">:]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">align_time_series</span><span class="p">()</span></div>
+
+
+        <span class="c1"># ts_len = [len(ts) for ts in self.data]</span>
+        <span class="c1">#</span>
+        <span class="c1"># if not np.any(ts_len &gt; max_history):</span>
+        <span class="c1">#     return None</span>
+        <span class="c1">#</span>
+        <span class="c1"># freqs = [0] * len(self.data)</span>
+        <span class="c1"># n_steps = [0] * len(self.data)</span>
+        <span class="c1"># for i,ts in enumerate(self.data):</span>
+        <span class="c1">#     freqs[i] = int(self.request // self.intervals[i])</span>
+        <span class="c1">#     n_steps[i] = int(max_history // freqs[i])</span>
+        <span class="c1">#</span>
+        <span class="c1"># n_steps = min(n_steps)</span>
+        <span class="c1"># for i, ts in enumerate(self.data):</span>
+        <span class="c1">#     self.data[i] = ts.iloc[-freqs[i]*n_steps:]</span>
+
+
+
+
+
+
+<div class="viewcode-block" id="TsStruct.align_time_series"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.TsStruct.align_time_series">[docs]</a>    <span class="k">def</span> <span class="nf">align_time_series</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_history</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Truncates time series in self.data so that the end points of all times series belong to the same requested interval</span>
+
+<span class="sd">        :return: truncated time series in pd.Series format</span>
+<span class="sd">        :rtype: list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
+        <span class="c1">#min_end_T = min([ts.index[-1] for ts in self.data]) # find earliest end-point index</span>
+        <span class="c1">#max_start_T = max([ts.index[0] for ts in self.data]) # find latest start-point index</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">max_history</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="n">max_history</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">common_T</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">common_T</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+            <span class="n">common_T</span> <span class="o">=</span> <span class="n">common_T</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">))</span>
+            <span class="c1">#ending_T = ending_T.intersection(set(ts.index[np.logical_and(ts.index &lt;= min_end_T, ts.index &gt;= min_end_T - self.request)]))</span>
+            <span class="c1">#self.data[i] = ts.iloc[np.logical_and(ts.index &lt; min_end_T + self.request, ts.index &gt;= max_start_T)]</span>
+            <span class="c1">#self.data[i] = ts.iloc[ts.index &lt; min_end_T + self.request]</span>
+
+        <span class="n">min_end_T</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">common_T</span><span class="p">)</span>
+        <span class="n">max_start_T</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">common_T</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span> <span class="o">&lt;</span> <span class="n">min_end_T</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">index</span> <span class="o">&gt;=</span> <span class="n">max_start_T</span><span class="p">)]</span>
+
+
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span></div>
+
+
+
+<div class="viewcode-block" id="TsStruct.summarize_ts"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.TsStruct.summarize_ts">[docs]</a>    <span class="k">def</span> <span class="nf">summarize_ts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latex</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns basic statistics for each time series in self.data</span>
+<span class="sd">        :param latex: if True, returns latex string with results in table</span>
+<span class="sd">        :type latex: bool</span>
+<span class="sd">        :return: pd.DataFrame or latex string with ts statistics</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">column_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;N. obs.&quot;</span><span class="p">,</span> <span class="s2">&quot;Min&quot;</span><span class="p">,</span> <span class="s2">&quot;Max&quot;</span><span class="p">,</span> <span class="s2">&quot;T. min&quot;</span><span class="p">,</span> <span class="s2">&quot;T.max&quot;</span><span class="p">,</span> <span class="s2">&quot;T. delta&quot;</span><span class="p">,</span> <span class="s2">&quot;Nans&quot;</span><span class="p">]</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="n">stats</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+            <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">ts</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span> <span class="n">ts</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">ts</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                       <span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">())),</span> <span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()))])</span>
+
+
+        <span class="n">res</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">names</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">column_names</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">latex</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">to_latex</span><span class="p">()</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="s2">&quot;{</span><span class="se">\\</span><span class="s2">tiny </span><span class="se">\n</span><span class="s2"> &quot;</span> <span class="o">+</span> <span class="n">res</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> }</span><span class="se">\n</span><span class="s2"> </span><span class="se">\\</span><span class="s2">bigskip </span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="k">return</span> <span class="n">res</span></div></div>
+
+<div class="viewcode-block" id="assign_one_step_requests"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.assign_one_step_requests">[docs]</a><span class="k">def</span> <span class="nf">assign_one_step_requests</span><span class="p">(</span><span class="n">intervals</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Assigns request as the lowest common multiple of one step requests for each time series</span>
+
+<span class="sd">    :param intervals: time deltas in unix format</span>
+<span class="sd">    :type intervals: list</span>
+<span class="sd">    :return: common request</span>
+<span class="sd">    :rtype: time delta, unix format</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">request</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">intv</span> <span class="ow">in</span> <span class="n">intervals</span><span class="p">:</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">lcm</span><span class="p">(</span><span class="n">intv</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">request</span></div>
+
+
+<div class="viewcode-block" id="lcm"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.lcm">[docs]</a><span class="k">def</span> <span class="nf">lcm</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return lowest common multiple.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">b</span> <span class="o">//</span> <span class="n">gcd</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="gcd"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.gcd">[docs]</a><span class="k">def</span> <span class="nf">gcd</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return greatest common divisor using Euclid&#39;s Algorithm.&quot;&quot;&quot;</span>
+    <span class="k">while</span> <span class="n">b</span><span class="p">:</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">%</span> <span class="n">b</span>
+    <span class="k">return</span> <span class="n">a</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Strijov, Motrenko, Neychev, Isachenko.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>

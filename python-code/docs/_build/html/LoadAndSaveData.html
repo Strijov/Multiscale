@@ -202,7 +202,7 @@
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">data structure with selected time series</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">TsStruct</p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#LoadAndSaveData.raw_time_series.TsStruct" title="LoadAndSaveData.raw_time_series.TsStruct">TsStruct</a></p>
 </td>
 </tr>
 </tbody>
@@ -211,7 +211,7 @@
 
 <dl class="function">
 <dt id="LoadAndSaveData.load_time_series.load_all_time_series">
-<code class="descclassname">LoadAndSaveData.load_time_series.</code><code class="descname">load_all_time_series</code><span class="sig-paren">(</span><em>datasets=None</em>, <em>load_funcs=None</em>, <em>name_pattern=''</em>, <em>load_raw=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/load_time_series.html#load_all_time_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.load_time_series.load_all_time_series" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">LoadAndSaveData.load_time_series.</code><code class="descname">load_all_time_series</code><span class="sig-paren">(</span><em>datasets=None</em>, <em>load_funcs=None</em>, <em>name_pattern=''</em>, <em>load_raw=True</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/load_time_series.html#load_all_time_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.load_time_series.load_all_time_series" title="Permalink to this definition">¶</a></dt>
 <dd><p>Data loader</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -222,13 +222,14 @@
 <li><strong>load_funcs</strong> (<em>list</em>) &#8211; contains callables for each dataset. Used if load_raw=True</li>
 <li><strong>name_pattern</strong> (<em>string</em>) &#8211; expression to look for in loaded file names</li>
 <li><strong>load_raw</strong> (<em>boolean</em>) &#8211; If set to True, the raw data is reloaded first</li>
+<li><strong>verbose</strong> (<em>bool</em>) &#8211; if True, will output summary of each loaded time series</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">loaded time series in TsStruct format</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
 </td>
 </tr>
 </tbody>
@@ -237,17 +238,23 @@
 
 <dl class="function">
 <dt id="LoadAndSaveData.load_time_series.load_raw_data">
-<code class="descclassname">LoadAndSaveData.load_time_series.</code><code class="descname">load_raw_data</code><span class="sig-paren">(</span><em>load_funcs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/load_time_series.html#load_raw_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.load_time_series.load_raw_data" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">LoadAndSaveData.load_time_series.</code><code class="descname">load_raw_data</code><span class="sig-paren">(</span><em>load_funcs</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/load_time_series.html#load_raw_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.load_time_series.load_raw_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads and saves raw data in .pkl format</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>load_funcs</strong> (<em>list</em>) &#8211; Each function (callable) is load_funcs loads some dataset</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>load_funcs</strong> (<em>list</em>) &#8211; Each function (callable) is load_funcs loads some dataset</li>
+<li><strong>verbose</strong> (<em>bool</em>) &#8211; if True, will output summary of each loaded time series</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">None</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -279,6 +286,137 @@
 </dd></dl>
 
 </div>
+<div class="section" id="loadandsavedata-raw-time-series-module">
+<h2>LoadAndSaveData.raw_time_series module<a class="headerlink" href="#loadandsavedata-raw-time-series-module" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-LoadAndSaveData.raw_time_series"></span><dl class="class">
+<dt id="LoadAndSaveData.raw_time_series.TsStruct">
+<em class="property">class </em><code class="descclassname">LoadAndSaveData.raw_time_series.</code><code class="descname">TsStruct</code><span class="sig-paren">(</span><em>data</em>, <em>request</em>, <em>history</em>, <em>name</em>, <em>readme</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#TsStruct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.TsStruct" title="Permalink to this definition">¶</a></dt>
+<dd><p>This structure stores input data. The fields are:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data</strong> (<em>list</em>) &#8211; input time series, each is pandas.Series</li>
+<li><strong>request</strong> (<em>inttime delta ? #FIXIT</em>) &#8211; Time interval requested for forecast</li>
+<li><strong>history</strong> (<em>inttime delta ? #FIXIT</em>) &#8211; Time interval,  to define number of historical points.</li>
+<li><strong>name</strong> (<em>string</em>) &#8211; Dataset name</li>
+<li><strong>readme</strong> (<em>string</em>) &#8211; Dataset info</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="LoadAndSaveData.raw_time_series.TsStruct.align_time_series">
+<code class="descname">align_time_series</code><span class="sig-paren">(</span><em>max_history=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#TsStruct.align_time_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.TsStruct.align_time_series" title="Permalink to this definition">¶</a></dt>
+<dd><p>Truncates time series in self.data so that the end points of all times series belong to the same requested interval</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">truncated time series in pd.Series format</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="LoadAndSaveData.raw_time_series.TsStruct.replace_nans">
+<code class="descname">replace_nans</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#TsStruct.replace_nans"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.TsStruct.replace_nans" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="LoadAndSaveData.raw_time_series.TsStruct.summarize_ts">
+<code class="descname">summarize_ts</code><span class="sig-paren">(</span><em>latex=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#TsStruct.summarize_ts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.TsStruct.summarize_ts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns basic statistics for each time series in self.data
+:param latex: if True, returns latex string with results in table
+:type latex: bool
+:return: pd.DataFrame or latex string with ts statistics</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="LoadAndSaveData.raw_time_series.TsStruct.train_test_split">
+<code class="descname">train_test_split</code><span class="sig-paren">(</span><em>train_test_ratio=0.75</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#TsStruct.train_test_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.TsStruct.train_test_split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Splits time series sequentially into train and test time series</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>train_test_ratio</strong> (<em>float</em>) &#8211; ratio of train objects to original ts length</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">TsStructs with train and test time series</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="LoadAndSaveData.raw_time_series.TsStruct.truncate">
+<code class="descname">truncate</code><span class="sig-paren">(</span><em>max_history=50000</em>, <em>max_total=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#TsStruct.truncate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.TsStruct.truncate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Truncate time series so that number of observations in any time series ornd in toltal do not exceed the given values</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>max_history</strong> (<em>int</em>) &#8211; Max number of observations per time series</li>
+<li><strong>max_history</strong> &#8211; Max total number of observations in the set (ignored!)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="LoadAndSaveData.raw_time_series.TsStruct.ts_frequencies">
+<code class="descname">ts_frequencies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#TsStruct.ts_frequencies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.TsStruct.ts_frequencies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="LoadAndSaveData.raw_time_series.assign_one_step_requests">
+<code class="descclassname">LoadAndSaveData.raw_time_series.</code><code class="descname">assign_one_step_requests</code><span class="sig-paren">(</span><em>intervals</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#assign_one_step_requests"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.assign_one_step_requests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assigns request as the lowest common multiple of one step requests for each time series</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>intervals</strong> (<em>list</em>) &#8211; time deltas in unix format</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">common request</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">time delta, unix format</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="LoadAndSaveData.raw_time_series.gcd">
+<code class="descclassname">LoadAndSaveData.raw_time_series.</code><code class="descname">gcd</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#gcd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.gcd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return greatest common divisor using Euclid&#8217;s Algorithm.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="LoadAndSaveData.raw_time_series.lcm">
+<code class="descclassname">LoadAndSaveData.raw_time_series.</code><code class="descname">lcm</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#lcm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.lcm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return lowest common multiple.</p>
+</dd></dl>
+
+</div>
 <div class="section" id="module-LoadAndSaveData.write_data_to_iot_format">
 <span id="loadandsavedata-write-data-to-iot-format-module"></span><h2>LoadAndSaveData.write_data_to_iot_format module<a class="headerlink" href="#module-LoadAndSaveData.write_data_to_iot_format" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
@@ -290,7 +428,7 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>ts</strong> (<em>TsStruct</em>) &#8211; input time series</li>
+<li><strong>ts</strong> (<a class="reference internal" href="#LoadAndSaveData.raw_time_series.TsStruct" title="LoadAndSaveData.raw_time_series.TsStruct"><em>TsStruct</em></a>) &#8211; input time series</li>
 <li><strong>dataset</strong> (<em>string</em>) &#8211; dataset name, replaces host name in IoT format</li>
 </ul>
 </td>
@@ -314,7 +452,7 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>ts_struct</strong> (<em>TsStruct</em>) &#8211; data to be written into file</li>
+<li><strong>ts_struct</strong> (<a class="reference internal" href="#LoadAndSaveData.raw_time_series.TsStruct" title="LoadAndSaveData.raw_time_series.TsStruct"><em>TsStruct</em></a>) &#8211; data to be written into file</li>
 <li><strong>file_name</strong> (<em>string</em>) &#8211; output filename</li>
 </ul>
 </td>
@@ -348,6 +486,7 @@
 <li><a class="reference internal" href="#module-LoadAndSaveData.get_iot_data">LoadAndSaveData.get_iot_data module</a></li>
 <li><a class="reference internal" href="#module-LoadAndSaveData.load_energy_weather_data">LoadAndSaveData.load_energy_weather_data module</a></li>
 <li><a class="reference internal" href="#module-LoadAndSaveData.load_time_series">LoadAndSaveData.load_time_series module</a></li>
+<li><a class="reference internal" href="#loadandsavedata-raw-time-series-module">LoadAndSaveData.raw_time_series module</a></li>
 <li><a class="reference internal" href="#module-LoadAndSaveData.write_data_to_iot_format">LoadAndSaveData.write_data_to_iot_format module</a></li>
 <li><a class="reference internal" href="#module-LoadAndSaveData">Module contents</a></li>
 </ul>
