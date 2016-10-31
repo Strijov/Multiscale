@@ -1,8 +1,14 @@
 """ Created on 23 September 2016. Author: Anastasia Motrenko"""
 from __future__ import print_function
 
+import os
+import pickle
+import copy_reg
 import numpy as np
 from sklearn.base import BaseEstimator
+from sklearn.pipeline import Pipeline
+
+
 
 
 class IdentityModel(BaseEstimator):
@@ -88,16 +94,6 @@ class MartingalFrc(IdentityModel):
         return X[:, -self.n_out:]
 
 
-def print_pipeline_pars(model):
-    """ Formatted print for pipeline model  """
-
-    # model.steps is a list of  tuples ('stepname', stepmodel)
-    for _, step_model in model.steps:
-        if hasattr(step_model, 'print_pars'):
-            step_model.print_pars()
-        else:
-            print(step_model.get_params())
-
 
 def CustomModel(parent, *args, **kwargs):
     """
@@ -108,9 +104,11 @@ def CustomModel(parent, *args, **kwargs):
     :param kwargs: Optional keyword arguments
     :return: instance of CustomModel class
     """
-    class CustomModel(parent, IdentityModel):
+    class CustomModel_(parent, IdentityModel):
 
         def __init__(self):
+            # self.__objclass__ = parent # do smth about this
+            # self.__name__ = parent.__name__
             if 'name' in kwargs.keys():
                 name = kwargs['name']
                 del kwargs['name']
@@ -118,8 +116,7 @@ def CustomModel(parent, *args, **kwargs):
                 name = None
             IdentityModel.__init__(self, name)
             parent.__init__(self, *args, **kwargs)
-            # for k, v in kwargs.items():
-            #     self.__setattr__(k, v)
+
 
         def fit(self, X, Y):
             IdentityModel.fit(self, X, Y)
@@ -134,7 +131,55 @@ def CustomModel(parent, *args, **kwargs):
             return Y
 
 
-    return CustomModel()
+    return CustomModel_()
+
+
+def _reduce_wrapper_descriptor(m): # for serialization
+    return getattr, (m.__objclass__, m.__name__)
+
+class PipelineModel(Pipeline):
+
+    def __init__(self, steps=None):
+        if not steps == None:
+            Pipeline.__init__(self, steps)
+
+
+    def save_model(self, file_name="", folder="models"):
+
+        import cloudpickle
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+
+        # copy_reg.pickle(type(self.named_steps['frc']), _reduce_wrapper_descriptor)
+
+        file_name += "_".join(list(self.named_steps.keys()))
+        file_name = os.path.join(folder, file_name + ".pkl")
+        with open(file_name, "wb") as f:
+            cloudpickle.dump(self, f)
+
+
+
+        return file_name
+
+
+    def load_model(self, file_name):
+
+        with open(file_name, "rb") as f:
+            self = pickle.load(f)
+
+        return self
+
+    def print_pipeline_pars(self):
+        """ Formatted print for pipeline model  """
+
+        # model.steps is a list of  tuples ('stepname', stepmodel)
+        for _, step_model in self.steps:
+            if hasattr(step_model, 'print_pars'):
+                step_model.print_pars()
+            else:
+                print(step_model.get_params())
+
+
 
 # class parent():
 #
