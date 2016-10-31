@@ -52,8 +52,9 @@ def demo_compare_forecasts(ts_struct_list=None, model=None, generators=None, fea
 
     results = []
     res_text = []
+    TS_IDX = [0,1,2,4,5,6] # exclude precipitation from the list of time series
     for ts in ts_struct_list:
-        data = regression_matrix.RegMatrix(ts)
+        data = regression_matrix.RegMatrix(ts, x_idx=TS_IDX, y_idx=TS_IDX)
 
         # Create regression matrix
         data.create_matrix(nsteps=1, norm_flag=True)
@@ -66,17 +67,19 @@ def demo_compare_forecasts(ts_struct_list=None, model=None, generators=None, fea
             VERBOSE = False
 
         data.forecast(model)
+        data.plot_frc(n_frc=5, n_hist=10)
 
-        train_mae = data.mae(idx_rows=data.idx_train, out=None)#, out="Training")
-        train_mape = data.mape(idx_rows=data.idx_train, out=None)#, out="Training")
+        train_mae = data.mae(idx_rows=data.idx_train, out=None)
+        train_mape = data.mape(idx_rows=data.idx_train, out=None)
 
-        test_mae = data.mae(idx_rows=data.idx_test, out=None)#, out="Test")
-        test_mape = data.mape(idx_rows=data.idx_test, out=None)#, out="Test")
+        test_mae = data.mae(idx_rows=data.idx_test, out=None)
+        test_mape = data.mape(idx_rows=data.idx_test, out=None)
 
-        res1 = pd.DataFrame(train_mae, index=[t.name for t in ts.data], columns=[("MAE", "train")])
-        res2 = pd.DataFrame(train_mape, index=[t.name for t in ts.data], columns=[("MAPE", "train")])
-        res3 = pd.DataFrame(test_mae, index=[t.name for t in ts.data], columns=[("MAE", "test")])
-        res4 = pd.DataFrame(test_mape, index=[t.name for t in ts.data], columns=[("MAPE", "test")])
+        index = [ts.data[i].name for i in TS_IDX]
+        res1 = pd.DataFrame(train_mae, index=index, columns=[("MAE", "train")])
+        res2 = pd.DataFrame(train_mape, index=index, columns=[("MAPE", "train")])
+        res3 = pd.DataFrame(test_mae, index=index, columns=[("MAE", "test")])
+        res4 = pd.DataFrame(test_mape, index=index, columns=[("MAPE", "test")])
         res = pd.concat([res1, res2, res3, res4], axis=1)
         print(res)
 
