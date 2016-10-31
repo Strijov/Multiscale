@@ -1,3 +1,4 @@
+# coding: utf-8
 from __future__ import division
 from __future__ import print_function
 import os.path
@@ -22,7 +23,7 @@ RAW_DIRS_DICT = {'EnergyWeather': '../code/data/EnergyWeatherTS/orig',
 
 
 
-def load_all_time_series(datasets=None, load_funcs=None, name_pattern='', load_raw=True):
+def load_all_time_series(datasets=None, load_funcs=None, name_pattern='', load_raw=True, verbose=False):
     """
     Data loader
 
@@ -34,8 +35,10 @@ def load_all_time_series(datasets=None, load_funcs=None, name_pattern='', load_r
     :type name_pattern: string
     :param load_raw: If set to True, the raw data is reloaded first
     :type load_raw: boolean
-    :return:
-    :rtype:
+    :param verbose: if True, will output summary of each loaded time series
+    :type verbose: bool
+    :return: loaded time series in TsStruct format
+    :rtype: list
     """
 
 
@@ -50,7 +53,7 @@ def load_all_time_series(datasets=None, load_funcs=None, name_pattern='', load_r
         load_funcs = [LOAD_FUNCS_DICT[x] for x in datasets]
 
     if load_raw:
-        load_raw_data(load_funcs)
+        load_raw_data(load_funcs, verbose)
 
     # find all .pkl files in DIRNAME directory
     filenames = glob.glob(os.path.join(DIRNAME, '*.pkl'))
@@ -69,12 +72,14 @@ def load_all_time_series(datasets=None, load_funcs=None, name_pattern='', load_r
 
     return all_ts
 
-def load_raw_data(load_funcs):
+def load_raw_data(load_funcs, verbose=False):
     """
     Loads and saves raw data in .pkl format
 
     :param load_funcs: Each function (callable) is load_funcs loads some dataset
     :type load_funcs: list
+    :param verbose: if True, will output summary of each loaded time series
+    :type verbose: bool
     :return:
     :rtype:  None
     """
@@ -85,6 +90,9 @@ def load_raw_data(load_funcs):
         ts_list, names = getattr(func, 'load_ts')()
         for ts, name in zip(ts_list, names):
             save_ts_to_dir(ts, name, DIRNAME)
+            if verbose:
+                print(ts.summarize_ts())
+
 
 
 def save_ts_to_dir(ts, tsname, dirname):

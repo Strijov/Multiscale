@@ -84,9 +84,6 @@ def load_ts_by_dirname(dirname, folder_name):
         ts.append(ts_train)
         ts.append(ts_test)
 
-        print(ts_train.summarize_ts())
-        print(ts_test.summarize_ts())
-
     return ts, names
 
 def _load_train_test_csv(train, test, weather):
