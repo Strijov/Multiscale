@@ -8,6 +8,7 @@ import pandas as pd
 import os
 import sys
 import time
+import datetime
 import optparse
 import my_plots
 
@@ -37,7 +38,7 @@ def main(file_name=None, line_indices="all", header=True):
     # Init string for latex results:
     latex_str = ""
     time_at_start = time.time()
-    folder = os.path.join("fig", str(int(time.time())))
+    folder = os.path.join("fig", str(datetime.date.today()))
     if not os.path.exists(folder):
         os.makedirs(folder)
 
@@ -47,7 +48,7 @@ def main(file_name=None, line_indices="all", header=True):
     except BaseException as e:
         print(e)
         print("Line indices: ", line_indices)
-        print("Fileame: ", file_name)
+        print("Filename: ", file_name)
         return None
 
 
