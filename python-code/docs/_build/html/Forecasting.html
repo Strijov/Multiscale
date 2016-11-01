@@ -284,10 +284,24 @@
 <dt id="Forecasting.frc_class.PipelineModel">
 <em class="property">class </em><code class="descclassname">Forecasting.frc_class.</code><code class="descname">PipelineModel</code><span class="sig-paren">(</span><em>steps=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#PipelineModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.PipelineModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sklearn.pipeline.Pipeline</span></code></p>
+<p>A pipeline forecasting model</p>
 <dl class="method">
 <dt id="Forecasting.frc_class.PipelineModel.load_model">
 <code class="descname">load_model</code><span class="sig-paren">(</span><em>file_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#PipelineModel.load_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.PipelineModel.load_model" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Loads the model from the specified file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file_name</strong> (<em>str</em>) &#8211; name of the file to load the data from</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">self</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#Forecasting.frc_class.PipelineModel" title="Forecasting.frc_class.PipelineModel">PipelineModel</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="Forecasting.frc_class.PipelineModel.print_pipeline_pars">
@@ -298,7 +312,26 @@
 <dl class="method">
 <dt id="Forecasting.frc_class.PipelineModel.save_model">
 <code class="descname">save_model</code><span class="sig-paren">(</span><em>file_name=''</em>, <em>folder='models'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#PipelineModel.save_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.PipelineModel.save_model" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Saves the model to filename with specified prefix</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>file_name</strong> (<em>str</em>) &#8211; prefix for the file name, optional</li>
+<li><strong>folder</strong> (<em>str</em>) &#8211; folder to strore the model in, optional; default = &#8220;models&#8221;</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">name of the saved file</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 

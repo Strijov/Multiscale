@@ -144,26 +144,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">align_time_series</span><span class="p">()</span></div>
 
 
-        <span class="c1"># ts_len = [len(ts) for ts in self.data]</span>
-        <span class="c1">#</span>
-        <span class="c1"># if not np.any(ts_len &gt; max_history):</span>
-        <span class="c1">#     return None</span>
-        <span class="c1">#</span>
-        <span class="c1"># freqs = [0] * len(self.data)</span>
-        <span class="c1"># n_steps = [0] * len(self.data)</span>
-        <span class="c1"># for i,ts in enumerate(self.data):</span>
-        <span class="c1">#     freqs[i] = int(self.request // self.intervals[i])</span>
-        <span class="c1">#     n_steps[i] = int(max_history // freqs[i])</span>
-        <span class="c1">#</span>
-        <span class="c1"># n_steps = min(n_steps)</span>
-        <span class="c1"># for i, ts in enumerate(self.data):</span>
-        <span class="c1">#     self.data[i] = ts.iloc[-freqs[i]*n_steps:]</span>
-
-
-
-
-
-
 <div class="viewcode-block" id="TsStruct.align_time_series"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.TsStruct.align_time_series">[docs]</a>    <span class="k">def</span> <span class="nf">align_time_series</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_history</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Truncates time series in self.data so that the end points of all times series belong to the same requested interval</span>
@@ -208,14 +188,20 @@
 <span class="sd">        :return: pd.DataFrame or latex string with ts statistics</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">column_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;N. obs.&quot;</span><span class="p">,</span> <span class="s2">&quot;Min&quot;</span><span class="p">,</span> <span class="s2">&quot;Max&quot;</span><span class="p">,</span> <span class="s2">&quot;T. min&quot;</span><span class="p">,</span> <span class="s2">&quot;T.max&quot;</span><span class="p">,</span> <span class="s2">&quot;T. delta&quot;</span><span class="p">,</span> <span class="s2">&quot;Nans&quot;</span><span class="p">]</span>
+        <span class="n">column_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;N. obs.&quot;</span><span class="p">,</span> <span class="s2">&quot;Min&quot;</span><span class="p">,</span> <span class="s2">&quot;Max&quot;</span><span class="p">,</span> <span class="s2">&quot;T. min&quot;</span><span class="p">,</span> <span class="s2">&quot;T.max&quot;</span><span class="p">,</span> <span class="s2">&quot;T. delta&quot;</span><span class="p">,</span> <span class="s2">&quot;Nans %&quot;</span><span class="p">]</span>
         <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
-            <span class="n">stats</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
             <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">ts</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span> <span class="n">ts</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">ts</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
-                       <span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">())),</span> <span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()))])</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pd</span><span class="o">.</span><span class="n">tslib</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">):</span>
+                <span class="n">ts_min</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">ts_max</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">ts_delta</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s2">&quot;1970-01-01&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ts_min</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">ts_max</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">ts_delta</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">)),</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">)</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s2">&quot;1970-01-01&quot;</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">ts</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span> <span class="n">ts</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">ts</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">ts_min</span><span class="p">,</span> <span class="n">ts_max</span><span class="p">,</span> <span class="n">ts_delta</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()))</span><span class="o">*</span><span class="mi">100</span><span class="p">])</span>
 
 
         <span class="n">res</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">names</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">column_names</span><span class="p">)</span>

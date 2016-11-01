@@ -203,14 +203,14 @@
 
 
     <span class="n">min_date</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">weather_time</span> <span class="o">+</span> <span class="n">train_time</span> <span class="o">+</span> <span class="n">test_time</span><span class="p">)</span>
-    <span class="n">weather_time</span> <span class="o">=</span> <span class="p">[(</span><span class="n">dt</span> <span class="o">-</span> <span class="n">min_date</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="k">for</span> <span class="n">dt</span> <span class="ow">in</span> <span class="n">weather_time</span><span class="p">]</span>
+    <span class="c1">#weather_time = [(dt - min_date).total_seconds() for dt in weather_time]</span>
     <span class="n">train_weather_time</span> <span class="o">=</span> <span class="n">weather_time</span><span class="p">[:</span><span class="mi">1096</span><span class="p">]</span>
     <span class="n">test_weather_time</span> <span class="o">=</span> <span class="n">weather_time</span><span class="p">[</span><span class="mi">1096</span><span class="p">:]</span>
 
     <span class="n">train_time</span> <span class="o">=</span> <span class="n">_add_hours_to_dates</span><span class="p">(</span><span class="n">train_time</span><span class="p">)</span>
     <span class="n">test_time</span> <span class="o">=</span> <span class="n">_add_hours_to_dates</span><span class="p">(</span><span class="n">test_time</span><span class="p">)</span>
-    <span class="n">test_time</span> <span class="o">=</span> <span class="p">[(</span><span class="n">dt</span> <span class="o">-</span> <span class="n">min_date</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="k">for</span> <span class="n">dt</span> <span class="ow">in</span> <span class="n">test_time</span><span class="p">]</span>
-    <span class="n">train_time</span> <span class="o">=</span> <span class="p">[(</span><span class="n">dt</span> <span class="o">-</span> <span class="n">min_date</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="k">for</span> <span class="n">dt</span> <span class="ow">in</span> <span class="n">train_time</span><span class="p">]</span>
+    <span class="c1">#test_time = [(dt - min_date).total_seconds() for dt in test_time]</span>
+    <span class="c1">#train_time = [(dt - min_date).total_seconds() for dt in train_time]</span>
 
 
     <span class="n">train_set</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">train_set</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">train_time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Energy&quot;</span><span class="p">)</span>

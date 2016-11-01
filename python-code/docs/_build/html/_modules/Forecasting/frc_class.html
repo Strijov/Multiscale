@@ -52,7 +52,8 @@
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">pickle</span>
-<span class="kn">import</span> <span class="nn">copy_reg</span>
+<span class="c1"># import cloudpickle, dill</span>
+
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">BaseEstimator</span>
 <span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="k">import</span> <span class="n">Pipeline</span>
@@ -156,8 +157,6 @@
     <span class="k">class</span> <span class="nc">CustomModel_</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">IdentityModel</span><span class="p">):</span>
 
         <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="c1"># self.__objclass__ = parent # do smth about this</span>
-            <span class="c1"># self.__name__ = parent.__name__</span>
             <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
                 <span class="n">name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
                 <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
@@ -167,26 +166,46 @@
             <span class="n">parent</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 
+
         <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot; Runs parent.fit after IndentityModel.fit&quot;&quot;&quot;</span>
             <span class="n">IdentityModel</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
             <span class="n">parent</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
 
             <span class="k">return</span> <span class="bp">self</span>
 
         <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot; Runs parent.predict after IndentityModel.predict&quot;&quot;&quot;</span>
             <span class="n">IdentityModel</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
-            <span class="n">Y</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="s2">&quot;predict&quot;</span><span class="p">):</span>
+                <span class="n">Y</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="s2">&quot;forecast&quot;</span><span class="p">):</span>
+                <span class="n">Y</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">forecast</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="s2">&quot;transform&quot;</span><span class="p">):</span>
+                <span class="n">Y</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> class has neither of predict, forecast or transform methods&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span>
 
             <span class="k">return</span> <span class="n">Y</span>
+
+        <span class="k">def</span> <span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            A way to reproduce the the class instance</span>
+
+<span class="sd">            :return: callable, arguments and object parameters</span>
+<span class="sd">            :rtype: tuple</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">CustomModel</span><span class="p">,</span> <span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="p">),</span> <span class="n">state</span><span class="p">)</span>
 
 
     <span class="k">return</span> <span class="n">CustomModel_</span><span class="p">()</span></div>
 
 
-<span class="k">def</span> <span class="nf">_reduce_wrapper_descriptor</span><span class="p">(</span><span class="n">m</span><span class="p">):</span> <span class="c1"># for serialization</span>
-    <span class="k">return</span> <span class="nb">getattr</span><span class="p">,</span> <span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">__objclass__</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PipelineModel"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.PipelineModel">[docs]</a><span class="k">class</span> <span class="nc">PipelineModel</span><span class="p">(</span><span class="n">Pipeline</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A pipeline forecasting model&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">steps</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
@@ -194,17 +213,24 @@
 
 
 <div class="viewcode-block" id="PipelineModel.save_model"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.PipelineModel.save_model">[docs]</a>    <span class="k">def</span> <span class="nf">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="s2">&quot;models&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Saves the model to filename with specified prefix</span>
 
-        <span class="kn">import</span> <span class="nn">cloudpickle</span>
+<span class="sd">        :param file_name: prefix for the file name, optional</span>
+<span class="sd">        :type file_name: str</span>
+<span class="sd">        :param folder: folder to strore the model in, optional; default = &quot;models&quot;</span>
+<span class="sd">        :type folder: str</span>
+<span class="sd">        :return: name of the saved file</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
-
-        <span class="c1"># copy_reg.pickle(type(self.named_steps[&#39;frc&#39;]), _reduce_wrapper_descriptor)</span>
 
         <span class="n">file_name</span> <span class="o">+=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">named_steps</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
         <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">+</span> <span class="s2">&quot;.pkl&quot;</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">cloudpickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
 
 
 
@@ -212,6 +238,14 @@
 
 
 <div class="viewcode-block" id="PipelineModel.load_model"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.PipelineModel.load_model">[docs]</a>    <span class="k">def</span> <span class="nf">load_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads the model from the specified file</span>
+
+<span class="sd">        :param file_name: name of the file to load the data from</span>
+<span class="sd">        :type file_name: str</span>
+<span class="sd">        :return: self</span>
+<span class="sd">        :rtype: PipelineModel</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="bp">self</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
@@ -230,25 +264,7 @@
 
 
 
-<span class="c1"># class parent():</span>
-<span class="c1">#</span>
-<span class="c1">#     def __init__(self):</span>
-<span class="c1">#         self.a = &quot;a&quot;</span>
-<span class="c1">#         self.b = 2</span>
-<span class="c1">#</span>
-<span class="c1">#     def fit(self, X, Y):</span>
-<span class="c1">#         self.is_fitted = &quot;here&quot;</span>
-<span class="c1">#         self.b += 2</span>
-<span class="c1">#</span>
-<span class="c1">#     def predict(self, X):</span>
-<span class="c1">#         self.my_print()</span>
-<span class="c1">#</span>
-<span class="c1">#     def my_print(self):</span>
-<span class="c1">#         print(self.a)</span>
 
-<span class="c1"># my_model = CustomModel(parent, c=1)</span>
-<span class="c1"># my_model.fit([], [])</span>
-<span class="c1"># my_model.predict([])</span>
 
 
 </pre></div>
