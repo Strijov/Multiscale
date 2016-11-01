@@ -112,7 +112,7 @@ def CustomModel(parent, *args, **kwargs):
                 name = kwargs['name']
                 del kwargs['name']
             else:
-                name = None
+                name = parent.__name__
             IdentityModel.__init__(self, name)
             parent.__init__(self, *args, **kwargs)
 
@@ -149,7 +149,7 @@ def CustomModel(parent, *args, **kwargs):
             :rtype: tuple
             """
             state = self.__dict__.copy()
-            return (CustomModel, (parent, ), state)
+            return (CustomModel, (parent, args, kwargs,), state)
 
 
     return CustomModel_()
