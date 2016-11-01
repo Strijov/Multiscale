@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import os
 import pickle
+# import cloudpickle, dill
 
 import numpy as np
 from sklearn.base import BaseEstimator
@@ -107,8 +108,6 @@ def CustomModel(parent, *args, **kwargs):
     class CustomModel_(parent, IdentityModel):
 
         def __init__(self):
-            # self.__objclass__ = parent # do smth about this
-            # self.__name__ = parent.__name__
             if 'name' in kwargs.keys():
                 name = kwargs['name']
                 del kwargs['name']
@@ -118,26 +117,46 @@ def CustomModel(parent, *args, **kwargs):
             parent.__init__(self, *args, **kwargs)
 
 
+
         def fit(self, X, Y):
+            """ Runs parent.fit after IndentityModel.fit"""
             IdentityModel.fit(self, X, Y)
             parent.fit(self, X, Y)
 
             return self
 
         def predict(self, X):
+            """ Runs parent.predict after IndentityModel.predict"""
             IdentityModel.predict(self, X)
-            Y = parent.predict(self, X)
+            if hasattr(parent, "predict"):
+                Y = parent.predict(self, X)
+            elif hasattr(parent, "forecast"):
+                Y = parent.forecast(self, X)
+            elif hasattr(parent, "transform"):
+                Y = parent.transform(self, X)
+            else:
+                print("{} class has neither of predict, forecast or transform methods".format(parent.__name__))
+                raise AttributeError
 
             return Y
+
+        def __reduce__(self):
+            """
+            A way to reproduce the the class instance
+
+            :return: callable, arguments and object parameters
+            :rtype: tuple
+            """
+            state = self.__dict__.copy()
+            return (CustomModel, (parent, ), state)
 
 
     return CustomModel_()
 
 
-def _reduce_wrapper_descriptor(m): # for serialization
-    return getattr, (m.__objclass__, m.__name__)
 
 class PipelineModel(Pipeline):
+    """ A pipeline forecasting model"""
 
     def __init__(self, steps=None):
         if not steps == None:
@@ -145,22 +164,24 @@ class PipelineModel(Pipeline):
 
 
     def save_model(self, file_name="", folder="models"):
+        """
+        Saves the model to filename with specified prefix
 
-        import cloudpickle
-        try:
-            import copy_reg
-        except ImportError:
-            import copyreg as copy_reg
+        :param file_name: prefix for the file name, optional
+        :type file_name: str
+        :param folder: folder to strore the model in, optional; default = "models"
+        :type folder: str
+        :return: name of the saved file
+        :rtype: str
+        """
 
         if not os.path.exists(folder):
             os.makedirs(folder)
 
-        # copy_reg.pickle(type(self.named_steps['frc']), _reduce_wrapper_descriptor)
-
         file_name += "_".join(list(self.named_steps.keys()))
         file_name = os.path.join(folder, file_name + ".pkl")
         with open(file_name, "wb") as f:
-            cloudpickle.dump(self, f)
+            pickle.dump(self, f)
 
 
 
@@ -168,6 +189,14 @@ class PipelineModel(Pipeline):
 
 
     def load_model(self, file_name):
+        """
+        Loads the model from the specified file
+
+        :param file_name: name of the file to load the data from
+        :type file_name: str
+        :return: self
+        :rtype: PipelineModel
+        """
 
         with open(file_name, "rb") as f:
             self = pickle.load(f)
@@ -186,24 +215,6 @@ class PipelineModel(Pipeline):
 
 
 
-# class parent():
-#
-#     def __init__(self):
-#         self.a = "a"
-#         self.b = 2
-#
-#     def fit(self, X, Y):
-#         self.is_fitted = "here"
-#         self.b += 2
-#
-#     def predict(self, X):
-#         self.my_print()
-#
-#     def my_print(self):
-#         print(self.a)
 
-# my_model = CustomModel(parent, c=1)
-# my_model.fit([], [])
-# my_model.predict([])
 
 

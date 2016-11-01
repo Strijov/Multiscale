@@ -32,7 +32,6 @@ FNAME_PREFIX = ""
 TRAIN_TEST_RATIO = 0.75
 N_STEPS = 1 # forecast only one requested interval
 
-#model = frc_class.PipelineModel().load_model("results\\frc_sel_gen.pkl")
 
 def main():
     # Load and prepare dataset.
@@ -41,6 +40,7 @@ def main():
     ts_list = []
     for name in TRAIN_FILE_NAMES:
         ts_list.append(load_time_series.load_all_time_series(datasets=[DATASET], load_raw=False, name_pattern=name, verbose=False)[0])
+        print(ts_list[-1].summarize_ts())
 
 
     generator = frc_class.IdentityGenerator(name="Identity generator")
@@ -100,7 +100,7 @@ def demo_train(ts_struct_list, frc_model=None, fg_mdl=None, fs_mdl=None, verbose
     results = []
     res_text = []
 
-    for ts in ts_struct_list:
+    for ts in ts_struct_list[:1]:
         data = regression_matrix.RegMatrix(ts, x_idx=TS_IDX, y_idx=TS_IDX)
 
         # Create regression matrix
@@ -111,7 +111,6 @@ def demo_train(ts_struct_list, frc_model=None, fg_mdl=None, fs_mdl=None, verbose
 
         # train the model. This returns trained pipeline and its steps
         model, frc, gen, sel = data.train_model(frc_model=frc_model, generator=fg_mdl, selector=fs_mdl)
-
 
         if verbose:
             model.print_pipeline_pars()
@@ -139,16 +138,17 @@ def demo_train(ts_struct_list, frc_model=None, fg_mdl=None, fs_mdl=None, verbose
             print(res)
 
         results.append(res)
-        res_text.append("Time series {0} forecasted with {1} + '{2}' feature generation model and '{3}' feature selection model \n \\\\".
+        res_text.append("Time series {} forecasted with {} + '{}' feature generation model and '{}' feature selection model \n \\\\".
                         format(ts.name, frc.name, gen.name, sel.name))
 
-    #saved_fname = model.save_model(file_name=FNAME_PREFIX, folder=SAVE_DIR) # saving in not an option yet
+    saved_mdl_fname = model.save_model(file_name=FNAME_PREFIX, folder=SAVE_DIR) # saving in not an option yet
+    # model = frc_class.PipelineModel().load_model(file_name=fname)
 
     # write results into a latex file
     my_plots.save_to_latex(results, df_names=res_text, folder=SAVE_DIR)
 
 
-    return model
+    return saved_mdl_fname
 
 
 def competition_errors(model, names, y_idx=None):
@@ -165,8 +165,8 @@ def competition_errors(model, names, y_idx=None):
     :rtype:
     """
 
-    # if isinstance(model, str):
-    #     model = frc_class.PipelineModel().load_model(model) # this doesn't work yet
+    if isinstance(model, str):
+        model = frc_class.PipelineModel().load_model(model) # this doesn't work yet
 
     mape = []
     for name in names:
