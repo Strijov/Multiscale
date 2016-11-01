@@ -97,7 +97,7 @@ def input_latex_headers():
 
 def save_to_latex(df_list, df_names=None, file_name=None, folder=""):
 
-    if not os.path.exists(folder):
+    if not folder == "" and not os.path.exists(folder):
         os.mkdir(folder)
     if file_name is None:
         file_name = "test_latex_output"
