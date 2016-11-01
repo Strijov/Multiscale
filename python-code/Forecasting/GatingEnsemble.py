@@ -3,6 +3,7 @@ import lasagne
 import theano
 import theano.tensor as T
 import numpy as np
+import inspect # for argument inspection
 
 
 class GatingEnsemble:
@@ -20,7 +21,7 @@ class GatingEnsemble:
         for i in range(n_iter):
             self.refit_estimators(X,y)
             if i%10 == 0:
-                print(i, 'iteration done')
+                print('{} iteration done'.format(i))
             self.refit_gf(X,y,n_iter=10)
 
         #print "i want a better implementation"
@@ -44,8 +45,14 @@ class GatingEnsemble:
         W /= W.sum(axis=0,keepdims=True)
         W[np.isnan(W)] = 1./len(W)
         
-        
-        self.estimators = [est.fit(X,y,sample_weight=W[:,i]) for i,est in enumerate(self.estimators)]
+
+        #self.estimators = [est.fit(X,y,sample_weight=W[:,i]) for i,est in enumerate(self.estimators)] # fails if estimator has no "sample_weight argument
+        for i, est in enumerate(self.estimators):
+            expected_args = inspect.getargspec(est.fit)
+            if "sample_weight" in expected_args.args or not expected_args.keywords is None:
+                self.estimators[i].fit(X, y, sample_weight=W[:, i])
+            else:
+                self.estimators[i].fit(X, y)
         self.get_est_params = [est.get_params() for est in self.estimators]
         
     def build_gating_function(self,x_shape,n_gates):
