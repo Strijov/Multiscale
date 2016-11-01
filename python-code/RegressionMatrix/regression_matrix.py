@@ -9,8 +9,6 @@ import copy
 import warnings
 import pandas as pd
 import numpy as np
-import sklearn.pipeline as pipeline
-
 
 from itertools import product
 from collections import namedtuple
@@ -50,11 +48,15 @@ class RegMatrix:
         """
 
         self.request = ts_struct.request
+        if isinstance(self.request, pd.tslib.Timedelta):
+            self.request = self.request.total_seconds()
 
         self.history = ts_struct.history
         if self.history is None:
             self.history = self.request
             print("History is not defined.  Do not forget to optimize it!") # FIXIT
+        elif isinstance(self.history, pd.tslib.Timedelta):
+            self.history = self.history.total_seconds()
 
         # check that data field contains a list:
         if not isinstance(ts_struct.data, list):
@@ -74,9 +76,14 @@ class RegMatrix:
         self.forecasts = [0] * self.nts
         self.idxY = [0] * self.nts
         names = []
+        min_date = min(np.hstack([ts.index for ts in ts_struct.data]))
         for ts in ts_struct_data:
             # print("nans:", ts.name, np.sum(np.isnan(ts)))
-            self.ts.append(TsMiniStruct(ts.as_matrix(), 1, 0, ts.name, np.array(ts.index)))
+            if isinstance(ts.index[0], pd.tslib.Timestamp):
+                ts_index = np.array((ts.index - min_date).total_seconds())
+            else:
+                ts_index = np.array(ts.index)
+            self.ts.append(TsMiniStruct(ts.as_matrix(), 1, 0, ts.name, ts_index))
             names.append(ts.name)
         self.feature_dict = dict.fromkeys(names)
 

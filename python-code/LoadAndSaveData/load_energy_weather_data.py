@@ -154,14 +154,14 @@ def _load_train_test_csv(train, test, weather):
 
 
     min_date = min(weather_time + train_time + test_time)
-    weather_time = [(dt - min_date).total_seconds() for dt in weather_time]
+    #weather_time = [(dt - min_date).total_seconds() for dt in weather_time]
     train_weather_time = weather_time[:1096]
     test_weather_time = weather_time[1096:]
 
     train_time = _add_hours_to_dates(train_time)
     test_time = _add_hours_to_dates(test_time)
-    test_time = [(dt - min_date).total_seconds() for dt in test_time]
-    train_time = [(dt - min_date).total_seconds() for dt in train_time]
+    #test_time = [(dt - min_date).total_seconds() for dt in test_time]
+    #train_time = [(dt - min_date).total_seconds() for dt in train_time]
 
 
     train_set = pd.Series(train_set, index=train_time, name="Energy")

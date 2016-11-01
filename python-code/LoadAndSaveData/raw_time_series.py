@@ -95,26 +95,6 @@ class TsStruct():
         self.align_time_series()
 
 
-        # ts_len = [len(ts) for ts in self.data]
-        #
-        # if not np.any(ts_len > max_history):
-        #     return None
-        #
-        # freqs = [0] * len(self.data)
-        # n_steps = [0] * len(self.data)
-        # for i,ts in enumerate(self.data):
-        #     freqs[i] = int(self.request // self.intervals[i])
-        #     n_steps[i] = int(max_history // freqs[i])
-        #
-        # n_steps = min(n_steps)
-        # for i, ts in enumerate(self.data):
-        #     self.data[i] = ts.iloc[-freqs[i]*n_steps:]
-
-
-
-
-
-
     def align_time_series(self, max_history=None):
         """
         Truncates time series in self.data so that the end points of all times series belong to the same requested interval
@@ -159,7 +139,7 @@ class TsStruct():
         :return: pd.DataFrame or latex string with ts statistics
         """
 
-        column_names = ["N. obs.", "Min", "Max", "T. min", "T.max", "T. delta", "Nans"]
+        column_names = ["N. obs.", "Min", "Max", "T. min", "T.max", "T. delta", "Nans %"]
         res = []
         names = []
         for ts in self.data:
@@ -167,12 +147,12 @@ class TsStruct():
             if isinstance(ts.index[0], pd.tslib.Timestamp):
                 ts_min = ts.index[0]
                 ts_max = ts.index[-1]
-                ts_delta = pd.to_datetime(min(np.diff(ts.index)), unit="s") - pd.to_datetime("1970-01-01")
+                ts_delta = min(ts.index[1:] - ts.index[:-1]) - pd.to_datetime("1970-01-01")
             else:
                 ts_min = pd.to_datetime(ts.index, unit="s")[0]
                 ts_max = pd.to_datetime(ts.index, unit="s")[-1]
                 ts_delta = pd.to_datetime(min(np.diff(ts.index)), unit="s") - pd.to_datetime("1970-01-01")
-            res.append([ts.count(), ts.min(), ts.max(), ts_min, ts_max, ts_delta, sum(np.isnan(ts.as_matrix()))])
+            res.append([ts.count(), ts.min(), ts.max(), ts_min, ts_max, ts_delta, np.mean(np.isnan(ts.as_matrix()))*100])
 
 
         res = pd.DataFrame(res, index=names, columns=column_names)
