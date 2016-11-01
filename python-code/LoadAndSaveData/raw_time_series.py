@@ -147,7 +147,7 @@ class TsStruct():
             if isinstance(ts.index[0], pd.tslib.Timestamp):
                 ts_min = ts.index[0]
                 ts_max = ts.index[-1]
-                ts_delta = min(ts.index[1] - ts.index[0]) - pd.to_datetime("1970-01-01")
+                ts_delta = min(ts.index[1:] - ts.index[:-1]) - pd.to_datetime("1970-01-01")
             else:
                 ts_min = pd.to_datetime(ts.index, unit="s")[0]
                 ts_max = pd.to_datetime(ts.index, unit="s")[-1]
