@@ -62,35 +62,87 @@
 <p>Created on 30 September 2016. Author: Maria Popova, Anastasia Motrenko</p>
 <dl class="class">
 <dt id="Forecasting.LSTM.LSTM">
-<em class="property">class </em><code class="descclassname">Forecasting.LSTM.</code><code class="descname">LSTM</code><span class="sig-paren">(</span><em>name='LSTM'</em>, <em>grad_clip=100</em>, <em>batch_size=50</em>, <em>l_out=None</em>, <em>n_epochs=100</em>, <em>plot_loss=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#LSTM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.LSTM" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">Forecasting.LSTM.</code><code class="descname">LSTM</code><span class="sig-paren">(</span><em>name='LSTM'</em>, <em>grad_clip=100.0</em>, <em>batch_size=50</em>, <em>l_out=None</em>, <em>n_epochs=100</em>, <em>plot_loss=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#LSTM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.LSTM" title="Permalink to this definition">¶</a></dt>
 <dd><p>Regression models built on LSTM-network</p>
 <dl class="method">
 <dt id="Forecasting.LSTM.LSTM.checkpoint">
 <code class="descname">checkpoint</code><span class="sig-paren">(</span><em>fname</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#LSTM.checkpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.LSTM.checkpoint" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Saves parameters for a file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fname</strong> (<em>str</em>) &#8211; filename</li>
+<li><strong>kwargs</strong> &#8211; named parameters to save</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="Forecasting.LSTM.LSTM.fit">
 <code class="descname">fit</code><span class="sig-paren">(</span><em>trainX</em>, <em>trainY</em>, <em>n_epochs=None</em>, <em>fname=None</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#LSTM.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.LSTM.fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Train module for LSTM network</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>trainX</strong> (<em>ndarray</em>) &#8211; training data, features</li>
+<li><strong>trainY</strong> (<em>ndarray</em>) &#8211; training data, targets</li>
+<li><strong>n_epochs</strong> (<em>int</em>) &#8211; number of training epochs</li>
+<li><strong>fname</strong> (<em>str</em>) &#8211; filename for saving model parameters</li>
+<li><strong>verbose</strong> (<em>bool</em>) &#8211; if True, outputs loss values while training</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="Forecasting.LSTM.LSTM.init_nn_structure">
 <code class="descname">init_nn_structure</code><span class="sig-paren">(</span><em>seq_length</em>, <em>pred_len</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#LSTM.init_nn_structure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.LSTM.init_nn_structure" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Inits network structure</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>seq_length</strong> (<em>int</em>) &#8211; number of features</li>
+<li><strong>pred_len</strong> (<em>int</em>) &#8211; number of predicted values (target dimensionality)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="Forecasting.LSTM.LSTM.predict">
 <code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#LSTM.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.LSTM.predict" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Duplicates self.forecast</p>
+</dd></dl>
 
 </dd></dl>
 
 <dl class="function">
 <dt id="Forecasting.LSTM.iterate_minibatches">
 <code class="descclassname">Forecasting.LSTM.</code><code class="descname">iterate_minibatches</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em>, <em>batch_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#iterate_minibatches"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.iterate_minibatches" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Generates batch_size batches from X and Y</p>
+</dd></dl>
 
 </div>
 <div class="section" id="module-Forecasting.frc_class">
@@ -228,10 +280,26 @@
 
 </dd></dl>
 
-<dl class="function">
-<dt id="Forecasting.frc_class.print_pipeline_pars">
-<code class="descclassname">Forecasting.frc_class.</code><code class="descname">print_pipeline_pars</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#print_pipeline_pars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.print_pipeline_pars" title="Permalink to this definition">¶</a></dt>
+<dl class="class">
+<dt id="Forecasting.frc_class.PipelineModel">
+<em class="property">class </em><code class="descclassname">Forecasting.frc_class.</code><code class="descname">PipelineModel</code><span class="sig-paren">(</span><em>steps=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#PipelineModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.PipelineModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sklearn.pipeline.Pipeline</span></code></p>
+<dl class="method">
+<dt id="Forecasting.frc_class.PipelineModel.load_model">
+<code class="descname">load_model</code><span class="sig-paren">(</span><em>file_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#PipelineModel.load_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.PipelineModel.load_model" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Forecasting.frc_class.PipelineModel.print_pipeline_pars">
+<code class="descname">print_pipeline_pars</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#PipelineModel.print_pipeline_pars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.PipelineModel.print_pipeline_pars" title="Permalink to this definition">¶</a></dt>
 <dd><p>Formatted print for pipeline model</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Forecasting.frc_class.PipelineModel.save_model">
+<code class="descname">save_model</code><span class="sig-paren">(</span><em>file_name=''</em>, <em>folder='models'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#PipelineModel.save_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.PipelineModel.save_model" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 </div>

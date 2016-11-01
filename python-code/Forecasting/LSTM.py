@@ -13,7 +13,22 @@ import my_plots
 class LSTM():
     """ Regression models built on LSTM-network """
 
-    def __init__(self, name="LSTM", grad_clip=100, batch_size=50, l_out=None, n_epochs=100, plot_loss=False):
+    def __init__(self, name="LSTM", grad_clip=100.0, batch_size=50, l_out=None, n_epochs=100, plot_loss=False):
+        """
+
+        :param name: reference name
+        :type name: str
+        :param grad_clip: max absolute gradient value
+        :type grad_clip: float
+        :param batch_size: number of rows in a batch
+        :type batch_size: int
+        :param l_out: output layer, optional
+        :type l_out: lasagne.Layer
+        :param n_epochs: number of training epochs
+        :type n_epochs: int
+        :param plot_loss: if True, plots loss by training epoch
+        :type plot_loss: bool
+        """
         self.name = name
         self.grad_clip = grad_clip
         self.batch_size = batch_size
@@ -23,7 +38,21 @@ class LSTM():
 
 
     def fit(self, trainX, trainY, n_epochs=None, fname=None, verbose=False):
-        """ Train module for LSTM network """
+        """
+        Train module for LSTM network
+
+        :param trainX: training data, features
+        :type trainX: ndarray
+        :param trainY: training data, targets
+        :type trainY: ndarray
+        :param n_epochs: number of training epochs
+        :type n_epochs: int
+        :param fname: filename for saving model parameters
+        :type fname: str
+        :param verbose: if True, outputs loss values while training
+        :type verbose: bool
+        :return: None
+        """
 
         _, nX = trainX.shape
         _, nY = trainY.shape
@@ -61,14 +90,23 @@ class LSTM():
 
 
     def predict(self, X):
-        #m, n = X.shape
+        """ Duplicates self.forecast """
 
         Y = self.forecast(X)
-        #nY = int(Y.size/m)
-        return Y #.reshape(m, nY)
+
+        return Y
 
 
     def init_nn_structure(self, seq_length, pred_len):
+        """
+        Inits network structure
+
+        :param seq_length: number of features
+        :type seq_length: int
+        :param pred_len: number of predicted values (target dimensionality)
+        :type pred_len: int
+        :return: None
+        """
         input_sequence = T.matrix('input sequence')
         target_values = T.matrix('target y')
 
@@ -121,6 +159,14 @@ class LSTM():
 
 
     def checkpoint(self, fname, **kwargs):
+        """
+        Saves parameters for a file
+
+        :param fname: filename
+        :type fname: str
+        :param kwargs: named parameters to save
+        :return: None
+        """
         results = {}
         params_names = lasagne.layers.get_all_params(self.l_out, trainable=True)
         params = lasagne.layers.get_all_param_values(self.l_out)
@@ -132,21 +178,18 @@ class LSTM():
             results[k] = v
 
         if fname is None:
-            fname = "last_weights_" + str(datetime.date.today())
+            fname = "lstm_weights_" + str(datetime.date.today())
 
         pickle.dump(params, open(fname, 'wb'))
 
 
 
 def iterate_minibatches(X, Y, batch_size):
+    """
+    Generates batch_size batches from X and Y
+    """
 
     m = X.shape[0]
-    # n_batches = int(m/batch_size)
-    # for i in range(m-batch_size):
-    #     X_batch = X[i:i+batch_size]
-    #     Y_batch = Y[i:i+batch_size]
-    #     yield (X_batch, Y_batch)
-
 
     ind = np.random.permutation(m).tolist()
     k = 0
