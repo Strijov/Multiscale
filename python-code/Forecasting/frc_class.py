@@ -3,7 +3,7 @@ from __future__ import print_function
 
 import os
 import pickle
-import copy_reg
+
 import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.pipeline import Pipeline
@@ -147,6 +147,11 @@ class PipelineModel(Pipeline):
     def save_model(self, file_name="", folder="models"):
 
         import cloudpickle
+        try:
+            import copy_reg
+        except ImportError:
+            import copyreg as copy_reg
+
         if not os.path.exists(folder):
             os.makedirs(folder)
 
