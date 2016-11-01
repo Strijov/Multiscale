@@ -6,8 +6,11 @@ import pandas as pd
 import numpy as np
 from RegressionMatrix import regression_matrix
 from sklearn.linear_model import Lasso
+from sklearn.ensemble import RandomForestRegressor
 from LoadAndSaveData import load_time_series
 from Forecasting import frc_class
+from Forecasting.GatingEnsemble import GatingEnsemble
+#from Forecasting.LSTM import LSTM
 import my_plots
 
 # Experiment data
@@ -50,7 +53,12 @@ def main():
     selector = frc_class.IdentityModel(name="Identity selector")
 
     # first argument is your model class, then follow optional parameters as keyword arguments
-    frc_model = frc_class.CustomModel(Lasso, name="Lasso", alpha=0.01)
+    frc_model = frc_class.CustomModel(Lasso, name="Lasso", alpha=0.001)
+    # Examples of custom models:
+    # Mixture of experts:
+    # frc_model = frc_class.CustomModel(GatingEnsemble, name="Mixture", estimators=[Lasso(alpha=0.01), Lasso(alpha=0.001)])
+    # LSTM network:
+    # frc_model = frc_class.CustomModel(LSTM.LSTM, name="LSTM")
 
     # train your model:
     model = demo_train(ts_list, frc_model=frc_model, fg_mdl=generator, fs_mdl=selector, verbose=VERBOSE)
@@ -85,6 +93,7 @@ def demo_train(ts_struct_list, frc_model=None, fg_mdl=None, fs_mdl=None, verbose
 
     if frc_model is None:
         frc_model = frc_class.CustomModel(Lasso, name="Lasso", alpha=0.01)
+
 
 
 
@@ -143,6 +152,18 @@ def demo_train(ts_struct_list, frc_model=None, fg_mdl=None, fs_mdl=None, verbose
 
 
 def competition_errors(model, names, y_idx=None):
+    """
+    Reaturns MAPE, averaged over a set of multivariate time series, specified by names
+
+    :param model: trained forecasting model
+    :type model: PipelineModel
+    :param names: (parts of) names of time series in the set
+    :type names: list
+    :param y_idx:
+    :type y_idx:
+    :return:
+    :rtype:
+    """
 
     # if isinstance(model, str):
     #     model = frc_class.PipelineModel().load_model(model) # this doesn't work yet
