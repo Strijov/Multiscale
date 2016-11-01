@@ -163,10 +163,16 @@ class TsStruct():
         res = []
         names = []
         for ts in self.data:
-            stats = pd.DataFrame(ts).describe()
             names.append(ts.name)
-            res.append([ts.count(), ts.min(), ts.max(), ts.index.to_datetime()[0], ts.index.to_datetime()[-1],
-                       min(np.diff(ts.index.to_datetime())), sum(np.isnan(ts.as_matrix()))])
+            if isinstance(ts.index[0], pd.tslib.Timestamp):
+                ts_min = ts.index[0]
+                ts_max = ts.index[-1]
+                ts_delta = pd.to_datetime(min(np.diff(ts.index)), unit="s") - pd.to_datetime("1970-01-01")
+            else:
+                ts_min = pd.to_datetime(ts.index, unit="s")[0]
+                ts_max = pd.to_datetime(ts.index, unit="s")[-1]
+                ts_delta = pd.to_datetime(min(np.diff(ts.index)), unit="s") - pd.to_datetime("1970-01-01")
+            res.append([ts.count(), ts.min(), ts.max(), ts_min, ts_max, ts_delta, sum(np.isnan(ts.as_matrix()))])
 
 
         res = pd.DataFrame(res, index=names, columns=column_names)
