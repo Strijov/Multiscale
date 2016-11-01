@@ -33,6 +33,8 @@ TRAIN_TEST_RATIO = 0.75
 N_STEPS = 1 # forecast only one requested interval
 
 
+
+
 def main():
     # Load and prepare dataset.
     load_raw = not os.path.exists(os.path.join("ProcessedData", "EnergyWeather_orig_train.pkl"))
@@ -45,9 +47,10 @@ def main():
 
     generator = frc_class.IdentityGenerator(name="Identity generator")
     # Example: define a transformation function for feature generation
+
     def transform(X):
         return np.hstack((X, np.power(X, 2)))
-    generator.transform = transform
+    generator.transform = transform # defined in __main__; otherwise will cause problems in save
 
     # feature selection model can be defined in the same way. If you don't use any, just leave as is
     selector = frc_class.IdentityModel(name="Identity selector")
@@ -70,6 +73,7 @@ def main():
     print("Mean error across time series: train = {} with std {}, test = {} with std {}".format(train_error, train_std, test_error, test_std))
 
     return train_error, test_error
+
 
 
 def demo_train(ts_struct_list, frc_model=None, fg_mdl=None, fs_mdl=None, verbose=False):
@@ -100,7 +104,7 @@ def demo_train(ts_struct_list, frc_model=None, fg_mdl=None, fs_mdl=None, verbose
     results = []
     res_text = []
 
-    for ts in ts_struct_list[:1]:
+    for ts in ts_struct_list:
         data = regression_matrix.RegMatrix(ts, x_idx=TS_IDX, y_idx=TS_IDX)
 
         # Create regression matrix

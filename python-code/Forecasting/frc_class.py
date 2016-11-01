@@ -2,8 +2,8 @@
 from __future__ import print_function
 
 import os
-import pickle
-# import cloudpickle, dill
+import dill
+# import cloudpickle
 
 import numpy as np
 from sklearn.base import BaseEstimator
@@ -128,15 +128,16 @@ def CustomModel(parent, *args, **kwargs):
         def predict(self, X):
             """ Runs parent.predict after IndentityModel.predict"""
             IdentityModel.predict(self, X)
-            if hasattr(parent, "predict"):
-                Y = parent.predict(self, X)
-            elif hasattr(parent, "forecast"):
-                Y = parent.forecast(self, X)
-            elif hasattr(parent, "transform"):
-                Y = parent.transform(self, X)
-            else:
-                print("{} class has neither of predict, forecast or transform methods".format(parent.__name__))
-                raise AttributeError
+            Y = parent.predict(self, X)
+            # if hasattr(parent, "predict"):
+            #     Y = parent.predict(self, X)
+            # elif hasattr(parent, "forecast"):
+            #     Y = parent.forecast(self, X)
+            # elif hasattr(parent, "transform"):
+            #     Y = parent.transform(self, X)
+            # else:
+            #     print("{} class has neither of predict, forecast or transform methods".format(parent.__name__))
+            #     raise AttributeError
 
             return Y
 
@@ -181,9 +182,7 @@ class PipelineModel(Pipeline):
         file_name += "_".join(list(self.named_steps.keys()))
         file_name = os.path.join(folder, file_name + ".pkl")
         with open(file_name, "wb") as f:
-            pickle.dump(self, f)
-
-
+            dill.dump(self, f)
 
         return file_name
 
@@ -199,7 +198,7 @@ class PipelineModel(Pipeline):
         """
 
         with open(file_name, "rb") as f:
-            self = pickle.load(f)
+            self = dill.load(f)
 
         return self
 
