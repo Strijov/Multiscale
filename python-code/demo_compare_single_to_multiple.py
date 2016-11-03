@@ -1,14 +1,12 @@
 from __future__ import division
 from __future__ import print_function
 
-import os
-import optparse
 import pandas as pd
 import numpy as np
+import utils_
 
 from sklearn.linear_model import Lasso, LinearRegression
 
-from LoadAndSaveData import get_iot_data, write_data_to_iot_format, load_time_series
 from RegressionMatrix import regression_matrix
 from Forecasting import frc_class
 # from Forecasting import LSTM, GatingEnsemble
@@ -21,7 +19,7 @@ N_EXPERTS = 4
 def main(file_name, line_indices, header):
     """
     Compares simultaneous (all-on-all regression) forecasts to individual (one-on-one). The data is in IoT format
-    
+
     :param file_name: file name (.csv) with data in IoT format
     :type file_name: str
     :param line_indices: indices of lines to read from file.  Lines are enumerated from 1. If "all", read the whole file
@@ -31,7 +29,7 @@ def main(file_name, line_indices, header):
     :rtype:
     """
 
-    ts = safe_read_iot_data(file_name, line_indices, header)
+    ts = utils_.safe_read_iot_data(file_name, line_indices, header)
 
 
     err_all = forecating_errors(ts, range(len(ts.data)))
@@ -61,24 +59,6 @@ def main(file_name, line_indices, header):
 
 
     return res_all, res_by_one
-
-
-def safe_read_iot_data(file_name, line_indices, header):
-    """
-    If the data can't be read from file_name, first write it to iot format, then read from it.
-    """
-
-    if not os.path.exists(file_name):
-        load_raw = not os.path.exists(os.path.join("ProcessedData", "EnergyWeather_orig_train.pkl"))
-        ts_struct = load_time_series.load_all_time_series(datasets=['EnergyWeather'], load_raw=load_raw,
-                                                          name_pattern="missing")[0]
-
-        write_data_to_iot_format.write_ts(ts_struct, file_name)
-    data, metric_ids, host_ids, header_names = get_iot_data.get_data(file_name, line_indices, header)
-    dataset = host_ids.keys()[0]
-    ts = load_time_series.from_iot_to_struct(data, host_ids[dataset], dataset)
-
-    return ts
 
 
 
@@ -119,34 +99,8 @@ def data_frame_res(columns, column_names, ts):
 
 
 
-def parse_options():
-    """Parses the command line options."""
-    usage = "usage: %prog [options]"
-    parser = optparse.OptionParser(usage=usage)
 
-    parser.add_option('-f', '--filename',
-                      type='string',
-                      default=os.path.join('..', 'code','data', 'IotTemplate', 'data.csv'),
-                      help='.csv file with input data. Default: %default')
-    parser.add_option('-l', '--line-indices',
-                      type='string', default='all',
-                      help='Line indices to be read from file. Default: %default')
-    parser.add_option('-d', '--header',
-                      type='string', default='True',
-                      help='Header flag. True means the first line of the csv file in the columns 1 to 8 are variable names.\
-                       Default: %default')
-
-    opts, args = parser.parse_args()
-    opts.__dict__['header'] = bool(opts.__dict__['header'])
-
-    if opts.__dict__['line_indices'] == "all":
-        ln = opts.__dict__['line_indices']
-    else:
-        ln = opts.__dict__['line_indices'].split(",")
-        for i, idx in enumerate(ln):
-            ln[i] = int(idx)
-
-    return opts.__dict__['filename'], ln, opts.__dict__['header']
 
 if __name__ == '__main__':
-    main(*parse_options())
+    file_name, line_indices, header, _ = utils_.parse_options()
+    main(file_name, line_indices, header)
