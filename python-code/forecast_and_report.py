@@ -9,21 +9,21 @@ import os
 import sys
 import time
 import datetime
-import optparse
 import my_plots
+import utils_
 
 from sklearn.model_selection import KFold
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import RidgeCV, Lasso
 from LoadAndSaveData import get_iot_data, load_time_series
-from RegressionMatrix import regression_matrix
+from RegressionMatrix import regression_matrix, random_data
 from Forecasting import frc_class, arima_model
 #from Forecasting import LSTM
 #from Forecasting import GatingEnsemble
 
 N_EXPERTS = 4
 
-def main(file_name=None, line_indices="all", header=True):
+def main(file_name=None, line_indices="all", header=True, format_="date"):
     """
     Runs forecasting models and reports results in latex file
 
@@ -38,22 +38,24 @@ def main(file_name=None, line_indices="all", header=True):
     # Init string for latex results:
     latex_str = ""
     time_at_start = time.time()
-    folder = os.path.join("fig", str(datetime.date.today()))
+    if format_ == "date":
+        folder = os.path.join("fig", datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d'))
+    else:
+        folder = os.path.join("fig", datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d-%H-%M-%S'))
     if not os.path.exists(folder):
         os.makedirs(folder)
 
     # Load data in IoT format
+    file_name = "test.csv"
     try:
         data, metric_ids, host_ids, header_names = get_iot_data.get_data(file_name, line_indices, header)
     except BaseException as e:
-        print(e)
-        print("Line indices: ", line_indices)
-        print("Filename: ", file_name)
+        print("{}. Line indices: {}. Filename {}".format(e.message, line_indices, file_name))
         return None
 
 
     # Select only data from first dataset in host_ids:
-    dataset = list(host_ids.keys())[0] # select the first dataset
+    dataset = list(host_ids.keys())[0] # select the first dataset # FIXIT
     ts = load_time_series.from_iot_to_struct(data, host_ids[dataset], dataset) # get all time series from dataset in TsStruct format
     ts.replace_nans()
     ts.align_time_series(max_history=50000) # truncate time series to align starting and ending points
@@ -66,7 +68,10 @@ def main(file_name=None, line_indices="all", header=True):
     for i, tsi in enumerate(ts.data):
         save_to = os.path.join(folder, "decompose", "_".join(tsi.name.split(" ")))
         # infer periodicity and try to decompose ts into tend, seasonality and resid:
-        period, msg = arima_model.decompose(tsi, nhist=500, folder=save_to, nsplits=50)
+        try:
+            period, msg = arima_model.decompose(tsi, nhist=500, folder=save_to, nsplits=50)
+        except Exception as e:
+            msg = "Failed to decompose, error message: {}".format(e.message)
         latex_str += my_plots.check_text_for_latex(tsi.name) + ": "
         latex_str += msg
         latex_str += arima_model.make_report(os.path.join(save_to), write=False) # adds figures from "save_to" to latex_str
@@ -244,37 +249,9 @@ def mean_squared_error(f, y):
     return np.mean((f-y)**2)
 
 
-def parse_options():
-    """Parses the command line options."""
-    usage = "usage: %prog [options]"
-    parser = optparse.OptionParser(usage=usage)
 
-    parser.add_option('-f', '--filename',
-                      type='string',
-                      default=os.path.join('..', 'code','data', 'IotTemplate', 'data.csv'),
-                      help='.csv file with input data. Default: %default')
-    parser.add_option('-l', '--line-indices',
-                      type='string', default="15, 16",
-                      help='Line indices to be read from file. Default: %default')
-    parser.add_option('-d', '--header',
-                      type='string', default='True',
-                      help='Header flag. True means the first line of the csv file in the columns 1 to 8 are variable names.\
-                       Default: %default')
-
-    opts, args = parser.parse_args()
-    opts.__dict__['header'] = bool(opts.__dict__['header'])
-
-    if opts.__dict__['line_indices'] == "all":
-        ln = opts.__dict__['line_indices']
-    else:
-
-        ln = opts.__dict__['line_indices'].split(",")
-        for i, idx in enumerate(ln):
-            ln[i] = int(idx)
-
-    return opts.__dict__['filename'], ln, opts.__dict__['header']
 
 if __name__ == '__main__':
-    main(*parse_options())
+    main(*utils_.parse_options())
 
 
