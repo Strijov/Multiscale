@@ -11,9 +11,6 @@ import my_plots
 
 
 
-def drop_cols(model, X):
-    return X[:, :100]
-
 def main(frc_model=None, generator=None, selector=None):
 
     # Experiment settings.
