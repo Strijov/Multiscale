@@ -1,16 +1,25 @@
 import unittest
 import os
+import numpy as np
 
 from RegressionMatrix import regression_matrix, random_data
 from LoadAndSaveData import write_data_to_iot_format, get_iot_data, load_time_series
+
+
 
 FILE_NAME = "TestIot.csv"
 TOL = pow(10, -10)
 
 class TestIotData(unittest.TestCase):
     def test_read_lines(self):
+        """
+        Check that reading by line works correctly: write random data into file, then read by line and compare
+        results to original time series
+        """
+
         input_ts = random_data.create_random_ts(n_ts=3, n_req=7, n_hist=23, max_length=2000, min_length=200)
         write_data_to_iot_format.write_ts(input_ts, FILE_NAME)
+
         for i, ts in enumerate(input_ts.data):
             data, metric_ids, host_ids, header_names = get_iot_data.get_data(FILE_NAME, [i+2], True)
             dataset = host_ids.keys()[0]
@@ -23,9 +32,8 @@ class TestIotData(unittest.TestCase):
 
 
     def read_and_write(self):
+        """ Writes random data into file, then reads from it and compares results """
         input_ts = random_data.create_random_ts(n_ts=3, n_req=7, n_hist=23, max_length=2000, min_length=200)
-        #data_original = regression_matrix.RegMatrix(input_ts)
-        #data_original.create_matrix()
 
         # write data to file in IoT format
         write_data_to_iot_format.write_ts(input_ts, FILE_NAME)
@@ -33,17 +41,48 @@ class TestIotData(unittest.TestCase):
         data, metric_ids, host_ids, header_names = get_iot_data.get_data(FILE_NAME, "all", True)
         os.remove(FILE_NAME)
 
-
         dataset = host_ids.keys()[0]
         converted_ts = load_time_series.from_iot_to_struct(data, host_ids[dataset], dataset)
-        #converted_data = regression_matrix.RegMatrix(converted_ts)
-        #converted_data.create_matrix()
 
         for tsi, tsc in zip(input_ts.data, converted_ts.data):
-            self.assertTrue((abs(tsi - tsc) < TOL).all())
+            # print(max(abs(np.array(tsi.T) - np.array(tsc.T))))
+            # print(max(abs(tsi.index - tsc.index)))
+            self.assertTrue((abs(np.array(tsi.T) - np.array(tsc.T)) < TOL).all())
             self.assertTrue((abs(tsi.index - tsc.index) < TOL).all())
 
-        self.assertTrue(input_ts.name == converted_ts)
+        self.assertTrue(input_ts.name == converted_ts.name)
+
+
+    def read_empty_lines(self):
+        """ Checks results of reading empty lines """
+        input_ts = random_data.create_random_ts(n_ts=3, n_req=7, n_hist=23, max_length=2000, min_length=200)
+
+        # write data to file in IoT format
+        write_data_to_iot_format.write_ts(input_ts, FILE_NAME)
+
+        data, metric_ids, host_ids, header_names = get_iot_data.get_data(FILE_NAME, [], True)
+        os.remove(FILE_NAME)
+
+        with self.assertRaises(IndexError) as e:
+            ts_list = load_time_series.iot_to_struct_by_dataset(data, host_ids, dataset_idx=[0])
+
+        #self.assertTrue('This is broken' in e.exception)
+
+    def read_empty_dataset(self):
+        """ Checks results of reading empty dataset """
+        input_ts = random_data.create_random_ts(n_ts=2, n_req=7, n_hist=23, max_length=2000, min_length=200)
+
+
+        write_data_to_iot_format.write_ts(input_ts, FILE_NAME)
+        data, metric_ids, host_ids, header_names = get_iot_data.get_data(FILE_NAME, "all", True)
+        os.remove(FILE_NAME)
+
+        with self.assertRaises(IndexError) as e:
+            ts = load_time_series.raw(data, host_ids, dataset_idx=[0])
+
+        #self.assertTrue('This is broken' in e.exception)
+
+
 
 
 

@@ -4,6 +4,7 @@ from __future__ import print_function
 import os.path
 import glob
 import re
+import numpy as np
 
 from sklearn.externals import joblib
 from .raw_time_series import TsStruct
@@ -113,6 +114,22 @@ def save_ts_to_dir(ts, tsname, dirname):
         os.mkdir(dirname)
     tsname = os.path.join(dirname, tsname) + '.pkl'
     joblib.dump(ts, tsname)
+
+
+def iot_to_struct_by_dataset(iot_ts_list, host_ids, dataset_idx=None):
+
+    ts_list = []
+    datasets_indices = host_ids.keys()
+    if dataset_idx is None:
+        dataset_idx = datasets_indices
+    if (np.array(dataset_idx) >= len(datasets_indices)).any():
+        print("Specified dataset indices {} out of range for dataset indices {} read from file".format(dataset_idx, datasets_indices))
+        raise IndexError
+    for i in dataset_idx:
+        dataset = datasets_indices[i]
+        ts_list.append(from_iot_to_struct(iot_ts_list, host_ids[dataset], dataset))
+
+    return ts_list
 
 def from_iot_to_struct(ts_list, idx, dataset):
     """

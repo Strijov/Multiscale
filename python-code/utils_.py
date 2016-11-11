@@ -61,7 +61,11 @@ def safe_read_iot_data(file_name, line_indices, header, default="EnergyWeather")
         write_data_to_iot_format.write_ts(ts_struct, file_name)
 
     data, metric_ids, host_ids, header_names = get_iot_data.get_data(file_name, line_indices, header)
-    dataset = host_ids.keys()[0]
-    ts = load_time_series.from_iot_to_struct(data, host_ids[dataset], dataset)
 
-    return ts
+    ts_list = load_time_series.iot_to_struct_by_dataset(data, host_ids, dataset_idx=[0])
+
+    if len(ts_list) == 0:
+        print("Data list, read from {} is empty".format(file_name))
+        raise ValueError
+
+    return ts_list[0]

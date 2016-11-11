@@ -80,11 +80,12 @@ class RegMatrix:
         for ts in ts_struct_data:
             # print("nans:", ts.name, np.sum(np.isnan(ts)))
             if isinstance(ts.index[0], pd.tslib.Timestamp):
-                ts_index = np.array((ts.index - min_date).total_seconds())
+                ts_index = np.array((ts.index - min_date).total_seconds()) # FIXIT
             else:
                 ts_index = np.array(ts.index)
             self.ts.append(TsMiniStruct(ts.as_matrix(), 1, 0, ts.name, ts_index))
             names.append(ts.name)
+
         self.feature_dict = dict.fromkeys(names)
 
     def create_matrix(self, nsteps=1, norm_flag=True, x_idx=None, y_idx=None):
@@ -173,7 +174,10 @@ class RegMatrix:
             print("Targets contain NaNs")
 
         if not check_time([timey[i] for i in self.y_idx], [timex[i] for i in self.x_idx]):
-            print("Time check failed")
+            #print("Time check failed")
+            print(timey)
+            print(timex)
+            raise ValueError("Time check failed")
 
 
 
@@ -517,6 +521,16 @@ class RegMatrix:
 
 
 def _normalize_ts(ts, name=None):
+    """
+    Standardize time series
+
+    :param ts: time series
+    :type ts: numpy 1d-array
+    :param name: ts name, optional
+    :type name: str
+    :return: standardized time series (ts - b)/a \in [0, 1] and standardization parameters a, b
+    :rtype: tuple
+    """
 
     norm_subt = np.min(ts)
     norm_div = np.max(ts) - norm_subt
@@ -537,14 +551,37 @@ def _denormalize(ts_list):
     return ts_list
 
 def truncate(ts_struct, n_hist, n_req, n_rows):
+    """
+    Truncates time series, leaving  n_hist + n_req * n_rows points from the beginning
+
+    :param ts_struct: time series structure
+    :type ts_struct: TsMiniStruct
+    :param n_hist: number of historical points of TS, included into X
+    :type n_hist: int
+    :param n_req: number of points of TS to forecast (to include into Y)
+    :type n_req: int
+    :param n_rows: number of rows of X and Y, associated with TS
+    :type n_rows: int
+    :return: time series structure with modified .s field
+    :rtype: TsMiniStruct
+    """
     ts = ts_struct.s
     n_points = n_hist + n_req*n_rows
 
-    ts = ts[-n_points:]
-    ts_struct = TsMiniStruct(ts, ts_struct.norm_div, ts_struct.norm_subt, ts_struct.name, ts_struct.index[-n_points:])
+    ts = ts[:n_points]
+    ts_struct = TsMiniStruct(ts, ts_struct.norm_div, ts_struct.norm_subt, ts_struct.name, ts_struct.index[:n_points])
     return ts_struct
 
 def check_time(y, x):
+    """
+    Checks that all x time entries preceed corresponding y time entries
+    :param y: for each time series, y stores array of earliest time entries in Y (by rows)
+    :type y: list
+    :param x: stores latest time for X in each row
+    :type x: list
+    :return: returns False if x and y overlap
+    :rtype: bool
+    """
     check = []
     # y stores earliest time for Y in each row, x stores latest time for X in each row. These two must not overlap
     for ty, tx in product(y, x):

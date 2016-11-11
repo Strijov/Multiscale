@@ -3,7 +3,7 @@
 Created on 30 September 2016
 @author: Parantapa Goswami, Yagmur Gizem Cinar
 """
-
+import os
 import pandas as pd
 import linecache
 
@@ -30,6 +30,7 @@ def get_data(file_name, line_indices="all", header=True):
     :return: data, metric_ids_dict, host_ids, header_names
     :rtype: tuple
     """
+
     if line_indices=="all":
         # read the whole file
         return read_all_lines(file_name, header)

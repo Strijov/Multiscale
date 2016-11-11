@@ -1,6 +1,10 @@
 from __future__ import print_function
+from __future__ import division
 import numpy as np
 import pandas as pd
+from fractions import Fraction
+
+TOL = pow(10, -10)
 
 class TsStruct():
     """ This structure stores input data. The fields are:
@@ -16,8 +20,16 @@ class TsStruct():
     :param readme: Dataset info
     :type readme: string
     """
-    def __init__(self, data, request, history, name, readme):
+    def __init__(self, data, request, history, name, readme, allow_empty=False):
         self.data = data
+
+        if not allow_empty:
+            if len(data) == 0:
+                raise ValueError("TsStruct.__init__: Data is an empty list")
+            for ts in data:
+                if ts.size == 0:
+                    raise ValueError("TsStruct.__init__: ts {} is empty".format(ts.name))
+
         self.request = request
         self.history = history
         self.name = name
@@ -109,15 +121,21 @@ class TsStruct():
 
         if not max_history is None:
             self.truncate(max_history)
-            return None
+            return self.data
 
-        common_T = set(self.data[0].index)
-        common_T.add(self.data[0].index[-1] + self.intervals[0])
+        common_T = set(np.around(self.data[0].index, decimals=5))
+        common_T.add(np.around(self.data[0].index[-1] + self.intervals[0], decimals=5))
         for i, ts in enumerate(self.data[1:]):
-            common_T = common_T.intersection(set(ts.index))
+            index_plus_1 = set(np.around(ts.index, decimals=5))
+            index_plus_1.add(np.around(ts.index[-1] + self.intervals[i+1], decimals=5))
+            #print(max(index_plus_1) - max(common_T))
+            common_T = common_T.intersection(index_plus_1)
+
             #ending_T = ending_T.intersection(set(ts.index[np.logical_and(ts.index <= min_end_T, ts.index >= min_end_T - self.request)]))
             #self.data[i] = ts.iloc[np.logical_and(ts.index < min_end_T + self.request, ts.index >= max_start_T)]
             #self.data[i] = ts.iloc[ts.index < min_end_T + self.request]
+
+
 
         min_end_T = max(common_T)
         max_start_T = min(common_T)
@@ -173,6 +191,9 @@ def assign_one_step_requests(intervals):
     """
 
     request = 1
+    min_interval = min(intervals)
+    intervals = intervals / min_interval
+
     for intv in intervals:
         request = lcm(intv, request)
 
@@ -185,6 +206,6 @@ def lcm(a, b):
 
 def gcd(a, b):
     """Return greatest common divisor using Euclid's Algorithm."""
-    while b:
+    while b > TOL:
         a, b = b, a % b
     return a

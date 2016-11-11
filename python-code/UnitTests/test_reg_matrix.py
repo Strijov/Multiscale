@@ -1,20 +1,19 @@
 import unittest
+import copy
 
 from Forecasting import frc_class
 from RegressionMatrix import regression_matrix, random_data
 from LoadAndSaveData.load_time_series import TsStruct
+
 
 TOL = pow(10, -10)
 
 class TestRegMatrix(unittest.TestCase):
 
     def test_identity(self):
-        input_ts = random_data.create_random_ts(n_ts = 3, n_req = 10, n_hist=20, max_length=200, min_length = 200)
+        input_ts = random_data.create_random_ts(n_ts=3, n_req=10, n_hist=20, max_length=200, min_length=200)
         data = regression_matrix.RegMatrix(input_ts)
 
-
-        # for n, ts in  enumerate(input_ts):
-        #     self.assertTrue((ts==data.ts[n].data).all())
 
         data.create_matrix()
 
@@ -39,12 +38,12 @@ class TestRegMatrix(unittest.TestCase):
 
 
     def test_y_slicing_args(self):
-        """" Check that individual forecasts are the same if scliced in init or at create_matrix """
+        """ Check that individual forecasts are the same if sliced in init or at create_matrix """
 
         input_ts = random_data.create_random_ts(n_ts=3, n_req=11, n_hist=23, max_length=500, min_length=200)
 
         # include all ts explicitly
-        data = regression_matrix.RegMatrix(input_ts,  y_idx = range(len(input_ts.data)))
+        data = regression_matrix.RegMatrix(input_ts,  y_idx=range(len(input_ts.data)))
         data.create_matrix()
         data.train_test_split(0.25)
 
@@ -96,7 +95,7 @@ class TestRegMatrix(unittest.TestCase):
             # keep the first ts the same
             new_ts = [ts0]
             new_ts.extend(input_ts.data[1:])
-            input_ts = TsStruct(new_ts, input_ts.request, input_ts.history, input_ts.name, input_ts.readme)
+            input_ts.data = new_ts
             data = regression_matrix.RegMatrix(input_ts)
             data.create_matrix(y_idx=0, x_idx=0)
             data.train_test_split(0.25)
@@ -125,7 +124,8 @@ class TestRegMatrix(unittest.TestCase):
             frc1, idx_frc = data.forecast(model)
             Y1 = data.Y
 
-            input_ts2 = TsStruct(input_ts.data[i_ts], input_ts.request, input_ts.history, input_ts.name, input_ts.readme)
+            input_ts2 = copy.deepcopy(input_ts)
+            input_ts2.data = input_ts.data[i_ts:i_ts + 1]
             data = regression_matrix.RegMatrix(input_ts2)
             data.create_matrix()
             data.train_test_split(0.25)
@@ -139,6 +139,60 @@ class TestRegMatrix(unittest.TestCase):
             self.assertTrue((Y1 == Y2).all())
 
         return None
+
+
+
+class TestTsStruct(unittest.TestCase):
+
+    def test_truncation(self):
+        """ Check that time series start from the same point after truncation """
+
+        input_ts = random_data.create_random_ts(time_delta=[1, 1, 10]) # this returns time series that start from 0
+
+        # shift time series
+        input_ts.data[0] = input_ts.data[0][2:]
+        input_ts.data[2] = input_ts.data[2][5:]
+        input_ts.align_time_series() # align and truncate time series
+
+
+        self.assertTrue(input_ts.data[0].index[0] == input_ts.data[1].index[0])
+        self.assertTrue(input_ts.data[1].index[0] == input_ts.data[2].index[0])
+
+
+
+
+    def test_double_truncation(self):
+        """ Check that re-truncation does not have any effect """
+
+        for i in range(10):
+            input_ts = random_data.create_random_ts(time_delta=[1, 1, 10])
+
+            # Truncate time series and remember resultant sizes
+            input_ts.align_time_series()
+            sizes1 = [ts.size for ts in input_ts.data]
+
+            # Repeat:
+            input_ts.align_time_series()
+            input_ts.align_time_series()
+            sizes2 = [ts.size for ts in input_ts.data]
+
+            # Compare results
+            self.assertEqual(sizes1, sizes2)
+
+
+    def test_empty_input(self):
+        """ Check response to empty input """
+        input_ts = random_data.create_random_ts()
+        with self.assertRaises(ValueError) as e:
+            TsStruct([], input_ts.request, input_ts.history, input_ts.name, input_ts.readme)
+
+        self.assertTrue('empty list' in e.exception.message)
+
+        data = input_ts.data[0][:0]
+        with self.assertRaises(ValueError) as e:
+            TsStruct([data], input_ts.request, input_ts.history, input_ts.name, input_ts.readme)
+
+
 
 
 
