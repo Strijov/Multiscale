@@ -180,19 +180,20 @@ def make_report(folder="fig/sine+trend/", fname="ts_arima_analisys", write=True)
     latex_str += "\end{figure}\n"
 
     # add acf plots
+    fnames = glob.glob(os.path.join(folder0, "acf_*.png"))
     latex_str += "\n"
     latex_str += "\\begin{figure}\n"
-    latex_str += "\subfloat{\includegraphics[width=0.5\\textwidth]{"+folder0+"/acf_Original.png}}\n"
-    latex_str += "\subfloat{\includegraphics[width=0.5\\textwidth]{"+folder0+"/acf_Trend.png}}\\\ \n"
-    latex_str += "\subfloat{\includegraphics[width=0.5\\textwidth]{"+folder0+"/acf_Seasonal.png}}\n"
-    latex_str += "\subfloat{\includegraphics[width=0.5\\textwidth]{"+folder0+"/acf_Residuals.png}}\n"
+    end_of_line = ["", "\\\\", "", ""]
+    for i, figname in enumerate(fnames):
+        figname = figname.split(os.path.sep)[-1]
+        latex_str += "\subfloat{\includegraphics[width=0.5\\textwidth]{" + folder0 + "/" + figname + "}}"+end_of_line[i]+"\n"
+
     latex_str += "\caption{ACF and PACF for componets of the time series.} \label{fg:acf}\n"
     latex_str += "\end{figure}\n"
 
     # for all p-q pairs add plots of arma forecasts
     fnames = glob.glob(os.path.join(folder, "arima_p*.png"))
     for figname in fnames:
-        #figname = "p"+str(p)+"q"+str(q)
         figname = figname.split(os.path.sep)[-1] #"/".join(figname.split(os.path.sep))
         latex_str += "\n"
         latex_str += "\\begin{figure}\n"
@@ -204,60 +205,6 @@ def make_report(folder="fig/sine+trend/", fname="ts_arima_analisys", write=True)
         my_plots.print_to_latex(latex_str, os.path.join(folder, fname), check=False)
 
     return latex_str
-
-
-
-# def decompose(ts, log_detrend=False, alpha=0.01, max_p_lags=50, max_q_lags=50):
-#     ts = ts.as_matrix()
-#     detrended = signal.detrend(ts)
-#     trend = ts - detrended
-#     acf, confint, qstat, p = statsmodels.tsa.stattools.acf(detrended, nlags=100, alpha=alpha, qstat=True)
-#
-#     period = arima_model.find_fft_period(acf, window_size=len(acf))
-#     confint = confint - confint.mean(1)[:, None]
-#
-#     #p = np.nonzero(np.vstack((acf > confint[:, 1], acf < confint[:, 0])).any(axis=0))
-#     q_lags = np.nonzero(acf > confint[:, 1])[0][1:]
-#     q_lags = q_lags[q_lags < 50]
-#
-#     pacf, pconfint = statsmodels.tsa.stattools.pacf(detrended, nlags=100, alpha=alpha)
-#     pconfint = pconfint - pconfint.mean(1)[:, None]
-#     p_lags = np.nonzero(pacf > pconfint[:, 1])[0][1:]
-#     p_lags = p_lags[p_lags < 50]
-#
-#     for p, q in product(p_lags, q_lags):
-#         model = ARIMA(ts, order=(p, 0, q))
-#         results_AR = model.fit(disp=-1)
-#         plt.plot(ts)
-#         plt.plot(results_AR.fittedvalues, color='red')
-#         plt.title('p: %.0f, q: %.0f, RSS: %.4f' % (p, q, sum((results_AR.fittedvalues - ts) ** 2)))
-#         plt.savefig('fig/p'+str(p)+'q'+str(q)+'.png')
-#         plt.close()
-#
-#     period = arima_model.find_fft_period(acf, window_size=len(acf))
-#
-#     sd = seasonal_decompose(ts, freq=int(period))
-#     if np.isnan(sd.trend).any():
-#         sd.resid = signal.detrend(ts - sd.seasonal)
-#         sd.trend = ts - sd.resid - sd.seasonal
-#
-#     my_plots.plot_seasonal_trend_decomposition(ts, sd.trend, sd.seasonal, sd.resid)
-#
-#     arima_model.plot_acf_pacf(ts).show()
-#     arima_model.plot_acf_pacf(sd.trend).show()
-#     arima_model.plot_acf_pacf(sd.seasonal).show()
-#     arima_model.plot_acf_pacf(sd.resid).show()
-#     # mdl = statsmodels.tsa.ar_model.AR(ts)
-#     # nlags = mdl.select_order(100, 'aic', method='cmle')
-#     #mdl = sm.tsa.ARMA(ts, (2,0)).fit()
-#
-#     dw_trend = sm.stats.durbin_watson(sd.resid)
-#
-#     period = arima_model.find_fft_period(ts)
-#     arima_model.plot_acf_pacf(ts)
-#
-#     return None
-
 
 
 
