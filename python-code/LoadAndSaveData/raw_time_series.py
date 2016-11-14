@@ -2,7 +2,6 @@ from __future__ import print_function
 from __future__ import division
 import numpy as np
 import pandas as pd
-from fractions import Fraction
 
 TOL = pow(10, -10)
 
@@ -34,13 +33,21 @@ class TsStruct():
         self.history = history
         self.name = name
         self.readme = readme
-        self.intervals = self.ts_frequencies()
+        self.intervals = np.around(self.ts_frequencies(), decimals=5)
 
         if request is None:
-            self.request = assign_one_step_requests(self.intervals)
+            self.request = assign_one_step_requests(self.intervals, isinstance(self.data[0].index[0], pd.tslib.Timestamp))
 
 
     def ts_frequencies(self):
+
+        if isinstance(self.data[0].index[0], pd.tslib.Timestamp):
+            freqs = []
+            for ts in self.data:
+                index = [ts.index[i].value for i in range(len(ts))]
+                freqs.append(min(np.diff(index)))
+            return freqs
+
         freqs = [min(np.diff(ts.index)) for ts in self.data]
 
         return freqs
@@ -180,12 +187,12 @@ class TsStruct():
 
         return res
 
-def assign_one_step_requests(intervals):
+def assign_one_step_requests(intervals, as_timedelta=False):
     """
     Assigns request as the lowest common multiple of one step requests for each time series
 
     :param intervals: time deltas in unix format
-    :type intervals: list
+    :type intervals: ndarray
     :return: common request
     :rtype: time delta, unix format
     """
@@ -196,6 +203,11 @@ def assign_one_step_requests(intervals):
 
     for intv in intervals:
         request = lcm(intv, request)
+
+    request *= min_interval
+
+    if as_timedelta:
+        request = pd.to_timedelta(request)
 
     return request
 

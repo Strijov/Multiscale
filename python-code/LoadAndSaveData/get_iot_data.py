@@ -76,9 +76,16 @@ def read_all_lines(file_name, header):
         V, T = [], []
         for i in range(8, len(b)):
             c = b[i]
-            v, s, t = c.split(":")  # value:status:time
+            vst = c.split(":")  # value:status:time
+            v, s = vst[0], vst[1]
+            t = ":".join(vst[2:])
+
+            if ":" in t or "-" in t or "/" in t:
+                T.append(pd.to_datetime(t,infer_datetime_format=True))
+            else:
+                T.append(float(t))
             V.append(float(v))
-            T.append(float(t))
+
         # append current values to the data matrix
         data.append(pd.Series(V, index=T, name=b[0]))
         nline += 1
