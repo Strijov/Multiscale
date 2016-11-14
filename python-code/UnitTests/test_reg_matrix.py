@@ -3,7 +3,6 @@ import copy
 
 from Forecasting import frc_class
 from RegressionMatrix import regression_matrix, random_data
-from LoadAndSaveData.load_time_series import TsStruct
 
 
 TOL = pow(10, -10)
@@ -139,60 +138,6 @@ class TestRegMatrix(unittest.TestCase):
             self.assertTrue((Y1 == Y2).all())
 
         return None
-
-
-
-class TestTsStruct(unittest.TestCase):
-
-    def test_truncation(self):
-        """ Check that time series start from the same point after truncation """
-
-        input_ts = random_data.create_random_ts(time_delta=[1, 1, 10]) # this returns time series that start from 0
-
-        # shift time series
-        input_ts.data[0] = input_ts.data[0][2:]
-        input_ts.data[2] = input_ts.data[2][5:]
-        input_ts.align_time_series() # align and truncate time series
-
-
-        self.assertTrue(input_ts.data[0].index[0] == input_ts.data[1].index[0])
-        self.assertTrue(input_ts.data[1].index[0] == input_ts.data[2].index[0])
-
-
-
-
-    def test_double_truncation(self):
-        """ Check that re-truncation does not have any effect """
-
-        for i in range(10):
-            input_ts = random_data.create_random_ts(time_delta=[1, 1, 10])
-
-            # Truncate time series and remember resultant sizes
-            input_ts.align_time_series()
-            sizes1 = [ts.size for ts in input_ts.data]
-
-            # Repeat:
-            input_ts.align_time_series()
-            input_ts.align_time_series()
-            sizes2 = [ts.size for ts in input_ts.data]
-
-            # Compare results
-            self.assertEqual(sizes1, sizes2)
-
-
-    def test_empty_input(self):
-        """ Check response to empty input """
-        input_ts = random_data.create_random_ts()
-        with self.assertRaises(ValueError) as e:
-            TsStruct([], input_ts.request, input_ts.history, input_ts.name, input_ts.readme)
-
-        self.assertTrue('empty list' in e.exception.message)
-
-        data = input_ts.data[0][:0]
-        with self.assertRaises(ValueError) as e:
-            TsStruct([data], input_ts.request, input_ts.history, input_ts.name, input_ts.readme)
-
-
 
 
 
