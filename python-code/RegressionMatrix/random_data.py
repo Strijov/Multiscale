@@ -149,7 +149,7 @@ def create_iot_data(n_ts=3, n_req=10, n_hist=20, max_length=5000, min_length=200
 
     return ts_struct
 
-def create_iot_data_poisson(n_ts=3, n_req=10, n_hist=20, max_length=5000, min_length=200, slope=0.001,
+def create_iot_data_poisson(n_ts=3, n_req=10, n_hist=20, max_length=10000, min_length=2000, slope=0.001,
                     non_zero_ratio=0.001, signal_to_noize=5, trend_noise=0.1, dt_index=False, allow_empty=True):
 
 

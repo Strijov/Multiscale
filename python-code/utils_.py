@@ -47,8 +47,8 @@ def safe_read_iot_data(file_name, line_indices, header, default="EnergyWeather")
 
     if not os.path.exists(file_name):
         if default.lower() == "poisson":
-            ts_struct = random_data.create_iot_data_poisson(n_ts=3, n_req=10, n_hist=20, max_length=5000, min_length=2000,
-                                                    slope=0.0001, trend_noise=0.001, non_zero_ratio=0.001)
+            ts_struct = random_data.create_iot_data_poisson(n_ts=5, n_req=10, n_hist=20, max_length=10000, min_length=2000,
+                                                    slope=0.0001, trend_noise=0.3, non_zero_ratio=0.1)
         elif default.lower() == "random":
             ts_struct = random_data.create_iot_data(n_ts=3, n_req=10, n_hist=20, max_length=5000,
                                                             min_length=2000, slope=0.0001, trend_noise=0.001)
