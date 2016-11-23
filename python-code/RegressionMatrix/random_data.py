@@ -5,7 +5,7 @@ import datetime
 from LoadAndSaveData.load_time_series import TsStruct
 
 PERIOD = 15
-def create_sine_ts(n_ts=3, n_req=10, n_hist=20, max_length=5000, min_length=200, period=PERIOD, dt_index=False, allow_empty=True):
+def create_sine_ts(n_ts=3, n_req=2, n_hist=7, max_length=5000, min_length=200, period=PERIOD, dt_index=False, allow_empty=True):
     """
     Creates artificial "Multiscale" data (noised sines)
 
@@ -104,7 +104,7 @@ def _index_to_datetime(index):
     return new_index
 
 
-def create_linear_ts(n_ts=3, n_req=10, n_hist=20, max_length=5000, min_length = 200, slope=1.0, dt_index=False, allow_empty=True):
+def create_linear_ts(n_ts=3, n_req=2, n_hist=7, max_length=5000, min_length = 200, slope=1.0, dt_index=False, allow_empty=True):
     """
         Creates artificial "Multiscale" data, linear ts
 
@@ -132,7 +132,7 @@ def create_linear_ts(n_ts=3, n_req=10, n_hist=20, max_length=5000, min_length = 
     return ts
 
 
-def create_iot_data(n_ts=3, n_req=10, n_hist=20, max_length=5000, min_length=200, slope=0.001,
+def create_iot_data(n_ts=3, n_req=2, n_hist=7, max_length=5000, min_length=200, slope=0.001,
                     non_zero_ratio=0.01, signal_to_noize=5, trend_noise=0.1, dt_index=False, allow_empty=True):
 
     ts_struct = create_linear_ts(n_ts, n_req, n_hist, max_length, min_length, slope, dt_index, allow_empty)
@@ -149,7 +149,7 @@ def create_iot_data(n_ts=3, n_req=10, n_hist=20, max_length=5000, min_length=200
 
     return ts_struct
 
-def create_iot_data_poisson(n_ts=3, n_req=10, n_hist=20, max_length=10000, min_length=2000, slope=0.001,
+def create_iot_data_poisson(n_ts=3, n_req=2, n_hist=7, max_length=10000, min_length=2000, slope=0.001,
                     non_zero_ratio=0.001, signal_to_noize=5, trend_noise=0.1, dt_index=False, allow_empty=True):
 
 

@@ -10,10 +10,10 @@ class TsStruct():
 
     :param data: input time series, each is pandas.Series
     :type data: list
-    :param request: Time interval requested for forecast
-    :type request: int\ time delta ? #FIXIT
-    :param history: Time interval,  to define number of historical points.
-    :type history: int\ time delta ? #FIXIT
+    :param request: Number of one-step intervals requested for forecast
+    :type request: int
+    :param history: Number of one-step intervals to forecast.
+    :type history: int
     :param name: Dataset name
     :type name: string
     :param readme: Dataset info
@@ -29,14 +29,19 @@ class TsStruct():
                 if ts.size == 0:
                     raise ValueError("TsStruct.__init__: ts {} is empty".format(ts.name))
 
+        self.intervals = np.around(self.ts_frequencies(), decimals=5)
+        self.one_step = assign_one_step_requests(self.intervals, isinstance(self.data[0].index[0], pd.tslib.Timestamp))
+
+        if request is None:
+            request = 1
+
         self.request = request
         self.history = history
         self.name = name
         self.readme = readme
-        self.intervals = np.around(self.ts_frequencies(), decimals=5)
 
-        if request is None:
-            self.request = assign_one_step_requests(self.intervals, isinstance(self.data[0].index[0], pd.tslib.Timestamp))
+
+
 
 
     def ts_frequencies(self):

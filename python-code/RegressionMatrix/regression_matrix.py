@@ -47,13 +47,13 @@ class RegMatrix:
         :type y_idx: list, int, None
         """
 
-        self.request = ts_struct.request
-        if isinstance(self.request, pd.tslib.Timedelta):
-            self.request = self.request.total_seconds()
+        self.request = ts_struct.request * ts_struct.one_step
+        # if isinstance(self.request, pd.tslib.Timedelta):
+        #     self.request = self.request.total_seconds()
 
-        self.history = ts_struct.history
+        self.history = ts_struct.history * ts_struct.one_step
         if self.history is None:
-            self.history = self.request
+            self.history = 2 * ts_struct.request * ts_struct.one_step
             print("History is not defined.  Do not forget to optimize it!") # FIXIT
         elif isinstance(self.history, pd.tslib.Timedelta):
             self.history = self.history.total_seconds()
@@ -277,7 +277,7 @@ class RegMatrix:
         self.idx_train, self.idx_test = idx_train, idx_test
 
 
-    def train_model(self, frc_model, selector=None, generator=None, retrain=True):
+    def train_model(self, frc_model, selector=None, generator=None, retrain=True, hyperpars=None, n_cvs=5):
         """
         Initializes and train feature generation, selection and forecasting model in a pipeline
 
@@ -306,8 +306,15 @@ class RegMatrix:
         model.name = "_".join([str(frc_model.name), str(generator.name), str(selector.name)])
 
         # once fitted, the model is retrained only if retrain = True
-        if (not frc_model.is_fitted) or retrain:
-            model.fit(self.trainX, self.trainY)
+        if frc_model.is_fitted and not retrain:
+            return model, model.named_steps['frc'], model.named_steps['gen'], model.named_steps['sel']
+
+        if not hyperpars is None:
+            best_hyperpars = cv_train(model, self, hyperpars, n_cvs)
+            for k, v in zip(hyperpars.keys(), best_hyperpars):
+                model.named_steps['frc'].__setattr__(k, v)
+
+        model.fit(self.trainX, self.trainY)
 
         return model, model.named_steps['frc'], model.named_steps['gen'], model.named_steps['sel']
 
@@ -667,11 +674,62 @@ def _check_input_ts_idx(idx, default):
     return list(idx)
 
 
+def cv_train(raw_model, data, hyperpars, n_cvs):
+    from sklearn.model_selection import KFold
+    import sys
+    if n_cvs is None:
+        n_cvs = 5
+
+    X = data.trainX
+    Y = data.trainY
+
+    kf = KFold(n_splits=n_cvs)
+    kf.get_n_splits(X)
+
+    par_names = list(hyperpars.keys())
+    par_values_range = list(hyperpars.values())
+    scores = []
+    for i, hyperpars in enumerate(product(*par_values_range)):
+        scores.append(np.zeros(n_cvs))
+        pars = {key:val for key, val in zip(par_names, hyperpars)}
+
+        for k, train_val_index in enumerate(kf.split(X)):
+            model = raw_model
+            for key, val in pars.items():
+                model.named_steps["frc"].__setattr__(key, val)
+            print("\r{}, kfold = {}".format(pars, k), end="")
+            sys.stdout.flush()
+            # getting training and validation data
+            train_index, val_index = train_val_index[0], train_val_index[1]
+            X_train, X_val = X[train_index], X[val_index]
+            y_train, y_val = Y[train_index], Y[val_index]
+            # train the model and predict the MSE
+            try:
+                model.fit(X_train, y_train)
+                pred_val = model.predict(X_val)
+                scores[-1][k] = mean_squared_error_(pred_val, y_val)
+            except BaseException as e:
+                print(e)
+                if k > 0:
+                    scores[-1][k] = scores[-1][k-1]
+                else:
+                    scores[-1][k] = 1
+
+        scores[-1] = np.mean(scores[-1])
+    idx = np.argmin(scores)
+    best_hyperpars = list(product(*par_values_range))[idx]
+    print("Best hyperpars combo: {} with mse {}".format(zip(par_names, best_hyperpars), scores[idx]))
 
 
-def history_from_periods(ts_list, n_periods=3):
-    import Forecasting
-    history = []
-    for ts in ts_list:
-        print(ts.name)
-        history.append(n_periods*Forecasting.preprocess_time_series.find_period(ts))
+    return best_hyperpars
+
+def mean_squared_error_(f, y):
+    return np.mean((f - y) ** 2)
+
+
+# def history_from_periods(ts_list, n_periods=3):
+#     import Forecasting
+#     history = []
+#     for ts in ts_list:
+#         print(ts.name)
+#         history.append(n_periods*Forecasting.preprocess_time_series.find_period(ts))
