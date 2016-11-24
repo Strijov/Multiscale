@@ -67,8 +67,8 @@ def load_ts_by_dirname(dirname, folder_name):
         # train_ts, test_ts, train_weather, test_weather = load_train_test_weather(
         #     filename_train[i], filename_test[i], filename_weather[i])
 
-        request = train_ts.index[24] - train_ts.index[0]  # by default, forecasts are requested for one day ahead
-        history = train_ts.index[7 * 24] - train_ts.index[0]  # by default, ts history is one week
+        request = 1  #train_ts.index[24] - train_ts.index[0]  # by default, forecasts are requested for one day ahead
+        history = 7  #train_ts.index[7 * 24] - train_ts.index[0]  # by default, ts history is one week
 
         train_ts = [train_ts]
         train_ts.extend(train_weather)
@@ -80,7 +80,8 @@ def load_ts_by_dirname(dirname, folder_name):
         name_test, _ = os.path.splitext(os.path.split(filename_test[i])[1])
         name_test = DATASET + '_' + folder_name + '_' + name_test
         names.extend([name_train, name_test])
-        ts_train, ts_test = TsStruct(train_ts, request, history, name_train, readme), TsStruct(test_ts, request, history, name_test, readme)
+        ts_train, ts_test = TsStruct(train_ts, request, history, name_train, readme), \
+                            TsStruct(test_ts, request, history, name_test, readme)
         ts.append(ts_train)
         ts.append(ts_test)
 
