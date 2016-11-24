@@ -10,12 +10,10 @@ TOL = pow(10, -10)
 class TestRegMatrix(unittest.TestCase):
 
     def test_identity(self):
-        input_ts = random_data.create_random_ts(n_ts=3, n_req=10, n_hist=20, max_length=200, min_length=200)
+        input_ts = random_data.create_random_ts(n_ts=3, n_req=1, n_hist=2, max_length=200, min_length=200)
+
         data = regression_matrix.RegMatrix(input_ts)
-
-
         data.create_matrix()
-
         data.X = data.Y  # for identity frc
         data.train_test_split(0.25)
 
@@ -39,7 +37,7 @@ class TestRegMatrix(unittest.TestCase):
     def test_y_slicing_args(self):
         """ Check that individual forecasts are the same if sliced in init or at create_matrix """
 
-        input_ts = random_data.create_random_ts(n_ts=3, n_req=11, n_hist=23, max_length=500, min_length=200)
+        input_ts = random_data.create_random_ts(n_ts=3, n_req=2, n_hist=13, max_length=500, min_length=200)
 
         # include all ts explicitly
         data = regression_matrix.RegMatrix(input_ts,  y_idx=range(len(input_ts.data)))
