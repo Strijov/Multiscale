@@ -22,9 +22,9 @@ class TsMiniStruct(TsMiniStruct_):
 
     :param s: time series
     :type s: 1d-ndarray
-    :param norm_div: Standartisation constant
+    :param norm_div: Standardisation constant
     :type norm_div: float
-    :param norm_subt: Standartisation constant
+    :param norm_subt: Standardisation constant
     :type norm_subt: float
     :param name: Dataset name
     :type name: string
@@ -36,7 +36,7 @@ class TsMiniStruct(TsMiniStruct_):
 class RegMatrix:
     """The main class for ts-to-matrix, matrix-to-ts conversions and other data operations. """
 
-    def __init__(self, ts_struct, x_idx=None, y_idx=None):
+    def __init__(self, ts_struct, x_idx=None, y_idx=None, n_historical=2):
         """
 
         :param ts_struct: input time series
@@ -45,18 +45,11 @@ class RegMatrix:
         :type x_idx: list, int, None
         :param y_idx: indices of time series if ts_struct.data to be used in Y matrix
         :type y_idx: list, int, None
+        :param n_historical: default number of requested intervals used as history if this parameter is not defined in ts_struct
+        :type n_historical: int
         """
-
-        self.request = ts_struct.request * ts_struct.one_step
-        # if isinstance(self.request, pd.tslib.Timedelta):
-        #     self.request = self.request.total_seconds()
-
-        self.history = ts_struct.history * ts_struct.one_step
-        if self.history is None:
-            self.history = 2 * ts_struct.request * ts_struct.one_step
-            print("History is not defined.  Do not forget to optimize it!") # FIXIT
-        elif isinstance(self.history, pd.tslib.Timedelta):
-            self.history = self.history.total_seconds()
+        # chech that time indices are all in floats
+        ts_struct.to_floats()
 
         # check that data field contains a list:
         if not isinstance(ts_struct.data, list):
@@ -66,27 +59,50 @@ class RegMatrix:
 
         self.nts = len(ts_struct_data)
         self.ts = []
+        names = []  # used in feature_dict
+
+        for ts in ts_struct_data:
+            # time series indices are converted to floats
+            # This part should probably go in TsStruct code? #FIXIT
+            #ts_index, frequency = pd_time_stamps_to_floats(ts.index)
+            self.ts.append(TsMiniStruct(ts.as_matrix(), 1, 0, ts.name, ts.index))
+            names.append(ts.name)
+        self.feature_dict = dict.fromkeys(names)
+
+        # if isinstance(ts_struct.request, pd.tslib.Timedelta):
+        #     self.request = ts_struct.request
+        # elif isinstance(ts_struct.one_step, pd.tslib.Timedelta):
+        #     self.request = multiply_pd_time_delta(ts_struct.one_step.days, ts_struct.request)
+        # else:
+        #     self.request = ts_struct.request * ts_struct.one_step
+        # self.request = general_time_delta_to_float(self.request, frequency)
+
+        self.request = ts_struct.request * ts_struct.one_step
+
+        # if not isinstance(ts_struct.one_step, pd.tslib.Timedelta):
+        #     self.history = ts_struct.history * ts_struct.one_step
+            
+        if ts_struct.history is None:
+            n_historical = n_historical * ts_struct.request
+            print("History is not defined.  Do not forget to optimize it!")  # FIXIT
+        else:
+            n_historical = ts_struct.history
+
+        self.history = n_historical * ts_struct.one_step
+        # if isinstance(ts_struct.history, pd.tslib.Timedelta):
+        #     self.history = ts_struct.request
+        # elif isinstance(self.history, pd.tslib.Timedelta):
+        #     self.history = multiply_pd_time_delta(ts_struct.one_step.days, n_historical)
+        # else:
+        #     self.history = n_historical * ts_struct.request * ts_struct.one_step
+        # self.history = general_time_delta_to_float(self.history, frequency)
 
         # check arguments
         self.x_idx = _check_input_ts_idx(x_idx, range(self.nts))
         self.y_idx = _check_input_ts_idx(y_idx, range(self.nts))
 
-
-
         self.forecasts = [0] * self.nts
         self.idxY = [0] * self.nts
-        names = []
-        min_date = min(np.hstack([ts.index for ts in ts_struct.data]))
-        for ts in ts_struct_data:
-            # print("nans:", ts.name, np.sum(np.isnan(ts)))
-            if isinstance(ts.index[0], pd.tslib.Timestamp):
-                ts_index = np.array((ts.index - min_date).total_seconds()) # FIXIT
-            else:
-                ts_index = np.array(ts.index)
-            self.ts.append(TsMiniStruct(ts.as_matrix(), 1, 0, ts.name, ts_index))
-            names.append(ts.name)
-
-        self.feature_dict = dict.fromkeys(names)
 
     def create_matrix(self, nsteps=1, norm_flag=True, x_idx=None, y_idx=None):
         """
@@ -126,26 +142,25 @@ class RegMatrix:
                 self.n_req_points[i] = n_req_points # here we assume time stamps are uniform
 
             if self.n_req_points[i] >= ts.s.shape[0]:
+                print("Request: {}".format(self.request))
                 raise ValueError("The length of time series {0} is smaller than the number of requested points: {1} <= {2}"
                                  .format(ts.name, ts.s.shape[0], self.n_req_points[i]))
             if self.n_hist_points[i] >= ts.s.shape[0]:
+                print("History: {}".format(self.history))
                 raise ValueError("The length of time series {0} is smaller than the number of historical points: {1} <= {2}"
                                  .format(ts.name, ts.s.shape[0], self.n_hist_points[i]))
 
-
             n_rows[i] = int(np.floor(len(ts.s) - self.n_hist_points[i]) / n_req_points)
-
             hist.append(hist[i] + self.n_hist_points[i])
             if i in self.x_idx:
                 self.feature_dict[ts.name] = range(hist[i], hist[i+1])
-
 
         idx_included = set(self.x_idx + self.y_idx)
         n_rows = min([n_rows[i] for i in idx_included])
 
         if n_rows < 5:
-            print("Number of rows is ", n_rows, "consider setting a lower value of nsteps or requested points")
-
+            print("Number of rows is {} consider setting a lower value of nsteps or requested points,"
+                  "(currently n_req = {}, n_hist={})".format(n_rows, self.n_req_points, self.n_hist_points))
 
         # prepare time series
         # standardize data:
@@ -166,7 +181,6 @@ class RegMatrix:
             if add_x or add_y:
                 timey[i], timex[i] = self.add_ts_to_matrix(i, norm_flag, add_x=add_x, add_y=add_y)
 
-
         if np.isnan(self.X).any():
             print("Inputs contain NaNs")
 
@@ -174,12 +188,7 @@ class RegMatrix:
             print("Targets contain NaNs")
 
         if not check_time([timey[i] for i in self.y_idx], [timex[i] for i in self.x_idx]):
-            #print("Time check failed")
-            print(timey)
-            print(timex)
-            raise ValueError("Time check failed")
-
-
+            raise ValueError("Time check failed timey: {}, timex {}".format(timey, timex))
 
     def add_ts_to_matrix(self, i_ts, norm_flag, add_x=True, add_y=True):
         """
@@ -204,8 +213,6 @@ class RegMatrix:
         else:
             ts = self.ts[i_ts]
 
-
-
         n_hist = self.n_hist_points[i_ts]
         n_req = self.n_req_points[i_ts]
         n_rows = self.X.shape[0]
@@ -213,7 +220,7 @@ class RegMatrix:
         # reverse time series, so that the top row is always to be forecasted first
         time = np.flipud(ts.index)
         ts = np.flipud(ts.s)
-
+        
         idxX, idxY = matrix_idx(n_hist, n_req, n_rows)
         self.idxY[i_ts] = idxY
         if add_y:
@@ -222,7 +229,6 @@ class RegMatrix:
             self.X = np.hstack((self.X, ts[idxX]))
 
         return time[idxY[:, -1]], time[idxX[:, 0]]
-
 
     def _matrix_to_flat_by_ts(self, idx_rows, i_ts):
         idx = _ravel_idx(self.idxY[i_ts][idx_rows, :], len(self.forecasts[i_ts]))
@@ -242,13 +248,10 @@ class RegMatrix:
             idx.append(self._matrix_to_flat_by_ts(idx_rows, i))
         return idx
 
-
     def arrange_time_scales(self, method):
         for i, ts in enumerate(self.ts):
             ts_arranged, index = method(ts.s, ts.index)
             self.ts[i] = TsMiniStruct(ts_arranged, ts.norm_div, ts.norm_subt, index)
-
-
 
     def train_test_split(self, train_test_ratio=0.75, splitter=None, idx_train=None, idx_test=None):
         """
@@ -261,13 +264,13 @@ class RegMatrix:
         :return: Updates attributes: idx_train, idx_test, testX, testY, trainX, trainY
         :rtype: None
         """
-        if not splitter is None:
+        if splitter is not None:
             idx_test, idx_train = splitter()
-        elif not idx_train is None:
+        elif idx_train is not None:
             idx_train = np.sort(idx_train)
-        elif not idx_test is None:
+        elif idx_test is not None:
             idx_test = np.sort(idx_test)
-        else: # sequesntial split
+        else:   # sequential split
             n_train= int(self.X.shape[0]*train_test_ratio)
             idx_test = range(self.X.shape[0] - n_train)
             idx_train = range(self.X.shape[0] - n_train, self.X.shape[0])
@@ -275,7 +278,6 @@ class RegMatrix:
         self.trainX, self.trainY = self.X[idx_train, :], self.Y[idx_train]
         self.testX, self.testY = self.X[idx_test, :], self.Y[idx_test]
         self.idx_train, self.idx_test = idx_train, idx_test
-
 
     def train_model(self, frc_model, selector=None, generator=None, retrain=True, hyperpars=None, n_cvs=5):
         """
@@ -286,6 +288,11 @@ class RegMatrix:
         :param generator: Instance of model generation class
         :param retrain: Flag that specifies if the model needs retraining
         :type retrain: bool
+        :param hyperpars: defines ranges of hyperparameters to tune with cross-validation. If None is specified, 
+        no hyperparameters will be optimized 
+        :type hyperpars: dict
+        :param n_cvs: number of folds in k-fold cross-validation
+        :type n_cvs: int
         :return: trained model, forecasting model, generator and selector
         :rtype: tuple
         """
@@ -297,7 +304,6 @@ class RegMatrix:
         if generator is None:
             generator = frc_class.IdentityGenerator()
 
-
         selector.feature_dict = copy.deepcopy(self.feature_dict)
         generator.feature_dict = copy.deepcopy(self.feature_dict)
 
@@ -307,9 +313,10 @@ class RegMatrix:
 
         # once fitted, the model is retrained only if retrain = True
         if frc_model.is_fitted and not retrain:
-            return model, model.named_steps['frc'], model.named_steps['gen'], model.named_steps['sel']
+            return model, model.named_steps['frc'],  model.named_steps['gen'], model.named_steps['sel']
 
-        if not hyperpars is None:
+        # if a range of hyperparametr values is specify, tune it via k-fold cross-validation
+        if hyperpars is not None:
             best_hyperpars = cv_train(model, self, hyperpars, n_cvs)
             for k, v in zip(hyperpars.keys(), best_hyperpars):
                 model.named_steps['frc'].__setattr__(k, v)
@@ -331,8 +338,6 @@ class RegMatrix:
         :return: Forecasted matrix, flat indices of forecasted values
         :rtype: ndarray, list
         """
-
-
         if idx_rows is None:
             idx_rows = range(self.X.shape[0])
 
@@ -371,8 +376,6 @@ class RegMatrix:
 
         return idx_flat
 
-
-
     def mae(self, idx_frc=None, idx_rows=None, out=None, y_idx=None):
         """
         Mean Absolute Error calculation.
@@ -402,14 +405,13 @@ class RegMatrix:
         else:
             idx = idx_frc
 
-
-        errors = np.zeros((self.nts))
+        errors = np.zeros(self.nts)
         for i in y_idx:
             ind = idx[i]
             ts = self.ts[i].s
             errors[i] = np.mean(np.abs(ts[ind] - self.forecasts[i][ind]))
 
-        if not out is None:
+        if out is not None:
             print(out, "MAE")
             for i in y_idx:
                 print(self.ts[i].name, errors[i])
@@ -452,7 +454,7 @@ class RegMatrix:
             denom[denom == 0] = np.mean(np.abs(self.ts[i].s))
             errors[i] = np.mean(np.divide(np.abs(self.ts[i].s[ind] - self.forecasts[i][ind]), denom))
 
-        if not out is None:
+        if out is not None:
             print(out, "MAPE")
             for i in y_idx:
                 print(self.ts[i].name, errors[i])
@@ -471,6 +473,12 @@ class RegMatrix:
         :type n_frc: int
         :param n_hist: number of historical intervals to plot
         :type n_hist: int
+        :param folder: saving directory
+        :type folder: str
+        :param save: if True, the plots will be saved
+        :type save: bool
+        :param y_idx: defines indices of time series that will be plotted
+        :type y_idx: int, list
         :return: None
         """
         idx = [0] * self.nts
@@ -488,14 +496,17 @@ class RegMatrix:
         else:
             idx = idx_frc
 
+        filenames = []
         for i in y_idx:
             if save:
                 filename = self.ts[i].name + ".png"
                 filename = "_".join(filename.split(" "))
+                filenames.append(filename)
             else:
                 filename = None
             my_plots.plot_forecast(self.ts[i], self.forecasts[i], idx_frc=idx[i], idx_ts=idx_ts[i], folder=folder, filename=filename)
 
+        return filenames
 
     # def optimize_history(self, frc_model, sel_model=None, gen_model=None,  hist_range=None, n_fold=5):
     #     """
@@ -656,9 +667,9 @@ def _ravel_idx(idx_matr, m):
     return m - 1 - np.ravel(idx_matr)#np.flipud(np.ravel(idx_matr))
 
 
-def _ravel_y(Ymat, norm_div, norm_subt):
-    y = np.ravel(Ymat) * norm_div + norm_subt
-    return y #np.flipud(y)
+def _ravel_y(y_mat, norm_div, norm_subt):
+    y = np.ravel(y_mat) * norm_div + norm_subt
+    return y
 
 def _check_input_ts_idx(idx, default):
     if idx is None:
@@ -691,7 +702,7 @@ def cv_train(raw_model, data, hyperpars, n_cvs):
     scores = []
     for i, hyperpars in enumerate(product(*par_values_range)):
         scores.append(np.zeros(n_cvs))
-        pars = {key:val for key, val in zip(par_names, hyperpars)}
+        pars = {key: val for key, val in zip(par_names, hyperpars)}
 
         for k, train_val_index in enumerate(kf.split(X)):
             model = raw_model
@@ -701,12 +712,12 @@ def cv_train(raw_model, data, hyperpars, n_cvs):
             sys.stdout.flush()
             # getting training and validation data
             train_index, val_index = train_val_index[0], train_val_index[1]
-            X_train, X_val = X[train_index], X[val_index]
+            x_train, x_val = X[train_index], X[val_index]
             y_train, y_val = Y[train_index], Y[val_index]
             # train the model and predict the MSE
             try:
-                model.fit(X_train, y_train)
-                pred_val = model.predict(X_val)
+                model.fit(x_train, y_train)
+                pred_val = model.predict(x_val)
                 scores[-1][k] = mean_squared_error_(pred_val, y_val)
             except BaseException as e:
                 print(e)
@@ -720,7 +731,6 @@ def cv_train(raw_model, data, hyperpars, n_cvs):
     best_hyperpars = list(product(*par_values_range))[idx]
     print("Best hyperpars combo: {} with mse {}".format(zip(par_names, best_hyperpars), scores[idx]))
 
-
     return best_hyperpars
 
 def mean_squared_error_(f, y):
@@ -733,3 +743,7 @@ def mean_squared_error_(f, y):
 #     for ts in ts_list:
 #         print(ts.name)
 #         history.append(n_periods*Forecasting.preprocess_time_series.find_period(ts))
+
+
+
+    

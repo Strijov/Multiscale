@@ -19,9 +19,10 @@ class TsStruct():
     :param readme: Dataset info
     :type readme: string
     """
-    def __init__(self, data, request, history, name, readme, allow_empty=False):
-        self.data = data
-
+    def __init__(self, data, request=1, history=1, name='', readme='', allow_empty=False, as_floats=False):
+        
+        # Check inputs:
+        # Some tests might need to process empty data without errors
         if not allow_empty:
             if len(data) == 0:
                 raise ValueError("TsStruct.__init__: Data is an empty list")
@@ -29,31 +30,64 @@ class TsStruct():
                 if ts.size == 0:
                     raise ValueError("TsStruct.__init__: ts {} is empty".format(ts.name))
 
-        self.intervals = np.around(self.ts_frequencies(), decimals=5)
-        self.one_step = assign_one_step_requests(self.intervals, isinstance(self.data[0].index[0], pd.tslib.Timestamp))
-
         if request is None:
             request = 1
+
+        if not isinstance(request, int) and not isinstance(request, float):
+            raise TypeError("request should be int or float; got {}, type {}".format(request, type(request)))
+
+        if history is not None and not isinstance(history, int) and not isinstance(history, float):
+            raise TypeError("history should be int or float; got {}, type {}".format(history, type(history)))
+                
+        self.as_floats = as_floats
+        self.data, self.index_type = data_index_type(data, as_floats)
+
+        self.intervals = np.around(self.ts_frequencies(), decimals=5)
+        self.one_step = assign_one_step_requests(self.intervals, self.as_floats, self.index_type)
 
         self.request = request
         self.history = history
         self.name = name
         self.readme = readme
+        
+    def to_floats(self):
+        """
+        Forces TsStruct instance to as_floats format
 
+        :return: None
+        """
+        if self.as_floats:
+            return None
+        request, history = self.request, self.history
+        if not isinstance(request, int) and not isinstance(request, float):
+            raise TypeError("request should be int or float; got {}, type {}".format(request, type(request)))
 
+        if history is not None and not isinstance(history, int) and not isinstance(history, float):
+            raise TypeError("history should be int or float; got {}, type {}".format(history, type(history)))
+        
+        self.as_floats = True
+        self.data, self.index_type = data_index_type(self.data, self.as_floats)
 
-
+        self.intervals = np.around(self.ts_frequencies(), decimals=5)
+        self.one_step = assign_one_step_requests(self.intervals, self.as_floats, self.index_type)
+        
 
     def ts_frequencies(self):
+        """
+        :return: time intervals for each time series; intervals are floats
+        :rtype: list
+        """
+        if self.as_floats:  #self.index_type in ["ns", "s", "h"]:
+            return [min(np.diff(ts.index)) for ts in self.data]
 
-        if isinstance(self.data[0].index[0], pd.tslib.Timestamp):
-            freqs = []
-            for ts in self.data:
-                index = [ts.index[i].value for i in range(len(ts))]
-                freqs.append(min(np.diff(index)))
-            return freqs
-
-        freqs = [min(np.diff(ts.index)) for ts in self.data]
+        freqs = []
+        if not isinstance(self.data[0].index[0], pd.tslib.Timestamp) and not self.index_type=="int":
+            raise TypeError("Unexpected type of time indices; expected pd.tslib.Timestamp, got {}. "
+                            "Index_type is {}"
+                            .format(type(self.data[0].index[0]), self.index_type))
+        for ts in self.data:
+            index, _ = pd_time_stamps_to_floats(ts.index, self.index_type)
+            freqs.append(min(np.diff(index)))
 
         return freqs
 
@@ -191,30 +225,122 @@ class TsStruct():
             res = "{\\tiny \n " + res + "\n }\n \\bigskip \n"
 
         return res
+    
+def data_index_type(data, as_float):
+    # should be handled with care, pd.Timedelta tends to lose nanoseconds for som reason
+    numeric_type_dict = {"int": 0, "ns": 1, "s": 2, "h": 3}
+    index_type, numeric_type = [], []
+    for ts in data:
+        index_type.append(infer_frequency(ts.index))
+        numeric_type.append(numeric_type_dict[index_type[-1]])
 
-def assign_one_step_requests(intervals, as_timedelta=False):
+    if "int" in index_type and sum(numeric_type) > 0:
+        raise TypeError("Data contains time series with both numeric and pd.Timestamp time indices")
+
+    preferred_type = index_type[np.argmin(numeric_type)]
+
+    if not as_float:
+        return data, preferred_type
+
+    for i, ts in enumerate(data):
+        ts_index, _ = pd_time_stamps_to_floats(ts.index, preferred_type)
+        data[i].index = ts_index
+
+    return data, preferred_type
+        
+def infer_frequency(ts_index):
+    if len(ts_index) < 2:
+        raise ValueError(("ts.index is too short!  len(ts.index) = {}".format(len(ts_index))))
+    
+    if not isinstance(ts_index[0], pd.tslib.Timestamp):  # isinstance(ts.index, pd.DatetimeIndex):  #
+        return "int"
+    
+    delta = ts_index[1] - ts_index[0]
+    if delta._ms > 0 or delta._ns > 0:
+        frequency = 'ns'
+    elif delta._s > 0:
+        frequency = 's'
+    else:
+        frequency = 'h'
+        
+    return frequency
+    
+def pd_time_stamps_to_floats(time_stamps_array, frequency, from_zero=False):
+
+    if len(time_stamps_array) < 2:
+        print("ts.index is too short!")
+        raise ValueError
+
+    if not isinstance(time_stamps_array[0], pd.tslib.Timestamp):  # isinstance(ts.index, pd.DatetimeIndex):  #
+        return np.array(time_stamps_array), frequency
+
+    time_stamps_array = (time_stamps_array.to_datetime() - np.datetime64('1970-01-01T00:00:00Z')) \
+                        / np.timedelta64(1, frequency)
+    time_stamps_array = np.array(time_stamps_array)
+
+    if from_zero:
+        time_stamps_array = time_stamps_array - np.min(time_stamps_array)
+
+    return time_stamps_array, frequency
+
+def general_time_delta_to_float(td, freq):
+    if freq == "int":
+        if isinstance(td, pd.tslib.Timedelta):
+            raise TypeError
+        return td
+
+    total = td.total_seconds()
+    if freq == "ns":
+        total *= 1e9
+    elif freq == "s":
+        pass
+    elif freq == "h":
+        total /= 3600.00
+    else:
+        print("Unsupported frequency type, should be 'ns, s, h or int, got {}".format(freq))
+        raise ValueError
+
+    return total
+
+
+def multiply_pd_time_delta(time_delta, multipl):
+    res = pd.Timedelta(days=time_delta.days * multipl,
+                       # hours=time_delta.hours * multipl,
+                       seconds=time_delta.seconds * multipl,
+                       microseconds=time_delta.microseconds * multipl,
+                       nanoseconds=time_delta.nanoseconds * multipl)
+
+    return res
+
+def assign_one_step_requests(intervals, as_floats=True, index_type="s"):
     """
     Assigns request as the lowest common multiple of one step requests for each time series
 
     :param intervals: time deltas in unix format
     :type intervals: ndarray
+    :param as_floats: if True, return request as floats, otherwise - a pd.Timedelta
+    :type as_floats: bool
+    :param index_type: defines frequency of the timedelta request (if as_floats is false)
+    :type index_type: str
     :return: common request
-    :rtype: time delta, unix format
+    :rtype: pd.tslib.Timedelta, float
     """
 
-    request = 1
+
     min_interval = min(intervals)
     intervals = intervals / min_interval
 
+    # Define the length of the least common interval
+    request = 1.0
     for intv in intervals:
         request = lcm(intv, request)
 
     request *= min_interval
 
-    if as_timedelta:
-        request = pd.to_timedelta(request)
+    if as_floats or index_type=="int":
+        return request
 
-    return request
+    return pd.to_timedelta(request, index_type)
 
 
 def lcm(a, b):
