@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import datetime
 
 from LoadAndSaveData.load_time_series import TsStruct
 
@@ -23,6 +22,9 @@ def create_sine_ts(n_ts=3, n_req=2, n_hist=7, max_length=5000, min_length=200, p
     :rtype: TsStruct
     """
 
+    if dt_index:
+        dt_index = False
+        print("Artificial data with datetime indices is not supported")
     end_time = np.random.randint(min_length, max_length + 1)
 
     ts = [0] * n_ts
@@ -55,9 +57,12 @@ def create_random_ts(n_ts=3, n_req=None, n_hist=20, max_length=5000, min_length=
         :rtype: TsStruct
         """
 
+    if dt_index:
+        dt_index = False
+        print("Artificial data with datetime indices is not supported")
 
     end_time = np.random.randint(min_length, max_length + 1, n_ts)
-    if not time_delta is None:
+    if time_delta is not None:
         n_ts = len(time_delta)
     if time_delta is None:
         time_delta = np.random.randint(1, max_freq + 1, n_ts)
@@ -70,6 +75,11 @@ def create_random_ts(n_ts=3, n_req=None, n_hist=20, max_length=5000, min_length=
     return ts
 
 def create_index(start_time=0, end_time=500, npoints_per_step=1, dt_index=False):
+    """ Creates time index with specified parameters"""
+
+    if dt_index:
+        dt_index = False
+        print("Artificial data with datetime indices is not supported")
 
     step_size = 1.0
     if npoints_per_step < 1.0:
@@ -87,21 +97,18 @@ def create_index(start_time=0, end_time=500, npoints_per_step=1, dt_index=False)
         index = _index_to_datetime(index)
 
     if np.unique(index).size < len(index):
-        print("Time stamps are not unique")
+        print("Time stamps are not unique, len(ts)={}, n_unique={}".format(len(index), np.unique(index).size))
     #index = np.arange(start_time, end_time, 1.0 / npoints_per_step)
     return index
 
 def _index_to_datetime(index):
-
-    #print("Type of indx {}".format(type(index[0])))
-    if isinstance(index[0], datetime.timedelta):
+    if isinstance(index[0], pd.tslib.Timestamp):
         return index
 
-    new_index = []
-    for i, t in enumerate(index):
-        new_index.append(datetime.datetime.fromtimestamp(t)) #.strftime('%Y-%m-%d %H:%M:%S')
-
-    return new_index
+    # new_index = []
+    # for i, t in enumerate(index):
+    #     new_index.append(datetime.datetime.fromtimestamp(t)) #.strftime('%Y-%m-%d %H:%M:%S')
+    return pd.to_datetime(index, unit="ns")
 
 
 def create_linear_ts(n_ts=3, n_req=2, n_hist=7, max_length=5000, min_length = 200, slope=1.0, dt_index=False, allow_empty=True):
@@ -121,6 +128,9 @@ def create_linear_ts(n_ts=3, n_req=2, n_hist=7, max_length=5000, min_length = 20
         :return: Data structure
         :rtype: TsStruct
         """
+    if dt_index:
+        dt_index = False
+        print("Artificial data with datetime indices is not supported")
 
     end_time = np.random.randint(min_length, max_length + 1)
     ts = [0] * n_ts
@@ -134,6 +144,9 @@ def create_linear_ts(n_ts=3, n_req=2, n_hist=7, max_length=5000, min_length = 20
 
 def create_iot_data(n_ts=3, n_req=2, n_hist=7, max_length=5000, min_length=200, slope=0.001,
                     non_zero_ratio=0.01, signal_to_noize=5, trend_noise=0.1, dt_index=False, allow_empty=True):
+    if dt_index:
+        dt_index = False
+        print("Artificial data with datetime indices is not supported")
 
     ts_struct = create_linear_ts(n_ts, n_req, n_hist, max_length, min_length, slope, dt_index, allow_empty)
     for i, ts in enumerate(ts_struct.data):
@@ -151,7 +164,37 @@ def create_iot_data(n_ts=3, n_req=2, n_hist=7, max_length=5000, min_length=200, 
 
 def create_iot_data_poisson(n_ts=3, n_req=2, n_hist=7, max_length=10000, min_length=2000, slope=0.001,
                     non_zero_ratio=0.001, signal_to_noize=5, trend_noise=0.1, dt_index=False, allow_empty=True):
+    """
+    Creates artificial "Multiscale" data based on Poisson distribution: linear trend + eventual peaks
 
+    :param n_ts: number of time series in the set
+    :type n_ts: int
+    :param n_req: Request (number of time intervals)
+    :type n_req: int
+    :param n_hist: History (number of time intervals)
+    :type n_hist: int
+    :param max_length: maximum length of time series in the set
+    :type max_length:  int
+    :param min_length: minimum length of time series in the set
+    :type min_length: int
+    :param slope: slope of the linear trend
+    :type slope: float
+    :param non_zero_ratio: ratio of the evetual peaks
+    :type non_zero_ratio: float
+    :param signal_to_noize:  additive height of peaks \in [1, 2] * signal_to_noize
+    :type signal_to_noize: float
+    :param trend_noise: gaussian noise added to the trend
+    :type trend_noise: float
+    :param dt_index: deprecated
+    :type dt_index: bool
+    :param allow_empty: if True, TsStruct will not raise error for empty data
+    :type allow_empty: bool
+    :return: Data structure
+    :rtype: TsStruct
+    """
+    if dt_index:
+        dt_index = False
+        print("Artificial data with datetime indices is not supported")
 
     ts_struct = create_linear_ts(n_ts, n_req, n_hist, max_length, min_length, slope, dt_index, allow_empty)
 
@@ -166,7 +209,7 @@ def create_iot_data_poisson(n_ts=3, n_req=2, n_hist=7, max_length=10000, min_len
         ts += signal
         ts_struct.data[i] = ts
 
-    ts_struct.readme = "Artificial Iot-like data, Poisson-based"
+    ts_struct.readme = "Artificially created Iot-like data; Poisson-based"
     ts_struct.name = "IoT"
 
     return ts_struct
