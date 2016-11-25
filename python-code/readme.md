@@ -16,7 +16,7 @@ To try the code on IoT data, do the following:
 
 ## Documentation
 For more information, see documentation. Open docs/_build/html/index.html.
-Update documentation (from /doc): 1) sphinx-apidoc -f 0 . .. 2) make html
+Update documentation (from /doc):  run 'sphinx-apidoc -f -o . ..', then 'make html'
 
 ## Unit tests
 python run_tests.py
