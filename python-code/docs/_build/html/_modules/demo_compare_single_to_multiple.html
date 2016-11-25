@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>demo_compare_single_to_multiple &#8212; MultiscaleForecasting 0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="MultiscaleForecasting 0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for demo_compare_single_to_multiple</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">utils_</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="k">import</span> <span class="n">Lasso</span><span class="p">,</span> <span class="n">LinearRegression</span>
+
+<span class="kn">from</span> <span class="nn">RegressionMatrix</span> <span class="k">import</span> <span class="n">regression_matrix</span>
+<span class="kn">from</span> <span class="nn">Forecasting</span> <span class="k">import</span> <span class="n">frc_class</span>
+<span class="c1"># from Forecasting import LSTM, GatingEnsemble</span>
+
+
+<span class="n">TRAIN_TEST_RATIO</span> <span class="o">=</span> <span class="mf">0.75</span>
+<span class="n">N_PREDICTIONS</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">N_EXPERTS</span> <span class="o">=</span> <span class="mi">4</span>
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../demo_compare_single_to_multiple.html#demo_compare_single_to_multiple.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">line_indices</span><span class="p">,</span> <span class="n">header</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compares simultaneous (all-on-all regression) forecasts to individual (one-on-one). The data is in IoT format</span>
+
+<span class="sd">    :param file_name: file name (.csv) with data in IoT format</span>
+<span class="sd">    :type file_name: str</span>
+<span class="sd">    :param line_indices: indices of lines to read from file.  Lines are enumerated from 1. If &quot;all&quot;, read the whole file</span>
+<span class="sd">    :param header: Specifies if the file contains a header row</span>
+<span class="sd">    :type header: bool</span>
+<span class="sd">    :return:</span>
+<span class="sd">    :rtype:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">utils_</span><span class="o">.</span><span class="n">safe_read_iot_data</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">line_indices</span><span class="p">,</span> <span class="n">header</span><span class="p">)</span>
+
+
+    <span class="n">err_all</span> <span class="o">=</span> <span class="n">forecating_errors</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">data</span><span class="p">)))</span>
+    <span class="n">column_names</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;MAE&quot;</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;MAPE&quot;</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;MAE&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;MAPE&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">)]</span>
+
+    <span class="n">res_all</span> <span class="o">=</span> <span class="n">data_frame_res</span><span class="p">(</span><span class="n">err_all</span><span class="p">,</span> <span class="n">column_names</span><span class="p">,</span> <span class="n">ts</span><span class="p">)</span>
+
+    <span class="n">train_mae</span><span class="p">,</span> <span class="n">train_mape</span><span class="p">,</span> <span class="n">test_mae</span><span class="p">,</span> <span class="n">test_mape</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">data</span><span class="p">),[</span><span class="kc">None</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">data</span><span class="p">),[</span><span class="kc">None</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">data</span><span class="p">)):</span>
+        <span class="n">train_mae</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">train_mape</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">test_mae</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">test_mape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">forecating_errors</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+
+        <span class="n">train_mae</span><span class="p">,</span> <span class="n">train_mape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">train_mae</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">train_mape</span><span class="p">)</span>
+        <span class="n">test_mae</span><span class="p">,</span> <span class="n">test_mape</span> <span class="o">=</span>  <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">test_mae</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">test_mape</span><span class="p">)</span>
+
+    <span class="n">err_by_one</span> <span class="o">=</span> <span class="p">[</span><span class="n">train_mae</span><span class="p">,</span> <span class="n">train_mape</span><span class="p">,</span> <span class="n">test_mae</span><span class="p">,</span> <span class="n">test_mape</span><span class="p">]</span>
+    <span class="n">res_by_one</span> <span class="o">=</span> <span class="n">data_frame_res</span><span class="p">(</span><span class="n">err_by_one</span><span class="p">,</span> <span class="n">column_names</span><span class="p">,</span> <span class="n">ts</span><span class="p">)</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">err1</span> <span class="o">-</span> <span class="n">err2</span><span class="p">,</span> <span class="n">err1</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span> <span class="k">for</span> <span class="n">err1</span><span class="p">,</span> <span class="n">err2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">err_by_one</span><span class="p">,</span> <span class="n">err_all</span><span class="p">)</span> <span class="p">]</span>
+    <span class="n">diff_res</span> <span class="o">=</span> <span class="n">data_frame_res</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">column_names</span><span class="p">,</span> <span class="n">ts</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Simultaneous forecast&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">res_all</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Individual forecasts&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">res_by_one</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Performance increase (in percents of individual errors)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">diff_res</span><span class="p">)</span>
+
+
+    <span class="k">return</span> <span class="n">res_all</span><span class="p">,</span> <span class="n">res_by_one</span></div>
+
+
+
+
+<div class="viewcode-block" id="forecating_errors"><a class="viewcode-back" href="../demo_compare_single_to_multiple.html#demo_compare_single_to_multiple.forecating_errors">[docs]</a><span class="k">def</span> <span class="nf">forecating_errors</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">ts_idx</span><span class="p">):</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">regression_matrix</span><span class="o">.</span><span class="n">RegMatrix</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">y_idx</span><span class="o">=</span><span class="n">ts_idx</span><span class="p">,</span> <span class="n">x_idx</span><span class="o">=</span><span class="n">ts_idx</span><span class="p">)</span>
+    <span class="c1"># Create regression matrix</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">create_matrix</span><span class="p">(</span><span class="n">nsteps</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">norm_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">frc_model</span> <span class="o">=</span> <span class="n">frc_class</span><span class="o">.</span><span class="n">CustomModel</span><span class="p">(</span><span class="n">Lasso</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Lasso&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>
+    <span class="c1"># frc_model = frc_class.CustomModel(LSTM.LSTM, name=&quot;LSTM&quot;)</span>
+    <span class="c1"># frc_model = frc_class.CustomModel(GatingEnsemble.GatingEnsemble,</span>
+    <span class="c1">#                                   estimators=[LinearRegression() for i in range(N_EXPERTS)])  # (LSTM.LSTM, name=&quot;LSTM&quot;)</span>
+
+    <span class="c1"># Split data for training and testing</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span><span class="n">TRAIN_TEST_RATIO</span><span class="p">)</span>
+    <span class="n">model</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">train_model</span><span class="p">(</span><span class="n">frc_model</span><span class="o">=</span><span class="n">frc_model</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                      <span class="n">selector</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># model parameters are changed inside</span>
+
+    <span class="n">data</span><span class="o">.</span><span class="n">forecast</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">train_mae</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mae</span><span class="p">(</span><span class="n">idx_rows</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">idx_train</span><span class="p">)</span>
+    <span class="n">train_mape</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mape</span><span class="p">(</span><span class="n">idx_rows</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">idx_train</span><span class="p">)</span>
+    <span class="n">test_mae</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mae</span><span class="p">(</span><span class="n">idx_rows</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">idx_test</span><span class="p">)</span>
+    <span class="n">test_mape</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mape</span><span class="p">(</span><span class="n">idx_rows</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">idx_test</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">train_mae</span><span class="p">,</span> <span class="n">train_mape</span><span class="p">,</span> <span class="n">test_mae</span><span class="p">,</span> <span class="n">test_mape</span></div>
+
+
+<div class="viewcode-block" id="data_frame_res"><a class="viewcode-back" href="../demo_compare_single_to_multiple.html#demo_compare_single_to_multiple.data_frame_res">[docs]</a><span class="k">def</span> <span class="nf">data_frame_res</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="n">column_names</span><span class="p">,</span> <span class="n">ts</span><span class="p">):</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="n">column_names</span><span class="p">):</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">data</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">res</span></div>
+
+
+
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">file_name</span><span class="p">,</span> <span class="n">line_indices</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">utils_</span><span class="o">.</span><span class="n">parse_options</span><span class="p">()</span>
+    <span class="n">main</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">line_indices</span><span class="p">,</span> <span class="n">header</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Strijov, Motrenko, Neychev, Isachenko.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>

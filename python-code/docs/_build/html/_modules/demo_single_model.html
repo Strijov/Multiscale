@@ -52,21 +52,15 @@
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
 <span class="kn">from</span> <span class="nn">RegressionMatrix</span> <span class="k">import</span> <span class="n">regression_matrix</span>
 <span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="k">import</span> <span class="n">Lasso</span>
 <span class="kn">from</span> <span class="nn">LoadAndSaveData</span> <span class="k">import</span> <span class="n">load_time_series</span>
 <span class="kn">from</span> <span class="nn">Forecasting</span> <span class="k">import</span> <span class="n">frc_class</span><span class="p">,</span> <span class="n">LSTM</span>
 <span class="kn">import</span> <span class="nn">my_plots</span>
 
-<span class="n">tsStruct</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;tsStruct&#39;</span><span class="p">,</span> <span class="s1">&#39;data request history name readme&#39;</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">drop_cols</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">X</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">100</span><span class="p">]</span>
-
-<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">frc_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">selector</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../demo_single_model.html#demo_single_model.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">frc_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">selector</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
     <span class="c1"># Experiment settings.</span>
     <span class="n">TRAIN_TEST_RATIO</span> <span class="o">=</span> <span class="mf">0.75</span>
@@ -76,13 +70,17 @@
     <span class="n">load_raw</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;ProcessedData&quot;</span><span class="p">,</span> <span class="s2">&quot;EnergyWeather_orig_train.pkl&quot;</span><span class="p">))</span>
     <span class="n">ts_struct_list</span> <span class="o">=</span> <span class="n">load_time_series</span><span class="o">.</span><span class="n">load_all_time_series</span><span class="p">(</span><span class="n">datasets</span><span class="o">=</span><span class="s1">&#39;EnergyWeather&#39;</span><span class="p">,</span> <span class="n">load_raw</span><span class="o">=</span><span class="n">load_raw</span><span class="p">,</span> <span class="n">name_pattern</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">generator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">generator</span> <span class="o">=</span> <span class="n">frc_class</span><span class="o">.</span><span class="n">CustomModel</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Poly&#39;</span><span class="p">,</span> <span class="n">fitfunc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">predictfunc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ndegrees</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">selector</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">selector</span> <span class="o">=</span> <span class="n">frc_class</span><span class="o">.</span><span class="n">CustomModel</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Identity&quot;</span><span class="p">,</span> <span class="n">fitfunc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">predictfunc</span><span class="o">=</span><span class="n">drop_cols</span><span class="p">)</span>
 
+
+
+    <span class="k">if</span> <span class="n">generator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1">#generator = frc_class.CustomModel(name=&#39;Poly&#39;, fitfunc=None, predictfunc=None, replace=True, ndegrees=3)</span>
+        <span class="n">generator</span> <span class="o">=</span> <span class="n">frc_class</span><span class="o">.</span><span class="n">CustomModel</span><span class="p">(</span><span class="n">frc_class</span><span class="o">.</span><span class="n">IdentityGenerator</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;IdentityGenerator&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">selector</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1">#selector = frc_class.CustomModel(name=&quot;Identity&quot;, fitfunc=None, predictfunc=drop_cols)</span>
+        <span class="n">selector</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">frc_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">frc_model</span> <span class="o">=</span> <span class="n">LSTM</span><span class="o">.</span><span class="n">LSTM</span><span class="p">()</span> <span class="c1">#Lasso(alpha=0.01) #frc_class.IdenitityFrc() #LinearRegression()</span>
+        <span class="n">frc_model</span> <span class="o">=</span> <span class="n">frc_class</span><span class="o">.</span><span class="n">CustomModel</span><span class="p">(</span><span class="n">Lasso</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Lasso&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span> <span class="c1"># LSTM.LSTM() #frc_class.IdenitityFrc() #LinearRegression()</span>
     <span class="c1"># Create regression matrix</span>
 
     <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
@@ -92,19 +90,20 @@
         <span class="c1"># Create regression matrix</span>
         <span class="n">data</span><span class="o">.</span><span class="n">create_matrix</span><span class="p">(</span><span class="n">nsteps</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">norm_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
+
         <span class="c1"># Split data for training and testing</span>
         <span class="n">data</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span><span class="n">TRAIN_TEST_RATIO</span><span class="p">)</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">train_model</span><span class="p">(</span><span class="n">frc_model</span><span class="o">=</span><span class="n">frc_model</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">,</span> <span class="n">selector</span><span class="o">=</span><span class="n">selector</span><span class="p">)</span> <span class="c1"># model parameters are changed inside</span>
+        <span class="n">model</span><span class="p">,</span> <span class="n">frc</span><span class="p">,</span> <span class="n">gen</span><span class="p">,</span> <span class="n">sel</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">train_model</span><span class="p">(</span><span class="n">frc_model</span><span class="o">=</span><span class="n">frc_model</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">,</span> <span class="n">selector</span><span class="o">=</span><span class="n">selector</span><span class="p">)</span> <span class="c1"># model parameters are changed inside</span>
 
         <span class="c1"># data.forecasts returns model obj, forecasted rows of Y matrix and a list [nts] of &quot;flat&quot;/ts indices of forecasted points</span>
-        <span class="n">frc</span><span class="p">,</span> <span class="n">idx_frc</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">forecast</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">idx_test</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">frc</span><span class="p">,</span> <span class="n">idx_frc</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">forecast</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">idx_train</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">forecast</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">idx_test</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">forecast</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">idx_train</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 
-        <span class="n">train_mae</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mae</span><span class="p">(</span><span class="n">idx_rows</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">idx_train</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="c1">#, out=&quot;Training&quot;)</span>
-        <span class="n">train_mape</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mape</span><span class="p">(</span><span class="n">idx_rows</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">idx_train</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="c1">#, out=&quot;Training&quot;)</span>
-        <span class="n">test_mae</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mae</span><span class="p">(</span><span class="n">idx_rows</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">idx_test</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="c1">#, out=&quot;Test&quot;)</span>
-        <span class="n">test_mape</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mape</span><span class="p">(</span><span class="n">idx_rows</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">idx_test</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="c1">#, out=&quot;Test&quot;)</span>
+        <span class="n">train_mae</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mae</span><span class="p">(</span><span class="n">idx_rows</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">idx_train</span><span class="p">)</span><span class="c1">#, out=&quot;Training&quot;)</span>
+        <span class="n">train_mape</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mape</span><span class="p">(</span><span class="n">idx_rows</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">idx_train</span><span class="p">)</span><span class="c1">#, out=&quot;Training&quot;)</span>
+        <span class="n">test_mae</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mae</span><span class="p">(</span><span class="n">idx_rows</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">idx_test</span><span class="p">)</span><span class="c1">#, out=&quot;Test&quot;)</span>
+        <span class="n">test_mape</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mape</span><span class="p">(</span><span class="n">idx_rows</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">idx_test</span><span class="p">)</span><span class="c1">#, out=&quot;Test&quot;)</span>
 
         <span class="n">res1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">train_mae</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">data</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;MAE&quot;</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">)])</span>
         <span class="n">res2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">train_mape</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">data</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;MAPE&quot;</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">)])</span>
@@ -114,7 +113,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
 
         <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
-        <span class="n">res_text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;: Lasso, feature generation: &quot;</span> <span class="o">+</span> <span class="n">generator</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span> <span class="o">+</span> <span class="n">selector</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="c1">#res_text.append(ts.name + frc.name + &quot;:, feature generation: &quot; + gen.name + &quot;, &quot; + sel.name)</span>
 
         <span class="n">data</span><span class="o">.</span><span class="n">plot_frc</span><span class="p">(</span><span class="n">n_frc</span><span class="o">=</span><span class="n">N_PREDICTIONS</span><span class="p">)</span>
 
@@ -122,7 +121,7 @@
 
 
 
-    <span class="k">return</span> <span class="n">results</span>
+    <span class="k">return</span> <span class="n">results</span></div>
 
 
 

@@ -1,0 +1,310 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Forecasting.arima_model &#8212; MultiscaleForecasting 0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="MultiscaleForecasting 0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for Forecasting.arima_model</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">fft</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">signal</span>
+<span class="kn">import</span> <span class="nn">my_plots</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">statsmodels.tsa</span> <span class="k">as</span> <span class="nn">tsa</span>
+<span class="kn">import</span> <span class="nn">statsmodels.api</span> <span class="k">as</span> <span class="nn">sm</span>
+<span class="kn">from</span> <span class="nn">statsmodels.tsa.seasonal</span> <span class="k">import</span> <span class="n">seasonal_decompose</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">product</span>
+<span class="kn">from</span> <span class="nn">RegressionMatrix</span> <span class="k">import</span> <span class="n">random_data</span>
+
+
+
+<div class="viewcode-block" id="adjust_arima_model"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.arima_model.adjust_arima_model">[docs]</a><span class="k">def</span> <span class="nf">adjust_arima_model</span><span class="p">(</span><span class="n">sd</span><span class="p">,</span> <span class="n">max_p_lags</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">max_q_lags</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">nsplits</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">nhist</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="s2">&quot;fig&quot;</span><span class="p">):</span>
+    <span class="c1"># Compute ACF with alpha-confidence intervals</span>
+    <span class="n">acf</span><span class="p">,</span> <span class="n">confint</span><span class="p">,</span> <span class="n">qstat</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">tsa</span><span class="o">.</span><span class="n">stattools</span><span class="o">.</span><span class="n">acf</span><span class="p">(</span><span class="n">sd</span><span class="o">.</span><span class="n">resid</span><span class="p">,</span> <span class="n">nlags</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">qstat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">confint</span> <span class="o">=</span> <span class="n">confint</span> <span class="o">-</span> <span class="n">confint</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+    <span class="c1"># Find non-zero lags, where ACF  exceeds upper alpha-confidence level (candidates for q)</span>
+    <span class="n">q_lags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">acf</span> <span class="o">&gt;</span> <span class="n">confint</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">q_lags</span> <span class="o">=</span> <span class="n">q_lags</span><span class="p">[</span><span class="n">q_lags</span> <span class="o">&lt;=</span> <span class="n">max_q_lags</span><span class="p">]</span>
+
+    <span class="c1"># Compute ACF with alpha-confidence intervals</span>
+    <span class="n">pacf</span><span class="p">,</span> <span class="n">pconfint</span> <span class="o">=</span> <span class="n">tsa</span><span class="o">.</span><span class="n">stattools</span><span class="o">.</span><span class="n">pacf</span><span class="p">(</span><span class="n">sd</span><span class="o">.</span><span class="n">resid</span><span class="p">,</span> <span class="n">nlags</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
+    <span class="n">pconfint</span> <span class="o">=</span> <span class="n">pconfint</span> <span class="o">-</span> <span class="n">pconfint</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+    <span class="c1"># Find non-zero lags, where PACF  exceeds upper alpha-confidence level (candidates for p)</span>
+    <span class="n">p_lags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">pacf</span> <span class="o">&gt;</span> <span class="n">pconfint</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span>
+             <span class="mi">1</span><span class="p">:]</span>  <span class="c1"># p = np.nonzero(np.vstack((acf &gt; confint[:, 1], acf &lt; confint[:, 0])).any(axis=0))</span>
+    <span class="n">p_lags</span> <span class="o">=</span> <span class="n">p_lags</span><span class="p">[</span><span class="n">p_lags</span> <span class="o">&lt;=</span> <span class="n">max_p_lags</span><span class="p">]</span>
+    <span class="n">rss</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># tscv = TimeSeriesSplit(n_splits=nsplits)</span>
+    <span class="n">predicted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+    <span class="n">split_rss</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># train, _ = tscv.split(ts)</span>
+    <span class="c1"># n_train = len(train)</span>
+    <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="n">p_lags</span><span class="p">,</span> <span class="n">q_lags</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="ow">in</span> <span class="n">random_split_time_series</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">nhist</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">nsplits</span><span class="p">):</span>  <span class="c1"># train, test in tscv.split(ts):</span>
+                <span class="c1"># train = np.hstack((train[-len(test):], test[:-1]))</span>
+                <span class="c1"># test = test[-1:]</span>
+                <span class="n">model</span> <span class="o">=</span> <span class="n">tsa</span><span class="o">.</span><span class="n">arima_model</span><span class="o">.</span><span class="n">ARIMA</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="n">train</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">q</span><span class="p">))</span>
+                <span class="n">results_AR</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">disp</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="c1"># predicted[test] = model.predict(results_AR.params, start=len(train), end=len(test) + len(train)-1)</span>
+                <span class="n">predicted</span><span class="p">[</span><span class="n">test</span><span class="p">],</span> <span class="n">err</span><span class="p">,</span> <span class="n">intvl</span> <span class="o">=</span> <span class="n">results_AR</span><span class="o">.</span><span class="n">forecast</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">test</span><span class="p">))</span>
+                <span class="n">split_rss</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">predicted</span><span class="p">[</span><span class="n">test</span><span class="p">]</span> <span class="o">-</span> <span class="n">ts</span><span class="p">[</span><span class="n">test</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">rss</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">split_rss</span><span class="p">)))</span>  <span class="c1"># sum((predicted - ts) ** 2)))</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">predicted</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">predicted</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;p: </span><span class="si">%.0f</span><span class="s1">, q: </span><span class="si">%.0f</span><span class="s1">, RSS: </span><span class="si">%.4f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">rss</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s1">&#39;arima_p&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;q&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">q</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.png&#39;</span><span class="p">))</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">rss_values</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">rss</span><span class="p">)</span>
+    <span class="n">best_pars</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">rss_values</span><span class="p">)</span>
+    <span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">rss</span> <span class="o">=</span> <span class="n">rss</span><span class="p">[</span><span class="n">best_pars</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">rss</span></div>
+
+<div class="viewcode-block" id="decompose"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.arima_model.decompose">[docs]</a><span class="k">def</span> <span class="nf">decompose</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">log_detrend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">try_arima</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">max_p_lags</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">max_q_lags</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">nsplits</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">nhist</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="s2">&quot;fig&quot;</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+    <span class="n">detrended</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">detrend</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+
+    <span class="c1"># Compute ACF with alpha-confidence intervals</span>
+    <span class="n">acf</span><span class="p">,</span> <span class="n">confint</span><span class="p">,</span> <span class="n">qstat</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">tsa</span><span class="o">.</span><span class="n">stattools</span><span class="o">.</span><span class="n">acf</span><span class="p">(</span><span class="n">detrended</span><span class="p">,</span> <span class="n">nlags</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">qstat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Infer periodicity from ACF</span>
+    <span class="n">period</span> <span class="o">=</span> <span class="n">find_fft_period</span><span class="p">(</span><span class="n">acf</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">acf</span><span class="p">),</span> <span class="n">folder</span><span class="o">=</span><span class="n">folder</span><span class="p">)</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Estimated period </span><span class="si">{0}</span><span class="s2"> with std </span><span class="si">{1}</span><span class="s2"> </span><span class="se">\\\\</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">period</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">period</span><span class="p">))</span>
+    <span class="n">period</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">period</span><span class="p">)</span>
+    <span class="n">period</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">period</span><span class="p">)])</span>
+
+    <span class="n">sd</span> <span class="o">=</span> <span class="n">seasonal_decompose</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="n">period</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;additive&quot;</span><span class="p">)</span>
+
+    <span class="n">sd</span><span class="o">.</span><span class="n">resid</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">detrend</span><span class="p">(</span><span class="n">ts</span> <span class="o">-</span> <span class="n">sd</span><span class="o">.</span><span class="n">seasonal</span><span class="p">)</span>
+    <span class="n">sd</span><span class="o">.</span><span class="n">trend</span> <span class="o">=</span> <span class="n">ts</span> <span class="o">-</span> <span class="n">sd</span><span class="o">.</span><span class="n">resid</span> <span class="o">-</span> <span class="n">sd</span><span class="o">.</span><span class="n">seasonal</span>
+
+    <span class="n">my_plots</span><span class="o">.</span><span class="n">plot_seasonal_trend_decomposition</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">sd</span><span class="o">.</span><span class="n">trend</span><span class="p">,</span> <span class="n">sd</span><span class="o">.</span><span class="n">seasonal</span><span class="p">,</span> <span class="n">sd</span><span class="o">.</span><span class="n">resid</span><span class="p">,</span> <span class="n">folder</span><span class="p">)</span>
+
+    <span class="n">plot_acf_pacf</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="s2">&quot;Original&quot;</span><span class="p">,</span> <span class="n">folder</span><span class="p">)</span>
+    <span class="n">plot_acf_pacf</span><span class="p">(</span><span class="n">sd</span><span class="o">.</span><span class="n">trend</span><span class="p">,</span> <span class="s2">&quot;Trend&quot;</span><span class="p">,</span> <span class="n">folder</span><span class="p">)</span>
+    <span class="n">plot_acf_pacf</span><span class="p">(</span><span class="n">sd</span><span class="o">.</span><span class="n">seasonal</span><span class="p">,</span> <span class="s2">&quot;Seasonal&quot;</span><span class="p">,</span> <span class="n">folder</span><span class="p">)</span>
+    <span class="n">plot_acf_pacf</span><span class="p">(</span><span class="n">sd</span><span class="o">.</span><span class="n">resid</span><span class="p">,</span> <span class="s2">&quot;Residuals&quot;</span><span class="p">,</span> <span class="n">folder</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">try_arima</span><span class="p">:</span>
+        <span class="n">adjust_arima_model</span><span class="p">(</span><span class="n">sd</span><span class="p">,</span> <span class="n">max_p_lags</span><span class="o">=</span><span class="n">max_p_lags</span><span class="p">,</span> <span class="n">max_q_lags</span><span class="o">=</span><span class="n">max_q_lags</span><span class="p">,</span> <span class="n">nsplits</span><span class="o">=</span><span class="n">nsplits</span><span class="p">,</span> <span class="n">nhist</span><span class="o">=</span><span class="n">nhist</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="n">folder</span><span class="p">)</span>
+
+
+    <span class="c1"># deseasoned = ts[period:] - ts[:-period]</span>
+    <span class="c1"># plt.plot(ts[period:] - ts[:-period])</span>
+
+    <span class="k">return</span> <span class="n">period</span><span class="p">,</span> <span class="n">msg</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="find_fft_period"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.arima_model.find_fft_period">[docs]</a><span class="k">def</span> <span class="nf">find_fft_period</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">period</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">+</span> <span class="n">window_size</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">fft</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">window_size</span><span class="p">],</span> <span class="n">window_size</span><span class="p">)</span>
+        <span class="n">max_freq</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">window_size</span><span class="o">//</span><span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">period</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">window_size</span><span class="o">/</span><span class="n">max_freq</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="n">step</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">window_size</span> <span class="o">//</span> <span class="mi">2</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">window_size</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]))</span>
+
+
+    <span class="c1">#period = np.mean(period)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">folder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s2">&quot;fft.png&quot;</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">period</span></div>
+
+
+<div class="viewcode-block" id="split_time_series"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.arima_model.split_time_series">[docs]</a><span class="k">def</span> <span class="nf">split_time_series</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">nhist</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">):</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span><span class="o">-</span><span class="n">nsteps</span><span class="o">-</span><span class="n">nhist</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="n">nhist</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="n">nhist</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="n">nsteps</span><span class="o">+</span><span class="n">nhist</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="random_split_time_series"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.arima_model.random_split_time_series">[docs]</a><span class="k">def</span> <span class="nf">random_split_time_series</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">nhist</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">nsplits</span><span class="p">):</span>
+
+    <span class="n">ts_idx</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span><span class="o">-</span><span class="n">nsteps</span><span class="o">-</span><span class="n">nhist</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">ts_idx</span><span class="p">)</span>
+    <span class="n">ts_idx</span> <span class="o">=</span> <span class="n">ts_idx</span><span class="p">[:</span><span class="n">nsplits</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ts_idx</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="n">nhist</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="n">nhist</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="n">nsteps</span><span class="o">+</span><span class="n">nhist</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="plot_acf_pacf"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.arima_model.plot_acf_pacf">[docs]</a><span class="k">def</span> <span class="nf">plot_acf_pacf</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="s2">&quot;fig&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+    <span class="n">ax1</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">)</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">graphics</span><span class="o">.</span><span class="n">tsa</span><span class="o">.</span><span class="n">plot_acf</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(),</span> <span class="n">lags</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
+    <span class="n">ax2</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">)</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">graphics</span><span class="o">.</span><span class="n">tsa</span><span class="o">.</span><span class="n">plot_pacf</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">lags</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s2">&quot;acf_&quot;</span><span class="o">+</span><span class="n">title</span><span class="o">+</span><span class="s2">&quot;.png&quot;</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="make_report"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.arima_model.make_report">[docs]</a><span class="k">def</span> <span class="nf">make_report</span><span class="p">(</span><span class="n">folder</span><span class="o">=</span><span class="s2">&quot;fig/sine+trend/&quot;</span><span class="p">,</span> <span class="n">fname</span><span class="o">=</span><span class="s2">&quot;ts_arima_analisys&quot;</span><span class="p">,</span> <span class="n">write</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">glob</span>
+
+    <span class="n">latex_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">folder0</span> <span class="o">=</span> <span class="n">folder</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="c1"># add decomposition plot</span>
+    <span class="n">latex_str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">latex_str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">begin</span><span class="si">{figure}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">latex_str</span> <span class="o">+=</span> <span class="s2">&quot;\includegraphics[width=0.9</span><span class="se">\\</span><span class="s2">textwidth]{&quot;</span><span class="o">+</span><span class="n">folder0</span><span class="o">+</span><span class="s2">&quot;/decomposition.png}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">latex_str</span> <span class="o">+=</span> <span class="s2">&quot;\caption{Decomposition of time series into trend and seasonal component).} \label{fg:decomp}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">latex_str</span> <span class="o">+=</span> <span class="s2">&quot;\end</span><span class="si">{figure}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+    <span class="c1"># add acf plots</span>
+    <span class="n">fnames</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder0</span><span class="p">,</span> <span class="s2">&quot;acf_*.png&quot;</span><span class="p">))</span>
+    <span class="n">latex_str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">latex_str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">begin</span><span class="si">{figure}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">end_of_line</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\\\\</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">figname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fnames</span><span class="p">):</span>
+        <span class="n">figname</span> <span class="o">=</span> <span class="n">figname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">latex_str</span> <span class="o">+=</span> <span class="s2">&quot;\subfloat{\includegraphics[width=0.5</span><span class="se">\\</span><span class="s2">textwidth]{&quot;</span> <span class="o">+</span> <span class="n">folder0</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">figname</span> <span class="o">+</span> <span class="s2">&quot;}}&quot;</span><span class="o">+</span><span class="n">end_of_line</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+    <span class="n">latex_str</span> <span class="o">+=</span> <span class="s2">&quot;\caption{ACF and PACF for componets of the time series.} \label{fg:acf}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">latex_str</span> <span class="o">+=</span> <span class="s2">&quot;\end</span><span class="si">{figure}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+    <span class="c1"># for all p-q pairs add plots of arma forecasts</span>
+    <span class="n">fnames</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s2">&quot;arima_p*.png&quot;</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">figname</span> <span class="ow">in</span> <span class="n">fnames</span><span class="p">:</span>
+        <span class="n">figname</span> <span class="o">=</span> <span class="n">figname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="c1">#&quot;/&quot;.join(figname.split(os.path.sep))</span>
+        <span class="n">latex_str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">latex_str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">begin</span><span class="si">{figure}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">latex_str</span> <span class="o">+=</span> <span class="s2">&quot;\includegraphics[width=0.7</span><span class="se">\\</span><span class="s2">textwidth]{&quot;</span> <span class="o">+</span> <span class="n">figname</span> <span class="o">+</span> <span class="s2">&quot;}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">latex_str</span> <span class="o">+=</span> <span class="s2">&quot;\caption{Random forecasts with ARMA($p, q$).} \label{fg:&quot;</span><span class="o">+</span><span class="n">figname</span><span class="o">+</span><span class="s2">&quot;}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">latex_str</span> <span class="o">+=</span> <span class="s2">&quot;\end</span><span class="si">{figure}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+    <span class="k">if</span> <span class="n">write</span><span class="p">:</span>
+        <span class="n">my_plots</span><span class="o">.</span><span class="n">print_to_latex</span><span class="p">(</span><span class="n">latex_str</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">fname</span><span class="p">),</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">latex_str</span></div>
+
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">random_data</span><span class="o">.</span><span class="n">create_sine_ts</span><span class="p">(</span><span class="n">n_ts</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ts</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span><span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span><span class="o">/</span><span class="n">ts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">ts</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">ts</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+    <span class="n">adjust_arima_model</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">nhist</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nsplits</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+    <span class="c1"># for period in range(10, 100, 10):</span>
+    <span class="c1">#     ts = random_data.create_sine_ts(n_ts=1, period=period, min_length=2000, max_length=2000).data[0]</span>
+    <span class="c1">#     ts = np.log(ts + np.arange(ts.shape[0])*abs(np.max(ts))/ts.shape[0])</span>
+    <span class="c1">#     ts[np.isnan(ts)] = np.mean(ts)</span>
+    <span class="c1">#     decompose(ts)</span>
+    <span class="c1">#     find_fft_period(ts)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Strijov, Motrenko, Neychev, Isachenko.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>

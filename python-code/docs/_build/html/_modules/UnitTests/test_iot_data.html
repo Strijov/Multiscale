@@ -49,17 +49,26 @@
   <h1>Source code for UnitTests.test_iot_data</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">unittest</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">RegressionMatrix</span> <span class="k">import</span> <span class="n">regression_matrix</span><span class="p">,</span> <span class="n">random_data</span>
+<span class="kn">from</span> <span class="nn">RegressionMatrix</span> <span class="k">import</span> <span class="n">random_data</span>
 <span class="kn">from</span> <span class="nn">LoadAndSaveData</span> <span class="k">import</span> <span class="n">write_data_to_iot_format</span><span class="p">,</span> <span class="n">get_iot_data</span><span class="p">,</span> <span class="n">load_time_series</span>
 
 <span class="n">FILE_NAME</span> <span class="o">=</span> <span class="s2">&quot;TestIot.csv&quot;</span>
 <span class="n">TOL</span> <span class="o">=</span> <span class="nb">pow</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">)</span>
 
+
 <div class="viewcode-block" id="TestIotData"><a class="viewcode-back" href="../../UnitTests.html#UnitTests.test_iot_data.TestIotData">[docs]</a><span class="k">class</span> <span class="nc">TestIotData</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+
 <div class="viewcode-block" id="TestIotData.test_read_lines"><a class="viewcode-back" href="../../UnitTests.html#UnitTests.test_iot_data.TestIotData.test_read_lines">[docs]</a>    <span class="k">def</span> <span class="nf">test_read_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">input_ts</span> <span class="o">=</span> <span class="n">random_data</span><span class="o">.</span><span class="n">create_random_ts</span><span class="p">(</span><span class="n">n_ts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_req</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">23</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check that reading by line works correctly: write random data into file, then read by line and compare</span>
+<span class="sd">        results to original time series</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Running test_read_lines</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">input_ts</span> <span class="o">=</span> <span class="n">random_data</span><span class="o">.</span><span class="n">create_random_ts</span><span class="p">(</span><span class="n">n_ts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_req</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
         <span class="n">write_data_to_iot_format</span><span class="o">.</span><span class="n">write_ts</span><span class="p">(</span><span class="n">input_ts</span><span class="p">,</span> <span class="n">FILE_NAME</span><span class="p">)</span>
+
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">input_ts</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
             <span class="n">data</span><span class="p">,</span> <span class="n">metric_ids</span><span class="p">,</span> <span class="n">host_ids</span><span class="p">,</span> <span class="n">header_names</span> <span class="o">=</span> <span class="n">get_iot_data</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">FILE_NAME</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
             <span class="n">dataset</span> <span class="o">=</span> <span class="n">host_ids</span><span class="o">.</span><span class="n">keys</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
@@ -70,11 +79,10 @@
 
         <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">FILE_NAME</span><span class="p">)</span></div>
 
-
 <div class="viewcode-block" id="TestIotData.read_and_write"><a class="viewcode-back" href="../../UnitTests.html#UnitTests.test_iot_data.TestIotData.read_and_write">[docs]</a>    <span class="k">def</span> <span class="nf">read_and_write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">input_ts</span> <span class="o">=</span> <span class="n">random_data</span><span class="o">.</span><span class="n">create_random_ts</span><span class="p">(</span><span class="n">n_ts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_req</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">23</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
-        <span class="c1">#data_original = regression_matrix.RegMatrix(input_ts)</span>
-        <span class="c1">#data_original.create_matrix()</span>
+        <span class="sd">&quot;&quot;&quot; Writes random data into file, then reads from it and compares results &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Running read_and_write</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">input_ts</span> <span class="o">=</span> <span class="n">random_data</span><span class="o">.</span><span class="n">create_random_ts</span><span class="p">(</span><span class="n">n_ts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_req</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
 
         <span class="c1"># write data to file in IoT format</span>
         <span class="n">write_data_to_iot_format</span><span class="o">.</span><span class="n">write_ts</span><span class="p">(</span><span class="n">input_ts</span><span class="p">,</span> <span class="n">FILE_NAME</span><span class="p">)</span>
@@ -83,20 +91,45 @@
         <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">FILE_NAME</span><span class="p">)</span>
 
 
-        <span class="n">dataset</span> <span class="o">=</span> <span class="n">host_ids</span><span class="o">.</span><span class="n">keys</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">converted_ts</span> <span class="o">=</span> <span class="n">load_time_series</span><span class="o">.</span><span class="n">from_iot_to_struct</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">host_ids</span><span class="p">[</span><span class="n">dataset</span><span class="p">],</span> <span class="n">dataset</span><span class="p">)</span>
-        <span class="c1">#converted_data = regression_matrix.RegMatrix(converted_ts)</span>
-        <span class="c1">#converted_data.create_matrix()</span>
+        <span class="n">converted_ts</span> <span class="o">=</span> <span class="n">load_time_series</span><span class="o">.</span><span class="n">iot_to_struct_by_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">host_ids</span><span class="p">,</span> <span class="n">dataset_idx</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">for</span> <span class="n">tsi</span><span class="p">,</span> <span class="n">tsc</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">input_ts</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">converted_ts</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">((</span><span class="nb">abs</span><span class="p">(</span><span class="n">tsi</span> <span class="o">-</span> <span class="n">tsc</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">TOL</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+            <span class="c1"># print(max(abs(np.array(tsi.T) - np.array(tsc.T))))</span>
+            <span class="c1"># print(max(abs(tsi.index - tsc.index)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">((</span><span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tsi</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tsc</span><span class="o">.</span><span class="n">T</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">TOL</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">((</span><span class="nb">abs</span><span class="p">(</span><span class="n">tsi</span><span class="o">.</span><span class="n">index</span> <span class="o">-</span> <span class="n">tsc</span><span class="o">.</span><span class="n">index</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">TOL</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">input_ts</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">converted_ts</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">input_ts</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">converted_ts</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestIotData.read_empty_lines"><a class="viewcode-back" href="../../UnitTests.html#UnitTests.test_iot_data.TestIotData.read_empty_lines">[docs]</a>    <span class="k">def</span> <span class="nf">read_empty_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Checks results of reading empty lines &quot;&quot;&quot;</span>
+        <span class="n">input_ts</span> <span class="o">=</span> <span class="n">random_data</span><span class="o">.</span><span class="n">create_random_ts</span><span class="p">(</span><span class="n">n_ts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">n_req</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+
+        <span class="c1"># write data to file in IoT format</span>
+        <span class="n">write_data_to_iot_format</span><span class="o">.</span><span class="n">write_ts</span><span class="p">(</span><span class="n">input_ts</span><span class="p">,</span> <span class="n">FILE_NAME</span><span class="p">)</span>
+
+        <span class="n">data</span><span class="p">,</span> <span class="n">metric_ids</span><span class="p">,</span> <span class="n">host_ids</span><span class="p">,</span> <span class="n">header_names</span> <span class="o">=</span> <span class="n">get_iot_data</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">FILE_NAME</span><span class="p">,</span> <span class="p">[],</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">FILE_NAME</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">IndexError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">ts_list</span> <span class="o">=</span> <span class="n">load_time_series</span><span class="o">.</span><span class="n">iot_to_struct_by_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">host_ids</span><span class="p">,</span> <span class="n">dataset_idx</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+        <span class="c1">#self.assertTrue(&#39;This is broken&#39; in e.exception)</span>
+
+<div class="viewcode-block" id="TestIotData.read_empty_dataset"><a class="viewcode-back" href="../../UnitTests.html#UnitTests.test_iot_data.TestIotData.read_empty_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">read_empty_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Checks results of reading empty dataset &quot;&quot;&quot;</span>
+        <span class="n">input_ts</span> <span class="o">=</span> <span class="n">random_data</span><span class="o">.</span><span class="n">create_random_ts</span><span class="p">(</span><span class="n">n_ts</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_req</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+        <span class="n">input_ts</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
 
 
+        <span class="n">write_data_to_iot_format</span><span class="o">.</span><span class="n">write_ts</span><span class="p">(</span><span class="n">input_ts</span><span class="p">,</span> <span class="n">FILE_NAME</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">metric_ids</span><span class="p">,</span> <span class="n">host_ids</span><span class="p">,</span> <span class="n">header_names</span> <span class="o">=</span> <span class="n">get_iot_data</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">FILE_NAME</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">FILE_NAME</span><span class="p">)</span>
 
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">IndexError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">ts</span> <span class="o">=</span> <span class="n">load_time_series</span><span class="o">.</span><span class="n">iot_to_struct_by_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">host_ids</span><span class="p">,</span> <span class="n">dataset_idx</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span></div></div>
 
+        <span class="c1">#self.assertTrue(&#39;This is broken&#39; in e.exception)</span>
 
 
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>

@@ -53,7 +53,7 @@
 <span class="kn">from</span> <span class="nn">LoadAndSaveData.load_time_series</span> <span class="k">import</span> <span class="n">TsStruct</span>
 
 <span class="n">PERIOD</span> <span class="o">=</span> <span class="mi">15</span>
-<div class="viewcode-block" id="create_sine_ts"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.random_data.create_sine_ts">[docs]</a><span class="k">def</span> <span class="nf">create_sine_ts</span><span class="p">(</span><span class="n">n_ts</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">n_req</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">min_length</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="n">PERIOD</span><span class="p">):</span>
+<div class="viewcode-block" id="create_sine_ts"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.random_data.create_sine_ts">[docs]</a><span class="k">def</span> <span class="nf">create_sine_ts</span><span class="p">(</span><span class="n">n_ts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_req</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="n">PERIOD</span><span class="p">,</span> <span class="n">dt_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">allow_empty</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Creates artificial &quot;Multiscale&quot; data (noised sines)</span>
 
@@ -71,18 +71,22 @@
 <span class="sd">    :rtype: TsStruct</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="k">if</span> <span class="n">dt_index</span><span class="p">:</span>
+        <span class="n">dt_index</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Artificial data with datetime indices is not supported&quot;</span><span class="p">)</span>
     <span class="n">end_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">min_length</span><span class="p">,</span> <span class="n">max_length</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
-    <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">end_time</span><span class="p">)</span>  <span class="c1"># frequency is the same for all FIXIT</span>
     <span class="n">ts</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_ts</span>
     <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_ts</span><span class="p">):</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">create_index</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">end_time</span><span class="p">,</span> <span class="n">npoints_per_step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dt_index</span><span class="o">=</span><span class="n">dt_index</span><span class="p">)</span>
         <span class="n">ts</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">index</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="n">period</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">index</span><span class="p">))</span><span class="o">*</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
 
-    <span class="n">ts</span> <span class="o">=</span> <span class="n">TsStruct</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">n_req</span><span class="p">,</span> <span class="n">n_hist</span><span class="p">,</span> <span class="s1">&#39;Sine&#39;</span><span class="p">,</span> <span class="s1">&#39;Artificial data for testing purposes&#39;</span><span class="p">)</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">TsStruct</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">n_req</span><span class="p">,</span> <span class="n">n_hist</span><span class="p">,</span> <span class="s1">&#39;Sine&#39;</span><span class="p">,</span> <span class="s1">&#39;Artificial data for testing purposes&#39;</span><span class="p">,</span> <span class="n">allow_empty</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">ts</span></div>
 
 
-<div class="viewcode-block" id="create_random_ts"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.random_data.create_random_ts">[docs]</a><span class="k">def</span> <span class="nf">create_random_ts</span><span class="p">(</span><span class="n">n_ts</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">n_req</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">min_length</span> <span class="o">=</span> <span class="mi">200</span><span class="p">):</span>
+<div class="viewcode-block" id="create_random_ts"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.random_data.create_random_ts">[docs]</a><span class="k">def</span> <span class="nf">create_random_ts</span><span class="p">(</span><span class="n">n_ts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_req</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">max_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">time_delta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">dt_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">allow_empty</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Creates random &quot;Multiscale&quot; data</span>
 
@@ -96,20 +100,67 @@
 <span class="sd">        :type max_length:  int</span>
 <span class="sd">        :param min_length: minimum length of time series in the set</span>
 <span class="sd">        :type min_length: int</span>
+<span class="sd">        :param max_freq: specifies maximum frequency, times of basis time delta (1)</span>
+<span class="sd">        :type max_freq: int</span>
 <span class="sd">        :return: Data structure</span>
 <span class="sd">        :rtype: TsStruct</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-    <span class="n">end_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">min_length</span><span class="p">,</span> <span class="n">max_length</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">index</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">end_time</span><span class="p">)</span>  <span class="c1"># frequency is the same for all FIXIT</span>
+    <span class="k">if</span> <span class="n">dt_index</span><span class="p">:</span>
+        <span class="n">dt_index</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Artificial data with datetime indices is not supported&quot;</span><span class="p">)</span>
+
+    <span class="n">end_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">min_length</span><span class="p">,</span> <span class="n">max_length</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_ts</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">time_delta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">n_ts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_delta</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">time_delta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">time_delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_freq</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_ts</span><span class="p">)</span>
     <span class="n">ts</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_ts</span>
     <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_ts</span><span class="p">):</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">create_index</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">end_time</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">time_delta</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">dt_index</span><span class="p">)</span>   <span class="c1">#list(range(0, end_time, time_delta[n]))</span>
         <span class="n">ts</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">index</span><span class="p">))</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
 
-    <span class="n">ts</span> <span class="o">=</span> <span class="n">TsStruct</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">n_req</span><span class="p">,</span> <span class="n">n_hist</span><span class="p">,</span> <span class="s1">&#39;Sine&#39;</span><span class="p">,</span> <span class="s1">&#39;Artificial data for testing purposes&#39;</span><span class="p">)</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">TsStruct</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">n_req</span><span class="p">,</span> <span class="n">n_hist</span><span class="p">,</span> <span class="s1">&#39;Sine&#39;</span><span class="p">,</span> <span class="s1">&#39;Artificial data for testing purposes&#39;</span><span class="p">,</span> <span class="n">allow_empty</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">ts</span></div>
 
-<div class="viewcode-block" id="create_linear_ts"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.random_data.create_linear_ts">[docs]</a><span class="k">def</span> <span class="nf">create_linear_ts</span><span class="p">(</span><span class="n">n_ts</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">n_req</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">min_length</span> <span class="o">=</span> <span class="mi">200</span><span class="p">):</span>
+<div class="viewcode-block" id="create_index"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.random_data.create_index">[docs]</a><span class="k">def</span> <span class="nf">create_index</span><span class="p">(</span><span class="n">start_time</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end_time</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">npoints_per_step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dt_index</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Creates time index with specified parameters&quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">dt_index</span><span class="p">:</span>
+        <span class="n">dt_index</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Artificial data with datetime indices is not supported&quot;</span><span class="p">)</span>
+
+    <span class="n">step_size</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="k">if</span> <span class="n">npoints_per_step</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">:</span>
+        <span class="n">step_size</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">npoints_per_step</span>
+        <span class="n">npoints_per_step</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="n">step</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">step_size</span><span class="p">,</span> <span class="n">npoints_per_step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start_time</span><span class="p">,</span> <span class="n">end_time</span><span class="p">,</span> <span class="n">step_size</span><span class="p">):</span>
+        <span class="n">index</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
+
+    <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dt_index</span><span class="p">:</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">_index_to_datetime</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">index</span><span class="p">)</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Time stamps are not unique, len(ts)=</span><span class="si">{}</span><span class="s2">, n_unique=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">index</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">index</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+    <span class="c1">#index = np.arange(start_time, end_time, 1.0 / npoints_per_step)</span>
+    <span class="k">return</span> <span class="n">index</span></div>
+
+<span class="k">def</span> <span class="nf">_index_to_datetime</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pd</span><span class="o">.</span><span class="n">tslib</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">index</span>
+
+    <span class="c1"># new_index = []</span>
+    <span class="c1"># for i, t in enumerate(index):</span>
+    <span class="c1">#     new_index.append(datetime.datetime.fromtimestamp(t)) #.strftime(&#39;%Y-%m-%d %H:%M:%S&#39;)</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;ns&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="create_linear_ts"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.random_data.create_linear_ts">[docs]</a><span class="k">def</span> <span class="nf">create_linear_ts</span><span class="p">(</span><span class="n">n_ts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_req</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">min_length</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">slope</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">dt_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">allow_empty</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Creates artificial &quot;Multiscale&quot; data, linear ts</span>
 
@@ -126,15 +177,95 @@
 <span class="sd">        :return: Data structure</span>
 <span class="sd">        :rtype: TsStruct</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">dt_index</span><span class="p">:</span>
+        <span class="n">dt_index</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Artificial data with datetime indices is not supported&quot;</span><span class="p">)</span>
 
     <span class="n">end_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">min_length</span><span class="p">,</span> <span class="n">max_length</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">index</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">end_time</span><span class="p">)</span>  <span class="c1"># frequency is the same for all FIXIT</span>
     <span class="n">ts</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_ts</span>
     <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_ts</span><span class="p">):</span>
-        <span class="n">ts</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">end_time</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">create_index</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">end_time</span><span class="p">,</span> <span class="n">npoints_per_step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dt_index</span><span class="o">=</span><span class="n">dt_index</span><span class="p">)</span>
+        <span class="n">ts</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">end_time</span><span class="p">)</span> <span class="o">*</span> <span class="n">slope</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
 
-    <span class="n">ts</span> <span class="o">=</span> <span class="n">TsStruct</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">n_req</span><span class="p">,</span> <span class="n">n_hist</span><span class="p">,</span> <span class="s1">&#39;Sine&#39;</span><span class="p">,</span> <span class="s1">&#39;Artificial data for testing purposes&#39;</span><span class="p">)</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">TsStruct</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">n_req</span><span class="p">,</span> <span class="n">n_hist</span><span class="p">,</span> <span class="s1">&#39;Sine&#39;</span><span class="p">,</span> <span class="s1">&#39;Artificial data for testing purposes&#39;</span><span class="p">,</span> <span class="n">allow_empty</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">ts</span></div>
+
+
+<div class="viewcode-block" id="create_iot_data"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.random_data.create_iot_data">[docs]</a><span class="k">def</span> <span class="nf">create_iot_data</span><span class="p">(</span><span class="n">n_ts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_req</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">slope</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+                    <span class="n">non_zero_ratio</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">signal_to_noize</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">trend_noise</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">dt_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">allow_empty</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">dt_index</span><span class="p">:</span>
+        <span class="n">dt_index</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Artificial data with datetime indices is not supported&quot;</span><span class="p">)</span>
+
+    <span class="n">ts_struct</span> <span class="o">=</span> <span class="n">create_linear_ts</span><span class="p">(</span><span class="n">n_ts</span><span class="p">,</span> <span class="n">n_req</span><span class="p">,</span> <span class="n">n_hist</span><span class="p">,</span> <span class="n">max_length</span><span class="p">,</span> <span class="n">min_length</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">dt_index</span><span class="p">,</span> <span class="n">allow_empty</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ts_struct</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+        <span class="n">ts</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span> <span class="n">trend_noise</span>
+        <span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+        <span class="n">non_zero_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">non_zero_ratio</span>
+        <span class="n">signal</span><span class="p">[</span><span class="n">non_zero_idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">signal_to_noize</span>
+        <span class="n">ts</span> <span class="o">+=</span> <span class="n">signal</span>
+        <span class="n">ts_struct</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ts</span>
+
+    <span class="n">ts_struct</span><span class="o">.</span><span class="n">readme</span> <span class="o">=</span> <span class="s2">&quot;Artificial Iot-like data&quot;</span>
+    <span class="n">ts_struct</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;IoT&quot;</span>
+
+    <span class="k">return</span> <span class="n">ts_struct</span></div>
+
+<div class="viewcode-block" id="create_iot_data_poisson"><a class="viewcode-back" href="../../RegressionMatrix.html#RegressionMatrix.random_data.create_iot_data_poisson">[docs]</a><span class="k">def</span> <span class="nf">create_iot_data_poisson</span><span class="p">(</span><span class="n">n_ts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_req</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">slope</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+                    <span class="n">non_zero_ratio</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">signal_to_noize</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">trend_noise</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">dt_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">allow_empty</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates artificial &quot;Multiscale&quot; data based on Poisson distribution: linear trend + eventual peaks</span>
+
+<span class="sd">    :param n_ts: number of time series in the set</span>
+<span class="sd">    :type n_ts: int</span>
+<span class="sd">    :param n_req: Request (number of time intervals)</span>
+<span class="sd">    :type n_req: int</span>
+<span class="sd">    :param n_hist: History (number of time intervals)</span>
+<span class="sd">    :type n_hist: int</span>
+<span class="sd">    :param max_length: maximum length of time series in the set</span>
+<span class="sd">    :type max_length:  int</span>
+<span class="sd">    :param min_length: minimum length of time series in the set</span>
+<span class="sd">    :type min_length: int</span>
+<span class="sd">    :param slope: slope of the linear trend</span>
+<span class="sd">    :type slope: float</span>
+<span class="sd">    :param non_zero_ratio: ratio of the evetual peaks</span>
+<span class="sd">    :type non_zero_ratio: float</span>
+<span class="sd">    :param signal_to_noize:  additive height of peaks \in [1, 2] * signal_to_noize</span>
+<span class="sd">    :type signal_to_noize: float</span>
+<span class="sd">    :param trend_noise: gaussian noise added to the trend</span>
+<span class="sd">    :type trend_noise: float</span>
+<span class="sd">    :param dt_index: deprecated</span>
+<span class="sd">    :type dt_index: bool</span>
+<span class="sd">    :param allow_empty: if True, TsStruct will not raise error for empty data</span>
+<span class="sd">    :type allow_empty: bool</span>
+<span class="sd">    :return: Data structure</span>
+<span class="sd">    :rtype: TsStruct</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">dt_index</span><span class="p">:</span>
+        <span class="n">dt_index</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Artificial data with datetime indices is not supported&quot;</span><span class="p">)</span>
+
+    <span class="n">ts_struct</span> <span class="o">=</span> <span class="n">create_linear_ts</span><span class="p">(</span><span class="n">n_ts</span><span class="p">,</span> <span class="n">n_req</span><span class="p">,</span> <span class="n">n_hist</span><span class="p">,</span> <span class="n">max_length</span><span class="p">,</span> <span class="n">min_length</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">dt_index</span><span class="p">,</span> <span class="n">allow_empty</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ts_struct</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+        <span class="n">ts</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span> <span class="n">trend_noise</span>
+        <span class="n">lambda_</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span> <span class="o">*</span> <span class="n">non_zero_ratio</span><span class="p">)</span>
+        <span class="n">intervals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">lam</span><span class="o">=</span><span class="n">lambda_</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+        <span class="n">non_zero_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">intervals</span><span class="p">)</span>
+        <span class="n">non_zero_idx</span> <span class="o">=</span> <span class="n">non_zero_idx</span><span class="p">[</span><span class="n">non_zero_idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">)]</span>
+        <span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+        <span class="n">signal</span><span class="p">[</span><span class="n">non_zero_idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">signal_to_noize</span>
+        <span class="n">ts</span> <span class="o">+=</span> <span class="n">signal</span>
+        <span class="n">ts_struct</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ts</span>
+
+    <span class="n">ts_struct</span><span class="o">.</span><span class="n">readme</span> <span class="o">=</span> <span class="s2">&quot;Artificially created Iot-like data; Poisson-based&quot;</span>
+    <span class="n">ts_struct</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;IoT&quot;</span>
+
+    <span class="k">return</span> <span class="n">ts_struct</span></div>
+
+
+
+
 </pre></div>
 
           </div>

@@ -48,25 +48,21 @@
             
   <h1>Source code for UnitTests.test_reg_matrix</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">import</span> <span class="nn">copy</span>
 
 <span class="kn">from</span> <span class="nn">Forecasting</span> <span class="k">import</span> <span class="n">frc_class</span>
 <span class="kn">from</span> <span class="nn">RegressionMatrix</span> <span class="k">import</span> <span class="n">regression_matrix</span><span class="p">,</span> <span class="n">random_data</span>
-<span class="kn">from</span> <span class="nn">LoadAndSaveData.load_time_series</span> <span class="k">import</span> <span class="n">TsStruct</span>
+
 
 <span class="n">TOL</span> <span class="o">=</span> <span class="nb">pow</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">)</span>
 
 <div class="viewcode-block" id="TestRegMatrix"><a class="viewcode-back" href="../../UnitTests.html#UnitTests.test_reg_matrix.TestRegMatrix">[docs]</a><span class="k">class</span> <span class="nc">TestRegMatrix</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
 
 <div class="viewcode-block" id="TestRegMatrix.test_identity"><a class="viewcode-back" href="../../UnitTests.html#UnitTests.test_reg_matrix.TestRegMatrix.test_identity">[docs]</a>    <span class="k">def</span> <span class="nf">test_identity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">input_ts</span> <span class="o">=</span> <span class="n">random_data</span><span class="o">.</span><span class="n">create_random_ts</span><span class="p">(</span><span class="n">n_ts</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">n_req</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">min_length</span> <span class="o">=</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="n">input_ts</span> <span class="o">=</span> <span class="n">random_data</span><span class="o">.</span><span class="n">create_random_ts</span><span class="p">(</span><span class="n">n_ts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_req</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+
         <span class="n">data</span> <span class="o">=</span> <span class="n">regression_matrix</span><span class="o">.</span><span class="n">RegMatrix</span><span class="p">(</span><span class="n">input_ts</span><span class="p">)</span>
-
-
-        <span class="c1"># for n, ts in  enumerate(input_ts):</span>
-        <span class="c1">#     self.assertTrue((ts==data.ts[n].data).all())</span>
-
         <span class="n">data</span><span class="o">.</span><span class="n">create_matrix</span><span class="p">()</span>
-
         <span class="n">data</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">Y</span>  <span class="c1"># for identity frc</span>
         <span class="n">data</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
 
@@ -88,12 +84,12 @@
 
 
 <div class="viewcode-block" id="TestRegMatrix.test_y_slicing_args"><a class="viewcode-back" href="../../UnitTests.html#UnitTests.test_reg_matrix.TestRegMatrix.test_y_slicing_args">[docs]</a>    <span class="k">def</span> <span class="nf">test_y_slicing_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;&quot; Check that individual forecasts are the same if scliced in init or at create_matrix &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot; Check that individual forecasts are the same if sliced in init or at create_matrix &quot;&quot;&quot;</span>
 
-        <span class="n">input_ts</span> <span class="o">=</span> <span class="n">random_data</span><span class="o">.</span><span class="n">create_random_ts</span><span class="p">(</span><span class="n">n_ts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_req</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">23</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+        <span class="n">input_ts</span> <span class="o">=</span> <span class="n">random_data</span><span class="o">.</span><span class="n">create_random_ts</span><span class="p">(</span><span class="n">n_ts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_req</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
 
         <span class="c1"># include all ts explicitly</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">regression_matrix</span><span class="o">.</span><span class="n">RegMatrix</span><span class="p">(</span><span class="n">input_ts</span><span class="p">,</span>  <span class="n">y_idx</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">input_ts</span><span class="o">.</span><span class="n">data</span><span class="p">)))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">regression_matrix</span><span class="o">.</span><span class="n">RegMatrix</span><span class="p">(</span><span class="n">input_ts</span><span class="p">,</span>  <span class="n">y_idx</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">input_ts</span><span class="o">.</span><span class="n">data</span><span class="p">)))</span>
         <span class="n">data</span><span class="o">.</span><span class="n">create_matrix</span><span class="p">()</span>
         <span class="n">data</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
 
@@ -145,7 +141,7 @@
             <span class="c1"># keep the first ts the same</span>
             <span class="n">new_ts</span> <span class="o">=</span> <span class="p">[</span><span class="n">ts0</span><span class="p">]</span>
             <span class="n">new_ts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">input_ts</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
-            <span class="n">input_ts</span> <span class="o">=</span> <span class="n">TsStruct</span><span class="p">(</span><span class="n">new_ts</span><span class="p">,</span> <span class="n">input_ts</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">input_ts</span><span class="o">.</span><span class="n">history</span><span class="p">,</span> <span class="n">input_ts</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">input_ts</span><span class="o">.</span><span class="n">readme</span><span class="p">)</span>
+            <span class="n">input_ts</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">new_ts</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">regression_matrix</span><span class="o">.</span><span class="n">RegMatrix</span><span class="p">(</span><span class="n">input_ts</span><span class="p">)</span>
             <span class="n">data</span><span class="o">.</span><span class="n">create_matrix</span><span class="p">(</span><span class="n">y_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">x_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
             <span class="n">data</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
@@ -174,7 +170,8 @@
             <span class="n">frc1</span><span class="p">,</span> <span class="n">idx_frc</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">forecast</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
             <span class="n">Y1</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">Y</span>
 
-            <span class="n">input_ts2</span> <span class="o">=</span> <span class="n">TsStruct</span><span class="p">(</span><span class="n">input_ts</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">i_ts</span><span class="p">],</span> <span class="n">input_ts</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">input_ts</span><span class="o">.</span><span class="n">history</span><span class="p">,</span> <span class="n">input_ts</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">input_ts</span><span class="o">.</span><span class="n">readme</span><span class="p">)</span>
+            <span class="n">input_ts2</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">input_ts</span><span class="p">)</span>
+            <span class="n">input_ts2</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">input_ts</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">i_ts</span><span class="p">:</span><span class="n">i_ts</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">regression_matrix</span><span class="o">.</span><span class="n">RegMatrix</span><span class="p">(</span><span class="n">input_ts2</span><span class="p">)</span>
             <span class="n">data</span><span class="o">.</span><span class="n">create_matrix</span><span class="p">()</span>
             <span class="n">data</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>

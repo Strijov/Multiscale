@@ -1,0 +1,210 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Forecasting.periodogram &#8212; MultiscaleForecasting 0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="MultiscaleForecasting 0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for Forecasting.periodogram</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;Frequency estimation via periodograms</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.signal</span>
+
+<span class="c1"># by default, assume at least this many cycles of data when</span>
+<span class="c1"># establishing FFT window sizes.</span>
+<span class="n">MIN_FFT_CYCLES</span> <span class="o">=</span> <span class="mf">3.0</span>
+
+<span class="c1"># by default, assume periods of no more than this when establishing</span>
+<span class="c1"># FFT window sizes.</span>
+<span class="n">MAX_FFT_PERIOD</span> <span class="o">=</span> <span class="mi">512</span>
+
+<div class="viewcode-block" id="periodogram_peaks"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.periodogram.periodogram_peaks">[docs]</a><span class="k">def</span> <span class="nf">periodogram_peaks</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">min_period</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">max_period</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">thresh</span><span class="o">=</span><span class="mf">0.90</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;return a list of intervals containg high-scoring periods</span>
+
+<span class="sd">    Use a robust periodogram to estimate ranges containing</span>
+<span class="sd">    high-scoring periodicities in possibly short, noisy data. Returns</span>
+<span class="sd">    each peak period along with its adjacent bracketing periods from</span>
+<span class="sd">    the FFT coefficient sequence.</span>
+
+<span class="sd">    Data should be detrended for sharpest results, but trended data</span>
+<span class="sd">    can be accommodated by lowering thresh (resulting in more</span>
+<span class="sd">    intervals being returned)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : ndarray</span>
+<span class="sd">        Data series, evenly spaced samples.</span>
+<span class="sd">    min_period : int</span>
+<span class="sd">        Disregard periods shorter than this number of samples.</span>
+<span class="sd">        Defaults to 4</span>
+<span class="sd">    max_period : int</span>
+<span class="sd">        Disregard periods longer than this number of samples.</span>
+<span class="sd">        Defaults to the smaller of len(data)/MIN_FFT_CYCLES or MAX_FFT_PERIOD</span>
+<span class="sd">    thresh : float (0..1)</span>
+<span class="sd">        Retain periods scoring above thresh*maxscore. Defaults to 0.9</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    periods : array of quads, or None</span>
+<span class="sd">        Array of (period, power, period-, period+), maximizing period</span>
+<span class="sd">        and its score, and FFT periods bracketing the maximizing</span>
+<span class="sd">        period, returned in decreasing order of score</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">periods</span><span class="p">,</span> <span class="n">power</span> <span class="o">=</span> <span class="n">periodogram</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">min_period</span><span class="p">,</span> <span class="n">max_period</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">power</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="kc">None</span> <span class="c1"># DC</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">power</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">*</span> <span class="n">thresh</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">peak_i</span> <span class="o">=</span> <span class="n">power</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">power</span><span class="p">[</span><span class="n">peak_i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">keep</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="n">min_period</span> <span class="o">=</span> <span class="n">periods</span><span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">peak_i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">periods</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="n">max_period</span> <span class="o">=</span> <span class="n">periods</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">peak_i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">periods</span><span class="p">[</span><span class="n">peak_i</span><span class="p">],</span> <span class="n">power</span><span class="p">[</span><span class="n">peak_i</span><span class="p">],</span> <span class="n">min_period</span><span class="p">,</span> <span class="n">max_period</span><span class="p">])</span>
+        <span class="n">power</span><span class="p">[</span><span class="n">peak_i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">result</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="periodogram"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.periodogram.periodogram">[docs]</a><span class="k">def</span> <span class="nf">periodogram</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">min_period</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">max_period</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;score periodicities by their spectral power.</span>
+
+<span class="sd">    Produce a robust periodogram estimate for each possible periodicity</span>
+<span class="sd">    of the (possibly noisy) data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : ndarray</span>
+<span class="sd">        Data series, having at least three periods of data.</span>
+<span class="sd">    min_period : int</span>
+<span class="sd">        Disregard periods shorter than this number of samples.</span>
+<span class="sd">        Defaults to 4</span>
+<span class="sd">    max_period : int</span>
+<span class="sd">        Disregard periods longer than this number of samples.</span>
+<span class="sd">        Defaults to the smaller of len(data)/MIN_FFT_CYCLES or MAX_FFT_PERIOD</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    periods, power : ndarray, ndarray</span>
+<span class="sd">        Periods is an array of Fourier periods in descending order,</span>
+<span class="sd">        beginning with the first one greater than max_period.</span>
+<span class="sd">        Power is an array of spectral power values for the periods</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This uses Welch&#39;s method (no relation) of periodogram</span>
+<span class="sd">    averaging[1]_, which trades off frequency precision for better</span>
+<span class="sd">    noise resistance. We don&#39;t look for sharp period estimates from</span>
+<span class="sd">    it, as it uses the FFT, which evaluates at periods N, N/2, N/3, ...,</span>
+<span class="sd">    so that longer periods are sparsely sampled.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1]: https://en.wikipedia.org/wiki/Welch%27s_method</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">max_period</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">max_period</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">/</span> <span class="n">MIN_FFT_CYCLES</span><span class="p">,</span> <span class="n">MAX_FFT_PERIOD</span><span class="p">))</span>
+    <span class="n">nperseg</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">max_period</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># FFT window</span>
+    <span class="n">freqs</span><span class="p">,</span> <span class="n">power</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">welch</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">scaling</span><span class="o">=</span><span class="s1">&#39;spectrum&#39;</span><span class="p">,</span> <span class="n">nperseg</span><span class="o">=</span><span class="n">nperseg</span><span class="p">)</span>
+    <span class="n">periods</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">freq</span><span class="p">))</span> <span class="k">for</span> <span class="n">freq</span> <span class="ow">in</span> <span class="n">freqs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]])</span>
+    <span class="n">power</span> <span class="o">=</span> <span class="n">power</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="c1"># take the max among frequencies having the same integer part</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">periods</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">periods</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">==</span> <span class="n">periods</span><span class="p">[</span><span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]:</span>
+            <span class="n">power</span><span class="p">[</span><span class="n">idx</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">power</span><span class="p">[</span><span class="n">idx</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">power</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="n">periods</span><span class="p">,</span> <span class="n">power</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">periods</span><span class="p">,</span> <span class="n">idx</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">power</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">power</span><span class="p">[</span><span class="n">periods</span> <span class="o">==</span> <span class="n">nperseg</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># disregard the artifact at nperseg</span>
+    <span class="n">min_i</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">periods</span><span class="p">[</span><span class="n">periods</span> <span class="o">&gt;=</span> <span class="n">max_period</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">max_i</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">periods</span><span class="p">[</span><span class="n">periods</span> <span class="o">&lt;</span> <span class="n">min_period</span><span class="p">])</span>
+    <span class="n">periods</span><span class="p">,</span> <span class="n">power</span> <span class="o">=</span> <span class="n">periods</span><span class="p">[</span><span class="n">min_i</span> <span class="p">:</span> <span class="o">-</span><span class="n">max_i</span><span class="p">],</span> <span class="n">power</span><span class="p">[</span><span class="n">min_i</span> <span class="p">:</span> <span class="o">-</span><span class="n">max_i</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">periods</span><span class="p">,</span> <span class="n">power</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Strijov, Motrenko, Neychev, Isachenko.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>

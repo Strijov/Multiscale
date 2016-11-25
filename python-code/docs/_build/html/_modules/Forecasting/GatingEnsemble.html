@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Forecasting.GatingEnsemble &#8212; MultiscaleForecasting 0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="MultiscaleForecasting 0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for Forecasting.GatingEnsemble</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Created on 06 October 2016. Author: Radoslav Neychev &quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">lasagne</span>
+<span class="kn">import</span> <span class="nn">theano</span>
+<span class="kn">import</span> <span class="nn">theano.tensor</span> <span class="k">as</span> <span class="nn">T</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">inspect</span> <span class="c1"># for argument inspection</span>
+
+
+<div class="viewcode-block" id="GatingEnsemble"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.GatingEnsemble.GatingEnsemble">[docs]</a><span class="k">class</span> <span class="nc">GatingEnsemble</span><span class="p">:</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimators</span><span class="p">,</span> <span class="n">estimator_loss</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">y</span><span class="p">,</span><span class="n">y_pred</span><span class="p">:((</span><span class="n">y</span> <span class="o">-</span> <span class="n">y_pred</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span> <span class="n">n_hidden_units</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimators</span> <span class="o">=</span> <span class="n">estimators</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimator_loss</span> <span class="o">=</span> <span class="n">estimator_loss</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_hidden_units</span> <span class="o">=</span> <span class="n">n_hidden_units</span> <span class="c1"># number of hidden units in gate1</span>
+    
+<div class="viewcode-block" id="GatingEnsemble.fit"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.GatingEnsemble.GatingEnsemble.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">n_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">compile_gf</span><span class="p">((</span><span class="kc">None</span><span class="p">,)</span><span class="o">+</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+        <span class="n">params_vec</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_iter</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refit_estimators</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i</span><span class="o">%</span><span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> iteration done&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refit_gf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">n_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span></div>
+
+        <span class="c1">#print &quot;i want a better implementation&quot;</span>
+        
+    
+<div class="viewcode-block" id="GatingEnsemble.refit_gf"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.GatingEnsemble.GatingEnsemble.refit_gf">[docs]</a>    <span class="k">def</span> <span class="nf">refit_gf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">n_iter</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="c1">#for x in [np.sum(self.estimator_loss(y,est.predict(X)), axis = 1)</span>
+        <span class="c1">#                        for est in self.estimators]:</span>
+        <span class="c1">#    print x.shape</span>
+        <span class="n">best_estimator_ix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator_loss</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">est</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)),</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+                                 <span class="k">for</span> <span class="n">est</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimators</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>
+        <span class="c1">#print best_estimator_ix.shape</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_iter</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fit_nn_step</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">best_estimator_ix</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="GatingEnsemble.refit_estimators"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.GatingEnsemble.GatingEnsemble.refit_estimators">[docs]</a>    <span class="k">def</span> <span class="nf">refit_estimators</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+        <span class="n">ix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">),</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>
+        <span class="n">X</span><span class="p">,</span><span class="n">y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">ix</span><span class="p">],</span><span class="n">y</span><span class="p">[</span><span class="n">ix</span><span class="p">]</span>
+        <span class="n">W</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_W</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">W</span> <span class="o">=</span> <span class="p">(</span><span class="n">W</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">W</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+        <span class="n">W</span> <span class="o">/=</span> <span class="n">W</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">W</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">W</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
+        
+
+        <span class="c1">#self.estimators = [est.fit(X,y,sample_weight=W[:,i]) for i,est in enumerate(self.estimators)] # fails if estimator has no &quot;sample_weight argument</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">est</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimators</span><span class="p">):</span>
+            <span class="n">expected_args</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargspec</span><span class="p">(</span><span class="n">est</span><span class="o">.</span><span class="n">fit</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;sample_weight&quot;</span> <span class="ow">in</span> <span class="n">expected_args</span><span class="o">.</span><span class="n">args</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">expected_args</span><span class="o">.</span><span class="n">keywords</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">estimators</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="n">W</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">estimators</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_est_params</span> <span class="o">=</span> <span class="p">[</span><span class="n">est</span><span class="o">.</span><span class="n">get_params</span><span class="p">()</span> <span class="k">for</span> <span class="n">est</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimators</span><span class="p">]</span></div>
+        
+<div class="viewcode-block" id="GatingEnsemble.build_gating_function"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.GatingEnsemble.GatingEnsemble.build_gating_function">[docs]</a>    <span class="k">def</span> <span class="nf">build_gating_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x_shape</span><span class="p">,</span><span class="n">n_gates</span><span class="p">):</span>
+        
+        <span class="c1">#Input layer (auxilary)</span>
+        <span class="n">input_layer</span> <span class="o">=</span> <span class="n">lasagne</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">InputLayer</span><span class="p">(</span><span class="n">shape</span> <span class="o">=</span> <span class="n">x_shape</span><span class="p">)</span>
+
+        <span class="c1">#fully connected layer, that takes input layer and applies 50 neurons to it.</span>
+        <span class="c1"># nonlinearity here is sigmoid as in logistic regression</span>
+        <span class="c1"># you can give a name to each layer (optional)</span>
+        <span class="n">dense_1</span> <span class="o">=</span> <span class="n">lasagne</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span><span class="n">input_layer</span><span class="p">,</span><span class="n">num_units</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_hidden_units</span><span class="p">,</span> <span class="n">W</span><span class="o">=</span><span class="n">lasagne</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="mf">0.01</span><span class="p">),</span>
+                                          <span class="n">nonlinearity</span> <span class="o">=</span> <span class="n">lasagne</span><span class="o">.</span><span class="n">nonlinearities</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">,</span>
+                                          <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;hidden_dense_layer&quot;</span><span class="p">)</span>
+
+        <span class="c1">#fully connected output layer that takes dense_1 as input and has 10 neurons (1 for each digit)</span>
+        <span class="c1">#We use softmax nonlinearity to make probabilities add up to 1</span>
+        <span class="n">dense_output</span> <span class="o">=</span> <span class="n">lasagne</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span><span class="n">dense_1</span><span class="p">,</span><span class="n">num_units</span> <span class="o">=</span> <span class="n">n_gates</span><span class="p">,</span>
+                                                <span class="n">nonlinearity</span> <span class="o">=</span> <span class="n">lasagne</span><span class="o">.</span><span class="n">nonlinearities</span><span class="o">.</span><span class="n">softmax</span><span class="p">,</span>
+                                                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;output&#39;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">dense_output</span></div>
+    
+<div class="viewcode-block" id="GatingEnsemble.compile_gf"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.GatingEnsemble.GatingEnsemble.compile_gf">[docs]</a>    <span class="k">def</span> <span class="nf">compile_gf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x_shape</span><span class="p">):</span>
+        
+        <span class="n">input_X</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">)</span>
+        
+        <span class="n">target_W_of_x</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">ivector</span><span class="p">(</span><span class="s2">&quot;W(x) target - probability that i-th estimator is best&quot;</span><span class="p">)</span>
+        
+        <span class="n">nn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_gating_function</span><span class="p">(</span><span class="n">x_shape</span><span class="p">,</span> <span class="n">n_gates</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimators</span><span class="p">))</span>
+        
+        <span class="n">w_predicted</span> <span class="o">=</span> <span class="n">lasagne</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="n">nn</span><span class="p">,</span><span class="n">inputs</span><span class="o">=</span><span class="n">input_X</span><span class="p">)</span>
+        
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">lasagne</span><span class="o">.</span><span class="n">objectives</span><span class="o">.</span><span class="n">categorical_crossentropy</span><span class="p">(</span><span class="n">w_predicted</span><span class="p">,</span><span class="n">target_W_of_x</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        
+        <span class="n">nn_params</span> <span class="o">=</span> <span class="n">lasagne</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">get_all_params</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nn</span><span class="p">,</span><span class="n">trainable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        <span class="n">updates</span> <span class="o">=</span> <span class="n">lasagne</span><span class="o">.</span><span class="n">updates</span><span class="o">.</span><span class="n">adamax</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span><span class="n">nn_params</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_nn_step</span> <span class="o">=</span> <span class="n">theano</span><span class="o">.</span><span class="n">function</span><span class="p">([</span><span class="n">input_X</span><span class="p">,</span><span class="n">target_W_of_x</span><span class="p">],</span><span class="n">loss</span><span class="p">,</span> <span class="n">updates</span><span class="o">=</span><span class="n">updates</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_W</span> <span class="o">=</span> <span class="n">theano</span><span class="o">.</span><span class="n">function</span><span class="p">([</span><span class="n">input_X</span><span class="p">],</span> <span class="n">w_predicted</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="GatingEnsemble.predict"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.GatingEnsemble.GatingEnsemble.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">X</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;nn&#39;</span><span class="p">)</span>
+        
+        
+        <span class="n">W</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_W</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        
+        <span class="c1">#(sample i, est k)</span>
+        <span class="n">base_predictions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">est</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="k">for</span> <span class="n">est</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimators</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1">#print base_predictions.shape</span>
+        <span class="c1">#print W.shape</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">W</span><span class="p">[:,:,</span><span class="kc">None</span><span class="p">]</span><span class="o">*</span><span class="n">base_predictions</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div></div>
+        
+    
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Strijov, Motrenko, Neychev, Isachenko.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>

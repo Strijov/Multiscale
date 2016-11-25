@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Features.nonparametric &#8212; MultiscaleForecasting 0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="MultiscaleForecasting 0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for Features.nonparametric</h1><div class="highlight"><pre>
+<span></span><span class="c1"># coding: utf-8</span>
+<span class="sd">&quot;&quot;&quot; Created on 23 November 2016. Author: Alexey Goncharov &quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<div class="viewcode-block" id="univariate_transformation"><a class="viewcode-back" href="../../Features.html#Features.nonparametric.univariate_transformation">[docs]</a><span class="k">def</span> <span class="nf">univariate_transformation</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="n">X1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">X2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="mf">1.5</span><span class="p">)</span>
+    <span class="n">X3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">X4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">X5</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">X1</span><span class="p">,</span><span class="n">X2</span><span class="p">,</span><span class="n">X3</span><span class="p">,</span><span class="n">X4</span><span class="p">,</span><span class="n">X5</span><span class="p">)))</span></div>
+
+<div class="viewcode-block" id="bivariate_transformation"><a class="viewcode-back" href="../../Features.html#Features.nonparametric.bivariate_transformation">[docs]</a><span class="k">def</span> <span class="nf">bivariate_transformation</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+    <span class="n">X1</span> <span class="o">=</span> <span class="n">X</span><span class="o">+</span><span class="n">y</span>
+    <span class="n">X2</span> <span class="o">=</span> <span class="n">X</span><span class="o">-</span><span class="n">y</span>
+    <span class="n">X3</span> <span class="o">=</span> <span class="n">X</span><span class="o">*</span><span class="n">y</span>
+    <span class="n">X4</span> <span class="o">=</span> <span class="n">X</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">X5</span> <span class="o">=</span> <span class="n">X</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+    <span class="n">X6</span> <span class="o">=</span> <span class="n">X</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">X1</span><span class="p">,</span><span class="n">X2</span><span class="p">,</span><span class="n">X3</span><span class="p">,</span><span class="n">X4</span><span class="p">,</span><span class="n">X5</span><span class="p">,</span><span class="n">X6</span><span class="p">)))</span></div>
+
+<div class="viewcode-block" id="simple_statistics"><a class="viewcode-back" href="../../Features.html#Features.nonparametric.simple_statistics">[docs]</a><span class="k">def</span> <span class="nf">simple_statistics</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">quantile_number</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
+    <span class="n">X1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">X2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">X3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">X4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">X5</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="mf">100.</span><span class="o">/</span><span class="n">quantile_number</span><span class="p">))),</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">X6</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">X</span><span class="o">-</span><span class="n">X1</span><span class="p">),</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">X1</span><span class="p">,</span><span class="n">X2</span><span class="p">,</span><span class="n">X3</span><span class="p">,</span><span class="n">X4</span><span class="p">,</span><span class="n">X5</span><span class="p">,</span> <span class="n">X6</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="make_len_even"><a class="viewcode-back" href="../../Features.html#Features.nonparametric.make_len_even">[docs]</a><span class="k">def</span> <span class="nf">make_len_even</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span></div>
+
+
+<div class="viewcode-block" id="haar_iteration_avg"><a class="viewcode-back" href="../../Features.html#Features.nonparametric.haar_iteration_avg">[docs]</a><span class="k">def</span> <span class="nf">haar_iteration_avg</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">make_len_even</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">haar_avg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">haar_avg</span><span class="p">[:,</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[:,</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">i</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">Y</span><span class="p">[:,</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">haar_avg</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="haar_iteration_dif"><a class="viewcode-back" href="../../Features.html#Features.nonparametric.haar_iteration_dif">[docs]</a><span class="k">def</span> <span class="nf">haar_iteration_dif</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">make_len_even</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">haar_dif</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">haar_dif</span><span class="p">[:,</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[:,</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">i</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">Y</span><span class="p">[:,</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">haar_dif</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="haar_transformations"><a class="viewcode-back" href="../../Features.html#Features.nonparametric.haar_transformations">[docs]</a><span class="k">def</span> <span class="nf">haar_transformations</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="n">X_iteration_avg</span> <span class="o">=</span> <span class="n">haar_iteration_avg</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">X_iteration_dif</span> <span class="o">=</span> <span class="n">haar_iteration_dif</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">X_haar_avg</span> <span class="o">=</span> <span class="n">X_iteration_avg</span>
+    <span class="n">X_haar_dif</span> <span class="o">=</span> <span class="n">X_iteration_dif</span>
+    <span class="k">while</span> <span class="mi">1</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">X_iteration_avg</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">X_iteration_avg</span> <span class="o">=</span> <span class="n">haar_iteration_avg</span><span class="p">(</span><span class="n">X_iteration_avg</span><span class="p">)</span>
+            <span class="n">X_iteration_dif</span> <span class="o">=</span> <span class="n">haar_iteration_dif</span><span class="p">(</span><span class="n">X_iteration_dif</span><span class="p">)</span>
+            <span class="n">X_haar_avg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">X_haar_avg</span><span class="p">,</span> <span class="n">haar_iteration_avg</span><span class="p">(</span><span class="n">X_haar_avg</span><span class="p">)))</span>
+            <span class="n">X_haar_dif</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">X_haar_dif</span><span class="p">,</span> <span class="n">haar_iteration_dif</span><span class="p">(</span><span class="n">X_haar_dif</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">break</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">X_haar_avg</span><span class="p">,</span> <span class="n">X_haar_dif</span><span class="p">)))</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Strijov, Motrenko, Neychev, Isachenko.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>

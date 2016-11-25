@@ -48,37 +48,95 @@
             
   <h1>Source code for LoadAndSaveData.raw_time_series</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="n">TOL</span> <span class="o">=</span> <span class="nb">pow</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">)</span>
 
 <div class="viewcode-block" id="TsStruct"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.TsStruct">[docs]</a><span class="k">class</span> <span class="nc">TsStruct</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot; This structure stores input data. The fields are:</span>
 
 <span class="sd">    :param data: input time series, each is pandas.Series</span>
 <span class="sd">    :type data: list</span>
-<span class="sd">    :param request: Time interval requested for forecast</span>
-<span class="sd">    :type request: int\ time delta ? #FIXIT</span>
-<span class="sd">    :param history: Time interval,  to define number of historical points.</span>
-<span class="sd">    :type history: int\ time delta ? #FIXIT</span>
+<span class="sd">    :param request: Number of one-step intervals requested for forecast</span>
+<span class="sd">    :type request: int</span>
+<span class="sd">    :param history: Number of one-step intervals to forecast.</span>
+<span class="sd">    :type history: int</span>
 <span class="sd">    :param name: Dataset name</span>
 <span class="sd">    :type name: string</span>
 <span class="sd">    :param readme: Dataset info</span>
 <span class="sd">    :type readme: string</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">readme</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">request</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">history</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">readme</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">allow_empty</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">as_floats</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        
+        <span class="c1"># Check inputs:</span>
+        <span class="c1"># Some tests might need to process empty data without errors</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">allow_empty</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;TsStruct.__init__: Data is an empty list&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">ts</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;TsStruct.__init__: ts </span><span class="si">{}</span><span class="s2"> is empty&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">request</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">request</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;request should be int or float; got </span><span class="si">{}</span><span class="s2">, type </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">request</span><span class="p">)))</span>
+
+        <span class="k">if</span> <span class="n">history</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;history should be int or float; got </span><span class="si">{}</span><span class="s2">, type </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">history</span><span class="p">)))</span>
+                
+        <span class="bp">self</span><span class="o">.</span><span class="n">as_floats</span> <span class="o">=</span> <span class="n">as_floats</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_type</span> <span class="o">=</span> <span class="n">data_index_type</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">as_floats</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts_frequencies</span><span class="p">(),</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">one_step</span> <span class="o">=</span> <span class="n">assign_one_step_requests</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_floats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_type</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">request</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">history</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">readme</span> <span class="o">=</span> <span class="n">readme</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_frequencies</span><span class="p">()</span>
+        
+<div class="viewcode-block" id="TsStruct.to_floats"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.TsStruct.to_floats">[docs]</a>    <span class="k">def</span> <span class="nf">to_floats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forces TsStruct instance to as_floats format</span>
 
-        <span class="k">if</span> <span class="n">request</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">assign_one_step_requests</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">)</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_floats</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">request</span><span class="p">,</span> <span class="n">history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;request should be int or float; got </span><span class="si">{}</span><span class="s2">, type </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">request</span><span class="p">)))</span>
 
+        <span class="k">if</span> <span class="n">history</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;history should be int or float; got </span><span class="si">{}</span><span class="s2">, type </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">history</span><span class="p">)))</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">as_floats</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_type</span> <span class="o">=</span> <span class="n">data_index_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_floats</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts_frequencies</span><span class="p">(),</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">one_step</span> <span class="o">=</span> <span class="n">assign_one_step_requests</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_floats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_type</span><span class="p">)</span></div>
+        
 
 <div class="viewcode-block" id="TsStruct.ts_frequencies"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.TsStruct.ts_frequencies">[docs]</a>    <span class="k">def</span> <span class="nf">ts_frequencies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">freqs</span> <span class="o">=</span> <span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">))</span> <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">]</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: time intervals for each time series; intervals are floats</span>
+<span class="sd">        :rtype: list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_floats</span><span class="p">:</span>  <span class="c1">#self.index_type in [&quot;ns&quot;, &quot;s&quot;, &quot;h&quot;]:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">))</span> <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">]</span>
+
+        <span class="n">freqs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pd</span><span class="o">.</span><span class="n">tslib</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_type</span><span class="o">==</span><span class="s2">&quot;int&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Unexpected type of time indices; expected pd.tslib.Timestamp, got </span><span class="si">{}</span><span class="s2">. &quot;</span>
+                            <span class="s2">&quot;Index_type is </span><span class="si">{}</span><span class="s2">&quot;</span>
+                            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_type</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="n">index</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pd_time_stamps_to_floats</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_type</span><span class="p">)</span>
+            <span class="n">freqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">index</span><span class="p">)))</span>
 
         <span class="k">return</span> <span class="n">freqs</span></div>
 
@@ -158,15 +216,21 @@
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">max_history</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="n">max_history</span><span class="p">)</span>
-            <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
 
-        <span class="n">common_T</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
-        <span class="n">common_T</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">common_T</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
+        <span class="n">common_T</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
-            <span class="n">common_T</span> <span class="o">=</span> <span class="n">common_T</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">))</span>
+            <span class="n">index_plus_1</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
+            <span class="n">index_plus_1</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
+            <span class="c1">#print(max(index_plus_1) - max(common_T))</span>
+            <span class="n">common_T</span> <span class="o">=</span> <span class="n">common_T</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">index_plus_1</span><span class="p">)</span>
+
             <span class="c1">#ending_T = ending_T.intersection(set(ts.index[np.logical_and(ts.index &lt;= min_end_T, ts.index &gt;= min_end_T - self.request)]))</span>
             <span class="c1">#self.data[i] = ts.iloc[np.logical_and(ts.index &lt; min_end_T + self.request, ts.index &gt;= max_start_T)]</span>
             <span class="c1">#self.data[i] = ts.iloc[ts.index &lt; min_end_T + self.request]</span>
+
+
 
         <span class="n">min_end_T</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">common_T</span><span class="p">)</span>
         <span class="n">max_start_T</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">common_T</span><span class="p">)</span>
@@ -210,22 +274,122 @@
             <span class="n">res</span> <span class="o">=</span> <span class="s2">&quot;{</span><span class="se">\\</span><span class="s2">tiny </span><span class="se">\n</span><span class="s2"> &quot;</span> <span class="o">+</span> <span class="n">res</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> }</span><span class="se">\n</span><span class="s2"> </span><span class="se">\\</span><span class="s2">bigskip </span><span class="se">\n</span><span class="s2">&quot;</span>
 
         <span class="k">return</span> <span class="n">res</span></div></div>
+    
+<div class="viewcode-block" id="data_index_type"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.data_index_type">[docs]</a><span class="k">def</span> <span class="nf">data_index_type</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">as_float</span><span class="p">):</span>
+    <span class="c1"># should be handled with care, pd.Timedelta tends to lose nanoseconds for som reason</span>
+    <span class="n">numeric_type_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;int&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;ns&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;s&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
+    <span class="n">index_type</span><span class="p">,</span> <span class="n">numeric_type</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">index_type</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">infer_frequency</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">))</span>
+        <span class="n">numeric_type</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">numeric_type_dict</span><span class="p">[</span><span class="n">index_type</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
 
-<div class="viewcode-block" id="assign_one_step_requests"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.assign_one_step_requests">[docs]</a><span class="k">def</span> <span class="nf">assign_one_step_requests</span><span class="p">(</span><span class="n">intervals</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s2">&quot;int&quot;</span> <span class="ow">in</span> <span class="n">index_type</span> <span class="ow">and</span> <span class="nb">sum</span><span class="p">(</span><span class="n">numeric_type</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Data contains time series with both numeric and pd.Timestamp time indices&quot;</span><span class="p">)</span>
+
+    <span class="n">preferred_type</span> <span class="o">=</span> <span class="n">index_type</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">numeric_type</span><span class="p">)]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">as_float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">preferred_type</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="n">ts_index</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pd_time_stamps_to_floats</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">preferred_type</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">ts_index</span>
+
+    <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">preferred_type</span></div>
+        
+<div class="viewcode-block" id="infer_frequency"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.infer_frequency">[docs]</a><span class="k">def</span> <span class="nf">infer_frequency</span><span class="p">(</span><span class="n">ts_index</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts_index</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">((</span><span class="s2">&quot;ts.index is too short!  len(ts.index) = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ts_index</span><span class="p">))))</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ts_index</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pd</span><span class="o">.</span><span class="n">tslib</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">):</span>  <span class="c1"># isinstance(ts.index, pd.DatetimeIndex):  #</span>
+        <span class="k">return</span> <span class="s2">&quot;int&quot;</span>
+    
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">ts_index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ts_index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">delta</span><span class="o">.</span><span class="n">_ms</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">delta</span><span class="o">.</span><span class="n">_ns</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">frequency</span> <span class="o">=</span> <span class="s1">&#39;ns&#39;</span>
+    <span class="k">elif</span> <span class="n">delta</span><span class="o">.</span><span class="n">_s</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">frequency</span> <span class="o">=</span> <span class="s1">&#39;s&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">frequency</span> <span class="o">=</span> <span class="s1">&#39;h&#39;</span>
+        
+    <span class="k">return</span> <span class="n">frequency</span></div>
+    
+<div class="viewcode-block" id="pd_time_stamps_to_floats"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.pd_time_stamps_to_floats">[docs]</a><span class="k">def</span> <span class="nf">pd_time_stamps_to_floats</span><span class="p">(</span><span class="n">time_stamps_array</span><span class="p">,</span> <span class="n">frequency</span><span class="p">,</span> <span class="n">from_zero</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_stamps_array</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ts.index is too short!&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_stamps_array</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pd</span><span class="o">.</span><span class="n">tslib</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">):</span>  <span class="c1"># isinstance(ts.index, pd.DatetimeIndex):  #</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">time_stamps_array</span><span class="p">),</span> <span class="n">frequency</span>
+
+    <span class="n">time_stamps_array</span> <span class="o">=</span> <span class="p">(</span><span class="n">time_stamps_array</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">()</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="s1">&#39;1970-01-01T00:00:00Z&#39;</span><span class="p">))</span> \
+                        <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">timedelta64</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">frequency</span><span class="p">)</span>
+    <span class="n">time_stamps_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">time_stamps_array</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">from_zero</span><span class="p">:</span>
+        <span class="n">time_stamps_array</span> <span class="o">=</span> <span class="n">time_stamps_array</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">time_stamps_array</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">time_stamps_array</span><span class="p">,</span> <span class="n">frequency</span></div>
+
+<div class="viewcode-block" id="general_time_delta_to_float"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.general_time_delta_to_float">[docs]</a><span class="k">def</span> <span class="nf">general_time_delta_to_float</span><span class="p">(</span><span class="n">td</span><span class="p">,</span> <span class="n">freq</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">freq</span> <span class="o">==</span> <span class="s2">&quot;int&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">td</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">tslib</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span>
+        <span class="k">return</span> <span class="n">td</span>
+
+    <span class="n">total</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">freq</span> <span class="o">==</span> <span class="s2">&quot;ns&quot;</span><span class="p">:</span>
+        <span class="n">total</span> <span class="o">*=</span> <span class="mi">1</span><span class="n">e9</span>
+    <span class="k">elif</span> <span class="n">freq</span> <span class="o">==</span> <span class="s2">&quot;s&quot;</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">elif</span> <span class="n">freq</span> <span class="o">==</span> <span class="s2">&quot;h&quot;</span><span class="p">:</span>
+        <span class="n">total</span> <span class="o">/=</span> <span class="mf">3600.00</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Unsupported frequency type, should be &#39;ns, s, h or int, got </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">freq</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span>
+
+    <span class="k">return</span> <span class="n">total</span></div>
+
+
+<div class="viewcode-block" id="multiply_pd_time_delta"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.multiply_pd_time_delta">[docs]</a><span class="k">def</span> <span class="nf">multiply_pd_time_delta</span><span class="p">(</span><span class="n">time_delta</span><span class="p">,</span> <span class="n">multipl</span><span class="p">):</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">time_delta</span><span class="o">.</span><span class="n">days</span> <span class="o">*</span> <span class="n">multipl</span><span class="p">,</span>
+                       <span class="c1"># hours=time_delta.hours * multipl,</span>
+                       <span class="n">seconds</span><span class="o">=</span><span class="n">time_delta</span><span class="o">.</span><span class="n">seconds</span> <span class="o">*</span> <span class="n">multipl</span><span class="p">,</span>
+                       <span class="n">microseconds</span><span class="o">=</span><span class="n">time_delta</span><span class="o">.</span><span class="n">microseconds</span> <span class="o">*</span> <span class="n">multipl</span><span class="p">,</span>
+                       <span class="n">nanoseconds</span><span class="o">=</span><span class="n">time_delta</span><span class="o">.</span><span class="n">nanoseconds</span> <span class="o">*</span> <span class="n">multipl</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="assign_one_step_requests"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.assign_one_step_requests">[docs]</a><span class="k">def</span> <span class="nf">assign_one_step_requests</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">as_floats</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">index_type</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Assigns request as the lowest common multiple of one step requests for each time series</span>
 
 <span class="sd">    :param intervals: time deltas in unix format</span>
-<span class="sd">    :type intervals: list</span>
+<span class="sd">    :type intervals: ndarray</span>
+<span class="sd">    :param as_floats: if True, return request as floats, otherwise - a pd.Timedelta</span>
+<span class="sd">    :type as_floats: bool</span>
+<span class="sd">    :param index_type: defines frequency of the timedelta request (if as_floats is false)</span>
+<span class="sd">    :type index_type: str</span>
 <span class="sd">    :return: common request</span>
-<span class="sd">    :rtype: time delta, unix format</span>
+<span class="sd">    :rtype: pd.tslib.Timedelta, float</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">request</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">min_interval</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">intervals</span><span class="p">)</span>
+    <span class="n">intervals</span> <span class="o">=</span> <span class="n">intervals</span> <span class="o">/</span> <span class="n">min_interval</span>
+
+    <span class="c1"># Define the length of the least common interval</span>
+    <span class="n">request</span> <span class="o">=</span> <span class="mf">1.0</span>
     <span class="k">for</span> <span class="n">intv</span> <span class="ow">in</span> <span class="n">intervals</span><span class="p">:</span>
         <span class="n">request</span> <span class="o">=</span> <span class="n">lcm</span><span class="p">(</span><span class="n">intv</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">request</span></div>
+    <span class="n">request</span> <span class="o">*=</span> <span class="n">min_interval</span>
+
+    <span class="k">if</span> <span class="n">as_floats</span> <span class="ow">or</span> <span class="n">index_type</span><span class="o">==</span><span class="s2">&quot;int&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">request</span>
+
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_timedelta</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">index_type</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="lcm"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.lcm">[docs]</a><span class="k">def</span> <span class="nf">lcm</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
@@ -234,7 +398,7 @@
 
 <div class="viewcode-block" id="gcd"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.gcd">[docs]</a><span class="k">def</span> <span class="nf">gcd</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Return greatest common divisor using Euclid&#39;s Algorithm.&quot;&quot;&quot;</span>
-    <span class="k">while</span> <span class="n">b</span><span class="p">:</span>
+    <span class="k">while</span> <span class="n">b</span> <span class="o">&gt;</span> <span class="n">TOL</span><span class="p">:</span>
         <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">%</span> <span class="n">b</span>
     <span class="k">return</span> <span class="n">a</span></div>
 </pre></div>

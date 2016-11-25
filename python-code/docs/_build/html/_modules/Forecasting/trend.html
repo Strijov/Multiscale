@@ -1,0 +1,271 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Forecasting.trend &#8212; MultiscaleForecasting 0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="MultiscaleForecasting 0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for Forecasting.trend</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;Trend estimation for timeseries.</span>
+
+<span class="sd">Estimate and remove trend in a timeseries.</span>
+
+<span class="sd">In this package, trend removal is in service of isolating and</span>
+<span class="sd">estimating periodic (non-trend) variation. &quot;trend&quot; is in the sense of</span>
+<span class="sd">Cleveland&#39;s STL decomposition -- a lowpass smoothing of</span>
+<span class="sd">the data that, when removed from the original series, preserves</span>
+<span class="sd">original seasonal variation.  Detrending is accomplishd by a coarse</span>
+<span class="sd">fitted spline, mean or median filters, or a fitted line.</span>
+
+<span class="sd">Input samples are assumed evenly-spaced from an anomaly-free</span>
+<span class="sd">continuous-time signal.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">stats</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="k">import</span> <span class="n">LSQUnivariateSpline</span>
+<span class="kn">from</span> <span class="nn">periodogram</span> <span class="k">import</span> <span class="n">periodogram_peaks</span>
+
+<div class="viewcode-block" id="fit_trend"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.trend.fit_trend">[docs]</a><span class="k">def</span> <span class="nf">fit_trend</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;spline&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ptimes</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Fit a trend for a possibly noisy, periodic timeseries.</span>
+
+<span class="sd">    Trend may be modeled by a line, cubic spline, or mean or median</span>
+<span class="sd">    filtered series.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : ndarray</span>
+<span class="sd">        list of observed values</span>
+<span class="sd">    kind : string (&quot;mean&quot;, &quot;median&quot;, &quot;line&quot;, &quot;spline&quot;, None)</span>
+<span class="sd">        if mean, apply a period-based mean filter</span>
+<span class="sd">        if median, apply a period-based median filter</span>
+<span class="sd">        if line, fit a slope to median-filtered data.</span>
+<span class="sd">        if spline, fit a piecewise cubic spline to the data</span>
+<span class="sd">        if None, return zeros</span>
+<span class="sd">    period : number</span>
+<span class="sd">        seasonal periodicity, for filtering the trend.</span>
+<span class="sd">        if None, will be estimated.</span>
+<span class="sd">    ptimes : number</span>
+<span class="sd">        multiple of period to use as smoothing window size</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    trend : ndarray</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">period</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">period</span> <span class="o">=</span> <span class="n">guess_trended_period</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">window</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">period</span> <span class="o">*</span> <span class="n">ptimes</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span> <span class="c1"># odd window</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;median&quot;</span><span class="p">:</span>
+        <span class="n">filtered</span> <span class="o">=</span> <span class="n">aglet</span><span class="p">(</span><span class="n">median_filter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">window</span><span class="p">),</span> <span class="n">window</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;mean&quot;</span><span class="p">:</span>
+        <span class="n">filtered</span> <span class="o">=</span> <span class="n">aglet</span><span class="p">(</span><span class="n">mean_filter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">window</span><span class="p">),</span> <span class="n">window</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;line&quot;</span><span class="p">:</span>
+        <span class="n">filtered</span> <span class="o">=</span> <span class="n">line_filter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">window</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;spline&quot;</span><span class="p">:</span>
+        <span class="n">nsegs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">//</span> <span class="p">(</span><span class="n">window</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">filtered</span> <span class="o">=</span> <span class="n">aglet</span><span class="p">(</span><span class="n">spline_filter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">nsegs</span><span class="p">),</span> <span class="n">window</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;adjust_trend: unknown filter type </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">kind</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">filtered</span></div>
+
+<div class="viewcode-block" id="guess_trended_period"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.trend.guess_trended_period">[docs]</a><span class="k">def</span> <span class="nf">guess_trended_period</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;return a rough estimate of the major period of trendful data.</span>
+
+<span class="sd">    Periodogram wants detrended data to score periods reliably. To do</span>
+<span class="sd">    that, apply a broad median filter based on a reasonable maximum</span>
+<span class="sd">    period.  Return a weighted average of the plausible periodicities.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : ndarray</span>
+<span class="sd">        list of observed values, evenly spaced in time.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    period : int</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">max_period</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">//</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>
+    <span class="n">broad</span> <span class="o">=</span> <span class="n">fit_trend</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;median&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="n">max_period</span><span class="p">)</span>
+    <span class="n">peaks</span> <span class="o">=</span> <span class="n">periodogram_peaks</span><span class="p">(</span><span class="n">data</span> <span class="o">-</span> <span class="n">broad</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">peaks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">max_period</span>
+    <span class="n">periods</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">peaks</span><span class="p">)</span>
+    <span class="n">period</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">periods</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">scores</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">period</span></div>
+
+<div class="viewcode-block" id="aglet"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.trend.aglet">[docs]</a><span class="k">def</span> <span class="nf">aglet</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;straigten the ends of a windowed sequence.</span>
+
+<span class="sd">    Replace the window/2 samples at each end of the sequence with</span>
+<span class="sd">    lines fit to the full window at each end.  This boundary treatment</span>
+<span class="sd">    for windowed smoothers is better behaved for detrending than</span>
+<span class="sd">    decreasing window sizes at the ends.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    src : ndarray</span>
+<span class="sd">        list of observed values</span>
+<span class="sd">    window : int</span>
+<span class="sd">        odd integer window size (as would be provided to a windowed smoother)</span>
+<span class="sd">    dst : ndarray</span>
+<span class="sd">        if provided, write aglets into the boundaries of this array.</span>
+<span class="sd">        if dst=src, overwrite ends of src in place. If None, allocate result.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dst : ndarray</span>
+<span class="sd">        array composed of src&#39;s infield values with aglet ends.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">dst</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dst</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+    <span class="n">half</span> <span class="o">=</span> <span class="n">window</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">leftslope</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">theilslopes</span><span class="p">(</span><span class="n">src</span><span class="p">[:</span> <span class="n">window</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">rightslope</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">theilslopes</span><span class="p">(</span><span class="n">src</span><span class="p">[</span><span class="o">-</span><span class="n">window</span> <span class="p">:])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">dst</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">half</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">half</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">leftslope</span> <span class="o">+</span> <span class="n">src</span><span class="p">[</span><span class="n">half</span><span class="p">]</span>
+    <span class="n">dst</span><span class="p">[</span><span class="o">-</span><span class="n">half</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">half</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">rightslope</span> <span class="o">+</span> <span class="n">src</span><span class="p">[</span><span class="o">-</span><span class="n">half</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">dst</span></div>
+
+<div class="viewcode-block" id="median_filter"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.trend.median_filter">[docs]</a><span class="k">def</span> <span class="nf">median_filter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">window</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Apply a median filter to the data.</span>
+
+<span class="sd">    This implementation leaves partial windows at the ends untouched</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">filtered</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">window</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="n">window</span> <span class="o">//</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">filtered</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span> <span class="o">-</span> <span class="n">window</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">window</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">filtered</span></div>
+
+<div class="viewcode-block" id="mean_filter"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.trend.mean_filter">[docs]</a><span class="k">def</span> <span class="nf">mean_filter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">window</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Apply a windowed mean filter to the data.</span>
+
+<span class="sd">    This implementation leaves partial windows at the ends untouched</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">filtered</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">cum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">data</span><span class="p">)))</span>
+    <span class="n">half</span> <span class="o">=</span> <span class="n">window</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">filtered</span><span class="p">[</span><span class="n">half</span> <span class="p">:</span> <span class="o">-</span><span class="n">half</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">cum</span><span class="p">[</span><span class="n">window</span><span class="p">:]</span> <span class="o">-</span> <span class="n">cum</span><span class="p">[:</span><span class="o">-</span><span class="n">window</span><span class="p">])</span> <span class="o">/</span> <span class="n">window</span>
+    <span class="k">return</span> <span class="n">filtered</span></div>
+
+<div class="viewcode-block" id="line_filter"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.trend.line_filter">[docs]</a><span class="k">def</span> <span class="nf">line_filter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">window</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;fit a line to the data, after filtering&quot;&quot;&quot;</span>
+    <span class="c1"># knock down seasonal variation with a median filter first</span>
+    <span class="n">half</span> <span class="o">=</span> <span class="n">window</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">coarse</span> <span class="o">=</span> <span class="n">median_filter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">window</span><span class="p">)[</span><span class="n">half</span> <span class="p">:</span> <span class="o">-</span><span class="n">half</span><span class="p">]</span> <span class="c1"># discard crazy ends</span>
+    <span class="n">slope</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">theilslopes</span><span class="p">(</span><span class="n">coarse</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">lower</span> <span class="o">&lt;=</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">upper</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="n">filtered</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">intercept</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">slope</span>
+        <span class="n">filtered</span> <span class="o">=</span> <span class="n">slope</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span> <span class="o">+</span> <span class="n">intercept</span>
+    <span class="k">return</span> <span class="n">filtered</span></div>
+
+<div class="viewcode-block" id="spline_filter"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.trend.spline_filter">[docs]</a><span class="k">def</span> <span class="nf">spline_filter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">nsegs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Detrend a possibly periodic timeseries by fitting a coarse piecewise</span>
+<span class="sd">       smooth cubic spline</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : ndarray</span>
+<span class="sd">        list of observed values</span>
+<span class="sd">    nsegs : number</span>
+<span class="sd">        number of spline segments</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    filtered : ndarray</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+    <span class="n">nknots</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">nsegs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">knots</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">nknots</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">LSQUnivariateSpline</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">knots</span><span class="p">)(</span><span class="n">index</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Strijov, Motrenko, Neychev, Isachenko.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>

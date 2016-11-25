@@ -1,0 +1,305 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>my_plots &#8212; MultiscaleForecasting 0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="MultiscaleForecasting 0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for my_plots</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+
+
+
+
+<div class="viewcode-block" id="formatted_plot"><a class="viewcode-back" href="../my_plots.html#my_plots.formatted_plot">[docs]</a><span class="k">def</span> <span class="nf">formatted_plot</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plt_ref</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">ls</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ls</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span>
+    <span class="k">if</span> <span class="n">legend</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">legend</span>
+
+    <span class="c1"># if not plt_ref is None:</span>
+    <span class="c1">#     plt = plt_ref</span>
+
+    <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="n">ls</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="n">ls</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">title</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">legend</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">,</span> <span class="n">prop</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="mi">16</span><span class="p">})</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">xlabel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ylabel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">plt</span></div>
+
+
+
+<div class="viewcode-block" id="plot_multiple_ts_sharedx"><a class="viewcode-back" href="../my_plots.html#my_plots.plot_multiple_ts_sharedx">[docs]</a><span class="k">def</span> <span class="nf">plot_multiple_ts_sharedx</span><span class="p">(</span><span class="n">ts_list</span><span class="p">):</span>
+
+    <span class="n">f</span><span class="p">,</span> <span class="n">axarr</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ts_list</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ts_list</span><span class="p">):</span>
+        <span class="n">formatted_plot</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">plt_ref</span><span class="o">=</span><span class="n">axarr</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="plot_multiple_ts"><a class="viewcode-back" href="../my_plots.html#my_plots.plot_multiple_ts">[docs]</a><span class="k">def</span> <span class="nf">plot_multiple_ts</span><span class="p">(</span><span class="n">ts_list</span><span class="p">,</span> <span class="n">shared_x</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="n">shared_x</span><span class="p">:</span>
+        <span class="n">plot_multiple_ts_sharedx</span><span class="p">(</span><span class="n">ts_list</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ts_list</span><span class="p">):</span>
+        <span class="n">plt</span> <span class="o">=</span> <span class="n">formatted_plot</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="plot_forecast"><a class="viewcode-back" href="../my_plots.html#my_plots.plot_forecast">[docs]</a><span class="k">def</span> <span class="nf">plot_forecast</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">forecasts</span><span class="p">,</span> <span class="n">idx_ts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">idx_frc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">idx_frc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">idx_frc</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">s</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">idx_ts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">idx_ts</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">s</span><span class="p">))</span>
+
+
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+    <span class="n">idx_time</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">s</span><span class="p">))</span>
+    <span class="n">idx_frcb</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="ow">in</span> <span class="n">idx_frc</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">idx_time</span><span class="p">]</span>
+    <span class="n">idx_tsb</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="ow">in</span> <span class="n">idx_ts</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">idx_time</span><span class="p">]</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">idx_tsb</span><span class="p">,</span> <span class="n">idx_time</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">ts</span><span class="o">.</span><span class="n">s</span><span class="p">[</span><span class="n">idx_ts</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Time series&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">idx_frcb</span><span class="p">,</span> <span class="n">idx_time</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">idx_frcb</span><span class="p">,</span> <span class="n">forecasts</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Forecast&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">idx_time</span><span class="p">[</span><span class="n">idx_frc</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">,</span> <span class="n">prop</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="mi">16</span><span class="p">})</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Forecasting results&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">filename</span></div>
+
+
+<div class="viewcode-block" id="imagesc"><a class="viewcode-back" href="../my_plots.html#my_plots.imagesc">[docs]</a><span class="k">def</span> <span class="nf">imagesc</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">xticks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">yticks</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">xticks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">xticks</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">yticks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">yticks</span><span class="p">)</span>
+
+
+    <span class="k">return</span> <span class="n">plt</span></div>
+
+
+<div class="viewcode-block" id="input_latex_headers"><a class="viewcode-back" href="../my_plots.html#my_plots.input_latex_headers">[docs]</a><span class="k">def</span> <span class="nf">input_latex_headers</span><span class="p">():</span>
+    <span class="n">latex_header</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">documentclass[12pt]</span><span class="si">{article}</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> \
+                   <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">extrafloats</span><span class="si">{100}</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> \
+                   <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">usepackage</span><span class="si">{a4wide}</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> \
+                   <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">usepackage</span><span class="si">{booktabs}</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> \
+                   <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">usepackage{multicol, multirow}</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> \
+                   <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">usepackage[cp1251]</span><span class="si">{inputenc}</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> \
+                   <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">usepackage[russian]</span><span class="si">{babel}</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> \
+                   <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">usepackage{amsmath, amsfonts, amssymb, amsthm, amscd}</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> \
+                   <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">usepackage{graphicx, epsfig, subfig, epstopdf}</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> \
+                   <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">usepackage</span><span class="si">{longtable}</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> \
+                   <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">graphicspath{ {../fig/} {../} {fig/} {decompose/}}</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> \
+                   <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">begin</span><span class="si">{document}</span><span class="se">\n\n</span><span class="s1">&#39;</span>
+    <span class="n">latex_end</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">end</span><span class="si">{document}</span><span class="s2">&quot;</span>
+
+    <span class="k">return</span> <span class="n">latex_header</span><span class="p">,</span> <span class="n">latex_end</span></div>
+
+<div class="viewcode-block" id="save_to_latex"><a class="viewcode-back" href="../my_plots.html#my_plots.save_to_latex">[docs]</a><span class="k">def</span> <span class="nf">save_to_latex</span><span class="p">(</span><span class="n">df_list</span><span class="p">,</span> <span class="n">df_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">folder</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">file_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;test_latex_output&quot;</span>
+    <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">+</span> <span class="s2">&quot;.tex&quot;</span><span class="p">)</span>
+
+    <span class="n">latex_header</span><span class="p">,</span> <span class="n">latex_end</span> <span class="o">=</span> <span class="n">input_latex_headers</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">df_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">df_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Table&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df_list</span><span class="p">))]</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="s2">&quot;w+&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">latex_header</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">df</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">df_list</span><span class="p">):</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">+</span> <span class="n">check_text_for_latex</span><span class="p">(</span><span class="n">df_names</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>  <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">\ </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">to_latex</span><span class="p">())</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">latex_end</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="check_text_for_latex"><a class="viewcode-back" href="../my_plots.html#my_plots.check_text_for_latex">[docs]</a><span class="k">def</span> <span class="nf">check_text_for_latex</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+
+    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot;\_&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">text</span></div>
+
+
+<div class="viewcode-block" id="plot_seasonal_trend_decomposition"><a class="viewcode-back" href="../my_plots.html#my_plots.plot_seasonal_trend_decomposition">[docs]</a><span class="k">def</span> <span class="nf">plot_seasonal_trend_decomposition</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">trend</span><span class="p">,</span> <span class="n">seasonal</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">residual</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="s2">&quot;fig&quot;</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">seasonal</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">seasonal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">residual</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">residual</span> <span class="o">=</span> <span class="n">ts</span> <span class="o">-</span> <span class="n">trend</span> <span class="o">-</span> <span class="n">seasonal</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">411</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Original&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">412</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">trend</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Trend&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">413</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">seasonal</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Seasonality&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">414</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">residual</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Residuals&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s2">&quot;decomposition.png&quot;</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="print_to_latex"><a class="viewcode-back" href="../my_plots.html#my_plots.print_to_latex">[docs]</a><span class="k">def</span> <span class="nf">print_to_latex</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="n">latex_header</span><span class="p">,</span> <span class="n">latex_end</span> <span class="o">=</span> <span class="n">input_latex_headers</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">check</span><span class="p">:</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="n">check_text_for_latex</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+    <span class="n">latex_str</span> <span class="o">=</span> <span class="n">latex_header</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">inputs</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">latex_end</span>
+
+    <span class="k">if</span> <span class="n">file_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;test_latex_output&quot;</span>
+    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span> <span class="o">+</span> <span class="s2">&quot;.tex&quot;</span>
+    <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="s2">&quot;w+&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">latex_str</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="include_figures_from_folder"><a class="viewcode-back" href="../my_plots.html#my_plots.include_figures_from_folder">[docs]</a><span class="k">def</span> <span class="nf">include_figures_from_folder</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+
+    <span class="n">fnames</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s2">&quot;*.png&quot;</span><span class="p">))</span>
+    <span class="n">latex_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">figname</span> <span class="ow">in</span> <span class="n">fnames</span><span class="p">:</span>
+        <span class="c1">#figname = &quot;p&quot;+str(p)+&quot;q&quot;+str(q)</span>
+        <span class="n">figname</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">figname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">)[</span><span class="mi">1</span><span class="p">:])</span> <span class="c1">#join(figname.split(os.path.sep))</span>
+        <span class="k">if</span> <span class="s2">&quot; &quot;</span> <span class="ow">in</span> <span class="n">figname</span><span class="p">:</span>
+            <span class="n">figname</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">figname</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
+        <span class="n">latex_str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">latex_str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">begin</span><span class="si">{figure}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">latex_str</span> <span class="o">+=</span> <span class="s2">&quot;\includegraphics[width=0.7</span><span class="se">\\</span><span class="s2">textwidth]{&quot;</span> <span class="o">+</span> <span class="n">figname</span> <span class="o">+</span> <span class="s2">&quot;}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">latex_str</span> <span class="o">+=</span> <span class="s2">&quot;\caption{&quot;</span><span class="o">+</span> <span class="n">check_text_for_latex</span><span class="p">(</span><span class="n">figname</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.} \label{fg:&quot;</span><span class="o">+</span><span class="n">figname</span><span class="o">+</span><span class="s2">&quot;}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">latex_str</span> <span class="o">+=</span> <span class="s2">&quot;\end</span><span class="si">{figure}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+    <span class="k">return</span> <span class="n">latex_str</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Strijov, Motrenko, Neychev, Isachenko.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>

@@ -62,12 +62,27 @@
 <dl class="method">
 <dt id="UnitTests.test_iot_data.TestIotData.read_and_write">
 <code class="descname">read_and_write</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/UnitTests/test_iot_data.html#TestIotData.read_and_write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#UnitTests.test_iot_data.TestIotData.read_and_write" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Writes random data into file, then reads from it and compares results</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnitTests.test_iot_data.TestIotData.read_empty_dataset">
+<code class="descname">read_empty_dataset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/UnitTests/test_iot_data.html#TestIotData.read_empty_dataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#UnitTests.test_iot_data.TestIotData.read_empty_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks results of reading empty dataset</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnitTests.test_iot_data.TestIotData.read_empty_lines">
+<code class="descname">read_empty_lines</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/UnitTests/test_iot_data.html#TestIotData.read_empty_lines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#UnitTests.test_iot_data.TestIotData.read_empty_lines" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks results of reading empty lines</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="UnitTests.test_iot_data.TestIotData.test_read_lines">
 <code class="descname">test_read_lines</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/UnitTests/test_iot_data.html#TestIotData.test_read_lines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#UnitTests.test_iot_data.TestIotData.test_read_lines" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Check that reading by line works correctly: write random data into file, then read by line and compare
+results to original time series</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -104,7 +119,46 @@
 <dl class="method">
 <dt id="UnitTests.test_reg_matrix.TestRegMatrix.test_y_slicing_args">
 <code class="descname">test_y_slicing_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/UnitTests/test_reg_matrix.html#TestRegMatrix.test_y_slicing_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#UnitTests.test_reg_matrix.TestRegMatrix.test_y_slicing_args" title="Permalink to this definition">¶</a></dt>
-<dd><p>&#8221; Check that individual forecasts are the same if scliced in init or at create_matrix</p>
+<dd><p>Check that individual forecasts are the same if sliced in init or at create_matrix</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-UnitTests.test_ts_struct">
+<span id="unittests-test-ts-struct-module"></span><h2>UnitTests.test_ts_struct module<a class="headerlink" href="#module-UnitTests.test_ts_struct" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="UnitTests.test_ts_struct.TestTsStruct">
+<em class="property">class </em><code class="descclassname">UnitTests.test_ts_struct.</code><code class="descname">TestTsStruct</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/UnitTests/test_ts_struct.html#TestTsStruct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#UnitTests.test_ts_struct.TestTsStruct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<dl class="method">
+<dt id="UnitTests.test_ts_struct.TestTsStruct.test_double_truncation">
+<code class="descname">test_double_truncation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/UnitTests/test_ts_struct.html#TestTsStruct.test_double_truncation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#UnitTests.test_ts_struct.TestTsStruct.test_double_truncation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that re-truncation does not have any effect</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnitTests.test_ts_struct.TestTsStruct.test_empty_input">
+<code class="descname">test_empty_input</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/UnitTests/test_ts_struct.html#TestTsStruct.test_empty_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#UnitTests.test_ts_struct.TestTsStruct.test_empty_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check response to empty input</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnitTests.test_ts_struct.TestTsStruct.test_request_assignment">
+<code class="descname">test_request_assignment</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/UnitTests/test_ts_struct.html#TestTsStruct.test_request_assignment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#UnitTests.test_ts_struct.TestTsStruct.test_request_assignment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests for &#8216;assign_one_step_requests&#8217; method with time in floats</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnitTests.test_ts_struct.TestTsStruct.test_request_assignment_td">
+<code class="descname">test_request_assignment_td</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/UnitTests/test_ts_struct.html#TestTsStruct.test_request_assignment_td"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#UnitTests.test_ts_struct.TestTsStruct.test_request_assignment_td" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests for &#8216;assign_one_step_requests&#8217; method with time in timedelta format</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnitTests.test_ts_struct.TestTsStruct.test_truncation">
+<code class="descname">test_truncation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/UnitTests/test_ts_struct.html#TestTsStruct.test_truncation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#UnitTests.test_ts_struct.TestTsStruct.test_truncation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that time series start from the same point after truncation</p>
 </dd></dl>
 
 </dd></dl>
@@ -127,6 +181,7 @@
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-UnitTests.test_iot_data">UnitTests.test_iot_data module</a></li>
 <li><a class="reference internal" href="#module-UnitTests.test_reg_matrix">UnitTests.test_reg_matrix module</a></li>
+<li><a class="reference internal" href="#module-UnitTests.test_ts_struct">UnitTests.test_ts_struct module</a></li>
 <li><a class="reference internal" href="#module-UnitTests">Module contents</a></li>
 </ul>
 </li>

@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Features.parametric &#8212; MultiscaleForecasting 0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="MultiscaleForecasting 0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for Features.parametric</h1><div class="highlight"><pre>
+<span></span><span class="c1"># coding: utf-8</span>
+<span class="sd">&quot;&quot;&quot; Created on 23 November 2016. Author: Alexey Goncharov &quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<div class="viewcode-block" id="parametric_sum"><a class="viewcode-back" href="../../Features.html#Features.parametric.parametric_sum">[docs]</a><span class="k">def</span> <span class="nf">parametric_sum</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">w</span><span class="p">):</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">X</span><span class="o">+</span><span class="n">w</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="parametrc_quadratic"><a class="viewcode-back" href="../../Features.html#Features.parametric.parametrc_quadratic">[docs]</a><span class="k">def</span> <span class="nf">parametrc_quadratic</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">):</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span><span class="n">W</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">W</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="parametrc_qubic"><a class="viewcode-back" href="../../Features.html#Features.parametric.parametrc_qubic">[docs]</a><span class="k">def</span> <span class="nf">parametrc_qubic</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">):</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span><span class="n">W</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span><span class="n">W</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">+</span><span class="n">W</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="parametric_logarithmic_sigmoid"><a class="viewcode-back" href="../../Features.html#Features.parametric.parametric_logarithmic_sigmoid">[docs]</a><span class="k">def</span> <span class="nf">parametric_logarithmic_sigmoid</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">):</span>
+    <span class="k">return</span><span class="p">(</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="n">W</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">[</span><span class="mi">1</span><span class="p">]))))</span></div>
+
+<div class="viewcode-block" id="parametric_exponent"><a class="viewcode-back" href="../../Features.html#Features.parametric.parametric_exponent">[docs]</a><span class="k">def</span> <span class="nf">parametric_exponent</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">X</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="parametric_normal"><a class="viewcode-back" href="../../Features.html#Features.parametric.parametric_normal">[docs]</a><span class="k">def</span> <span class="nf">parametric_normal</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">):</span>
+    <span class="k">return</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="n">W</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">X</span><span class="o">-</span><span class="n">W</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="n">W</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="parametric_multiply"><a class="viewcode-back" href="../../Features.html#Features.parametric.parametric_multiply">[docs]</a><span class="k">def</span> <span class="nf">parametric_multiply</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">w</span><span class="p">):</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">w</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="parametric_monomial"><a class="viewcode-back" href="../../Features.html#Features.parametric.parametric_monomial">[docs]</a><span class="k">def</span> <span class="nf">parametric_monomial</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">):</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">W</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span></div>
+
+<div class="viewcode-block" id="parametric_weibul_2"><a class="viewcode-back" href="../../Features.html#Features.parametric.parametric_weibul_2">[docs]</a><span class="k">def</span> <span class="nf">parametric_weibul_2</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">):</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">W</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">W</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">W</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span></div>
+
+<div class="viewcode-block" id="parametric_weibul_3"><a class="viewcode-back" href="../../Features.html#Features.parametric.parametric_weibul_3">[docs]</a><span class="k">def</span> <span class="nf">parametric_weibul_3</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">):</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">W</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">W</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">W</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">X</span><span class="o">-</span><span class="n">W</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">W</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span></div>
+
+<div class="viewcode-block" id="parametric_transform"><a class="viewcode-back" href="../../Features.html#Features.parametric.parametric_transform">[docs]</a><span class="k">def</span> <span class="nf">parametric_transform</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">w_sum</span><span class="p">,</span><span class="n">w_quadratic</span><span class="p">,</span><span class="n">w_qubic</span><span class="p">,</span><span class="n">w_sigmoid</span><span class="p">,</span><span class="n">w_normal</span><span class="p">,</span><span class="n">w_multiply</span><span class="p">,</span><span class="n">w_monomial</span><span class="p">,</span><span class="n">w_weibul2</span><span class="p">,</span><span class="n">w_weibul3</span><span class="p">):</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">parametric_sum</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">w_sum</span><span class="p">),</span><span class="n">parametrc_quadratic</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">w_quadratic</span><span class="p">),</span><span class="n">parametrc_qubic</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">w_qubic</span><span class="p">),</span>
+                    <span class="n">parametric_logarithmic_sigmoid</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">w_sigmoid</span><span class="p">),</span> <span class="n">parametric_exponent</span><span class="p">(</span><span class="n">X</span><span class="p">),</span>
+                      <span class="n">parametric_normal</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">w_normal</span><span class="p">),</span><span class="n">parametric_multiply</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">w_multiply</span><span class="p">),</span><span class="n">parametric_monomial</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">w_monomial</span><span class="p">),</span>
+                     <span class="n">parametric_weibul_2</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">w_weibul2</span><span class="p">),</span><span class="n">parametric_weibul_3</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">w_weibul3</span><span class="p">))))</span></div>
+
+
+<div class="viewcode-block" id="build_henkel_matrix"><a class="viewcode-back" href="../../Features.html#Features.parametric.build_henkel_matrix">[docs]</a><span class="k">def</span> <span class="nf">build_henkel_matrix</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">p</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">henkel</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[(</span><span class="n">T</span><span class="o">-</span><span class="mi">1</span><span class="p">):(</span><span class="n">T</span><span class="o">-</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+    <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="o">-</span><span class="n">p</span>
+    <span class="k">while</span> <span class="n">T</span><span class="o">&gt;=</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span> <span class="p">:</span>
+        <span class="n">henkel</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">[(</span><span class="n">T</span><span class="o">-</span><span class="mi">1</span><span class="p">):(</span><span class="n">T</span><span class="o">-</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="o">-</span><span class="n">p</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">henkel</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="henkel_coefs"><a class="viewcode-back" href="../../Features.html#Features.parametric.henkel_coefs">[docs]</a><span class="k">def</span> <span class="nf">henkel_coefs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">p</span><span class="p">):</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">build_henkel_matrix</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">p</span><span class="p">)</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">[:,</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span><span class="n">Y</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))[</span><span class="mi">0</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="SSA"><a class="viewcode-back" href="../../Features.html#Features.parametric.SSA">[docs]</a><span class="k">def</span> <span class="nf">SSA</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">apply_along_axis</span><span class="p">(</span><span class="n">henkel_coefs</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">X</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">p</span><span class="p">))</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MultiscaleForecasting 0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Strijov, Motrenko, Neychev, Isachenko.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>
