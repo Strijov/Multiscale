@@ -7,9 +7,11 @@ import numpy as np
 from RegressionMatrix import regression_matrix
 from sklearn.linear_model import Lasso
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.decomposition import PCA
 from LoadAndSaveData import load_time_series
 from Forecasting import frc_class
-from Forecasting.GatingEnsemble import GatingEnsemble
+from Features import generation_classes as gnt_class
+#from Forecasting.GatingEnsemble import GatingEnsemble
 #from Forecasting.LSTM import LSTM
 import my_plots
 
@@ -36,6 +38,36 @@ N_STEPS = 1 # forecast only one requested interval
 
 
 def main():
+    """
+    Provides an example of usage of the system.
+
+    The model consists of three main components: feature generation, feature selection and forecasting model.
+    Feature generation and selection may be empty:
+    generation = frc_class.IdentityGenerator(name="Identity generator")
+    selection = frc_class.IdentityModel(name="Identity selector")
+
+    If generation model is not empty, it should have transform method:
+    def transform(X):  # should be defined in __main__; otherwise will cause problems in save
+        return np.hstack((X, np.power(X, 2)))
+    generator.transform = transform
+
+    Other options for feature generation:
+    generator = gnt_class.FeatureGeneration(name="univariate", replace=False, transformations="univariate_transformation")
+    generator = gnt_class.Nonparametric()
+    generator = gnt_class.Monotone()
+    generator = gnt_class.CentroidDistances()
+
+    Examples of using sklearn solutions:
+    frc_class.CustomModel(PCA, name="Randomized PCA", svd_solver="randomized")
+    frc_class.CustomModel(PCA, name="PCA")
+
+    Examples of custom models:
+    * Mixture of experts:
+    frc_model = frc_class.CustomModel(GatingEnsemble, name="Mixture", estimators=[Lasso(alpha=0.01), Lasso(alpha=0.001)])
+    * LSTM network:
+    frc_model = frc_class.CustomModel(LSTM.LSTM, name="LSTM")
+
+    """
     # Load and prepare dataset.
     load_raw = not os.path.exists(os.path.join("ProcessedData", "EnergyWeather_orig_train.pkl"))
     load_time_series.load_all_time_series(datasets=[DATASET], load_raw=load_raw, verbose=VERBOSE)
@@ -45,23 +77,13 @@ def main():
         print(ts_list[-1].summarize_ts())
 
 
-    generator = frc_class.IdentityGenerator(name="Identity generator")
-    # Example: define a transformation function for feature generation
-
-    def transform(X):
-        return np.hstack((X, np.power(X, 2)))
-    generator.transform = transform # defined in __main__; otherwise will cause problems in save
+    generator = gnt_class.CentroidDistances() #gnt_class.Monotone()
 
     # feature selection model can be defined in the same way. If you don't use any, just leave as is
-    selector = frc_class.IdentityModel(name="Identity selector")
-
+    selector = None #
     # first argument is your model class, then follow optional parameters as keyword arguments
-    frc_model = frc_class.CustomModel(Lasso, name="Lasso", alpha=0.001)
-    # Examples of custom models:
-    # Mixture of experts:
-    # frc_model = frc_class.CustomModel(GatingEnsemble, name="Mixture", estimators=[Lasso(alpha=0.01), Lasso(alpha=0.001)])
-    # LSTM network:
-    # frc_model = frc_class.CustomModel(LSTM.LSTM, name="LSTM")
+    frc_model = frc_class.CustomModel(RandomForestRegressor, name="RF")
+    #frc_class.CustomModel(Lasso, name="Lasso", alpha=0.001)
 
     # train your model:
     model = demo_train(ts_list, frc_model=frc_model, fg_mdl=generator, fs_mdl=selector, verbose=VERBOSE)
@@ -70,10 +92,10 @@ def main():
     train_error, train_std = competition_errors(model=model, names=TRAIN_FILE_NAMES, y_idx=TS_IDX)
     test_error, test_std = competition_errors(model=model, names=TEST_FILE_NAMES, y_idx=TS_IDX)
 
-    print("Mean error across time series: train = {} with std {}, test = {} with std {}".format(train_error, train_std, test_error, test_std))
+    print("Mean error across time series: train = {} with std {}, test = {} with std {}".
+          format(train_error, train_std, test_error, test_std))
 
     return train_error, test_error
-
 
 
 def demo_train(ts_struct_list, frc_model=None, fg_mdl=None, fs_mdl=None, verbose=False):
@@ -97,9 +119,6 @@ def demo_train(ts_struct_list, frc_model=None, fg_mdl=None, fs_mdl=None, verbose
 
     if frc_model is None:
         frc_model = frc_class.CustomModel(Lasso, name="Lasso", alpha=0.01)
-
-
-
 
     results = []
     res_text = []
@@ -142,7 +161,8 @@ def demo_train(ts_struct_list, frc_model=None, fg_mdl=None, fs_mdl=None, verbose
             print(res)
 
         results.append(res)
-        res_text.append("Time series {} forecasted with {} + '{}' feature generation model and '{}' feature selection model \n \\\\".
+        res_text.append("Time series {} forecasted with {} + '{}' feature generation model and "
+                        "'{}' feature selection model \n \\\\".
                         format(ts.name, frc.name, gen.name, sel.name))
 
     saved_mdl_fname = model.save_model(file_name=FNAME_PREFIX, folder=SAVE_DIR) # saving in not an option yet
@@ -150,14 +170,12 @@ def demo_train(ts_struct_list, frc_model=None, fg_mdl=None, fs_mdl=None, verbose
 
     # write results into a latex file
     my_plots.save_to_latex(results, df_names=res_text, folder=SAVE_DIR)
-
-
     return saved_mdl_fname
 
 
 def competition_errors(model, names, y_idx=None):
     """
-    Reaturns MAPE, averaged over a set of multivariate time series, specified by names
+    Returns MAPE, averaged over a set of multivariate time series, specified by names
 
     :param model: trained forecasting model
     :type model: PipelineModel
@@ -183,8 +201,6 @@ def competition_errors(model, names, y_idx=None):
         mape.append(data.mape())
 
     return np.mean(mape), np.std(mape)
-
-
 
 
 if __name__ == '__main__':
