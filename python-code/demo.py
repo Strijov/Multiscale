@@ -10,7 +10,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.decomposition import PCA
 from LoadAndSaveData import load_time_series
 from Forecasting import frc_class
-from Features import generation_classes as gnt_class
+from Features import generation_models as gnt_class
 #from Forecasting.GatingEnsemble import GatingEnsemble
 #from Forecasting.LSTM import LSTM
 import my_plots
