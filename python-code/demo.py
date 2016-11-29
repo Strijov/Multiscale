@@ -5,7 +5,7 @@ import os
 import pandas as pd
 import numpy as np
 from RegressionMatrix import regression_matrix
-from sklearn.linear_model import Lasso
+from sklearn.linear_model import Lasso, MultiTaskLassoCV
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.decomposition import PCA
 from LoadAndSaveData import load_time_series
@@ -24,6 +24,24 @@ TS_IDX = [0,1,2,4,5,6] # We exclude precipitation from the list of time series
 TRAIN_FILE_NAMES = ['missing_value_train']
 TEST_FILE_NAMES = ['missing_value_test']
 HIDDEN_TEST = ['varying'] #
+
+feature_gnt_names = [None, 'univariate_transformation',
+                       # 'bivariate_transformation', this one has additional argument
+                       'simple_statistics',
+                       'haar_transformations',
+                       'monotone_linear',
+                       'monotone_polinomial_rate',
+                       'monotone_sublinear_polinomial_rate',
+                       'monotone_logarithmic_rate',
+                       'monotone_slow_convergence',
+                       'monotone_fast_convergence',
+                       'monotone_soft_relu',
+                       'monotone_sigmoid',
+                       'monotone_soft_max',
+                       'monotone_hyberbolic_tangent',
+                       'monotone_softsign',
+                     'centroids',
+                     'all']
 
 # output and saving parameters
 VERBOSE = False
@@ -69,13 +87,7 @@ def main():
 
     """
     # Load and prepare dataset.
-    load_raw = not os.path.exists(os.path.join("ProcessedData", "EnergyWeather_orig_train.pkl"))
-    load_time_series.load_all_time_series(datasets=[DATASET], load_raw=load_raw, verbose=VERBOSE)
-    ts_list = []
-    for name in TRAIN_FILE_NAMES:
-        ts_list.append(load_time_series.load_all_time_series(datasets=[DATASET], load_raw=False, name_pattern=name, verbose=False)[0])
-        print(ts_list[-1].summarize_ts())
-
+    ts_list = load_energy_weather_data()
 
     generator = gnt_class.CentroidDistances() #gnt_class.Monotone()
 
@@ -92,13 +104,33 @@ def main():
     train_error, train_std = competition_errors(model=model, names=TRAIN_FILE_NAMES, y_idx=TS_IDX)
     test_error, test_std = competition_errors(model=model, names=TEST_FILE_NAMES, y_idx=TS_IDX)
 
-    print("Mean error across time series: train = {} with std {}, test = {} with std {}".
+
+    print("Average MAPE across time series: train = {} with std {}, test = {} with std {}".
           format(train_error, train_std, test_error, test_std))
 
     return train_error, test_error
 
 
-def demo_train(ts_struct_list, frc_model=None, fg_mdl=None, fs_mdl=None, verbose=False):
+def load_energy_weather_data(load_raw=None, fnames=TRAIN_FILE_NAMES):
+    """Load data from the EnergyWeather dataset """
+    if load_raw is None:
+        load_raw = not os.path.exists(os.path.join("ProcessedData", "EnergyWeather_orig_train.pkl"))
+
+    load_time_series.load_all_time_series(datasets=[DATASET], load_raw=load_raw, verbose=VERBOSE)
+    ts_list = []
+    for name in fnames:
+        ts_list.extend(
+            load_time_series.load_all_time_series(datasets=[DATASET], load_raw=False, name_pattern=name,
+                                                verbose=False)
+        )
+        print(name)
+        print(ts_list[-1].summarize_ts())
+
+    return ts_list
+
+
+def demo_train(ts_struct_list, frc_model=None, fg_mdl=None, fs_mdl=None, verbose=False,
+               return_model=False, rewrite=True):
     """
     Train and save the model.
 
@@ -135,9 +167,9 @@ def demo_train(ts_struct_list, frc_model=None, fg_mdl=None, fs_mdl=None, verbose
         # train the model. This returns trained pipeline and its steps
         model, frc, gen, sel = data.train_model(frc_model=frc_model, generator=fg_mdl, selector=fs_mdl)
 
-        if verbose:
-            model.print_pipeline_pars()
-            verbose = False
+        # if verbose:
+        #     model.print_pipeline_pars()
+        #     verbose = False
 
         frcY, _ = data.forecast(model) # returns forecasted matrix of the same shape as data.Y
         # frcY, idx_frc = data.forecast(model, idx_rows=data.idx_test) # this would return forecasts only for data.testY
@@ -157,19 +189,27 @@ def demo_train(ts_struct_list, frc_model=None, fg_mdl=None, fs_mdl=None, verbose
         res4 = pd.DataFrame(test_mape, index=index, columns=[("MAPE", "test")])
         res = pd.concat([res1, res2, res3, res4], axis=1)
 
+
+        conf_str = "Time series {} forecasted with {} + '{}' feature generation model and  " \
+                   "'{}' feature selection model \n \\\\".format(ts.name, frc.name, gen.name, sel.name)
         if verbose:
+            print(conf_str)
             print(res)
 
         results.append(res)
-        res_text.append("Time series {} forecasted with {} + '{}' feature generation model and "
-                        "'{}' feature selection model \n \\\\".
-                        format(ts.name, frc.name, gen.name, sel.name))
+        res_text.append(conf_str)
+
 
     saved_mdl_fname = model.save_model(file_name=FNAME_PREFIX, folder=SAVE_DIR) # saving in not an option yet
     # model = frc_class.PipelineModel().load_model(file_name=fname)
 
     # write results into a latex file
-    my_plots.save_to_latex(results, df_names=res_text, folder=SAVE_DIR)
+    my_plots.save_to_latex(results, df_names=res_text, folder=SAVE_DIR, rewrite=rewrite)
+    print("Results saved to folder {}".format(SAVE_DIR))
+
+    if return_model:
+        return model, saved_mdl_fname
+
     return saved_mdl_fname
 
 
@@ -188,7 +228,7 @@ def competition_errors(model, names, y_idx=None):
     """
 
     if isinstance(model, str):
-        model = frc_class.PipelineModel().load_model(model) # this doesn't work yet
+        model = frc_class.PipelineModel().load_model(model)
 
     mape = []
     for name in names:
@@ -201,6 +241,31 @@ def competition_errors(model, names, y_idx=None):
         mape.append(data.mape())
 
     return np.mean(mape), np.std(mape)
+
+
+
+def feature_generation_demo():
+
+    ts_list = load_energy_weather_data(load_raw=False, fnames=TRAIN_FILE_NAMES)
+    frc_model = frc_class.CustomModel(Lasso, name="lasso", alpha=0.001)
+    selector = frc_class.CustomModel(PCA)
+    rewrite = True
+    for fg_name in feature_gnt_names:
+        generator = gnt_class.FeatureGeneration(name=fg_name, replace=False,
+                 transformations=[fg_name], norm=True)
+        model, _ = demo_train(ts_list, frc_model=frc_model, fg_mdl=generator, fs_mdl=selector,
+                           verbose=True, return_model=True, rewrite=rewrite)
+        rewrite = False
+
+        train_error, train_std = competition_errors(model=model, names=TRAIN_FILE_NAMES, y_idx=TS_IDX)
+        test_error, test_std = competition_errors(model=model, names=TEST_FILE_NAMES, y_idx=TS_IDX)
+
+
+        res_text = "\n Average MAPE across time series: train = {} with std {}, test = {} with std {} \\\\ \n".\
+            format(train_error, train_std, test_error, test_std)
+
+        print(res_text)
+        my_plots.save_to_latex(text=res_text, folder=SAVE_DIR, rewrite=rewrite)
 
 
 if __name__ == '__main__':

@@ -104,6 +104,13 @@ def read_web_arguments(args):
             pars['learning_rate'] = float(args[i + 1])
         elif args[i] == 'n_units':
             pars['num_lstm_units'] = int(args[i + 1])
+        elif args[i] == 'n_epochs':
+            pars['n_epochs'] = int(args[i + 1])
+        elif args[i] == 'n_estimators':
+            pars['n_estimators'] = int(args[i + 1])
+        else:
+            print("Unexpected keyword {} in passed from server.js".format(args[i]))
+            i += 1
         i += 2
 
     return file_name, frc_model, n_hist, n_req, train_test, pars, msg

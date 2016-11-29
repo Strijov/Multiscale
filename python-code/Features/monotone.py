@@ -27,7 +27,7 @@ def monotone_polinomial_rate(X, w=(2, 1)):
 
 def monotone_sublinear_polinomial_rate(X, w=(.5, 1)):
     if 0 < w[0] < 1:
-        return np.exp(np.log(X) * w[0] + w[1])
+        return np.exp(np.log(X + 1) * w[0] + w[1])
     else:
         print('Error in monotone_sublinear_polinomial_rate: exp(a*logX + b). Parameter "a" should be in (0, 1) '
               'interval, got {}'.format(w[0]))
@@ -36,7 +36,7 @@ def monotone_sublinear_polinomial_rate(X, w=(.5, 1)):
 
 def monotone_logarithmic_rate(X, w=(.5, 1)):
     if 0 < w[0]:
-        return np.log(X) * w[0] + w[1]
+        return np.log(X + 1) * w[0] + w[1]
     else:
         print('Error in monotone_logarithmic_rate: a*logX + b. Parameter "a" should be in (0, 1) interval, got {}'
               .format(w[0]))
