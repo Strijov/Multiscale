@@ -123,8 +123,7 @@ def iot_to_struct_by_dataset(iot_ts_list, host_ids, dataset_idx=None):
     if dataset_idx is None:
         dataset_idx = datasets_indices
     if (np.array(dataset_idx) >= len(datasets_indices)).any():
-        print("Specified dataset indices {} out of range for dataset indices {} read from file".format(dataset_idx, datasets_indices))
-        raise IndexError
+        raise IndexError("Specified dataset indices {} out of range for dataset indices {} read from file".format(dataset_idx, datasets_indices))
     for i in dataset_idx:
         dataset = datasets_indices[i]
         ts_list.append(from_iot_to_struct(iot_ts_list, host_ids[dataset], dataset))
@@ -150,7 +149,7 @@ def from_iot_to_struct(ts_list, idx, dataset):
         request.append(ts_list[i].index[1] - ts_list[i].index[0])
         ts.append(ts_list[i])
 
-    return TsStruct(ts, None, None, dataset, "")
+    return TsStruct(data=ts, name=dataset, readme="")
 
 
 if __name__ == '__main__':

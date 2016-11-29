@@ -13,7 +13,9 @@ import my_plots
 class LSTM():
     """ Regression models built on LSTM-network """
 
-    def __init__(self, name="LSTM", grad_clip=100.0, batch_size=50, l_out=None, n_epochs=100, plot_loss=False):
+    def __init__(self, name="LSTM", grad_clip=100.0, batch_size=50, l_out=None, n_epochs=100, plot_loss=False,
+                 num_lstm_units=50,
+                 learning_rate=2e-4):
         """
 
         :param name: reference name
@@ -35,9 +37,10 @@ class LSTM():
         self.n_epochs = n_epochs
         self.l_out = l_out
         self.plot_loss = plot_loss
+        self.learning_rate = learning_rate
+        self.num_lstm_units = num_lstm_units
 
-
-    def fit(self, trainX, trainY, n_epochs=None, fname=None, verbose=False):
+    def fit(self, trainX, trainY, n_epochs=None, fname=None, verbose=True, save_results=False):
         """
         Train module for LSTM network
 
@@ -81,7 +84,8 @@ class LSTM():
                 print(msg)
 
         self.weights = lasagne.layers.get_all_params(self.l_out,trainable=True)
-        self.checkpoint(fname, loss=loss)
+        if save_results:
+            self.checkpoint(fname, loss=loss)
         self.msg = loss_msg
 
         if self.plot_loss:
@@ -125,9 +129,9 @@ class LSTM():
 
         l4 = lasagne.layers.ReshapeLayer(l3, shape=(-1, seq_length, 1))
 
-        l_rnn = lasagne.layers.LSTMLayer(l4, num_units=50, grad_clipping=self.grad_clip,
+        l_rnn = lasagne.layers.LSTMLayer(l4, num_units=self.num_lstm_units, grad_clipping=self.grad_clip,
                                             nonlinearity=lasagne.nonlinearities.tanh)
-        l_rnn = lasagne.layers.LSTMLayer(l_rnn, num_units=50, grad_clipping=self.grad_clip,
+        l_rnn = lasagne.layers.LSTMLayer(l_rnn, num_units=self.num_lstm_units, grad_clipping=self.grad_clip,
                                             nonlinearity=lasagne.nonlinearities.tanh)
 
         l_out_norm = lasagne.layers.DenseLayer(l_rnn, num_units=pred_len, nonlinearity=lasagne.nonlinearities.linear)
@@ -144,7 +148,7 @@ class LSTM():
 
         self.loss = T.mean(lasagne.objectives.squared_error(network_output/std,
                                                             target_values/std))
-        self.updates = lasagne.updates.adam(self.loss, weights, learning_rate=2e-4)
+        self.updates = lasagne.updates.adam(self.loss, weights, learning_rate=self.learning_rate)
 
         self.trainT = theano.function([input_sequence, target_values], self.loss,
                                       updates=self.updates, allow_input_downcast=True)
@@ -178,7 +182,7 @@ class LSTM():
             results[k] = v
 
         if fname is None:
-            fname = "lstm_weights_" + str(datetime.date.today())
+            fname = "tmp/lstm_weights_" + str(datetime.date.today())
 
         pickle.dump(params, open(fname, 'wb'))
 

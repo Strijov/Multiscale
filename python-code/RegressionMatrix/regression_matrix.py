@@ -62,25 +62,11 @@ class RegMatrix:
         names = []  # used in feature_dict
 
         for ts in ts_struct_data:
-            # time series indices are converted to floats
-            # This part should probably go in TsStruct code? #FIXIT
-            #ts_index, frequency = pd_time_stamps_to_floats(ts.index)
             self.ts.append(TsMiniStruct(ts.as_matrix(), 1, 0, ts.name, ts.index))
             names.append(ts.name)
         self.feature_dict = dict.fromkeys(names)
 
-        # if isinstance(ts_struct.request, pd.tslib.Timedelta):
-        #     self.request = ts_struct.request
-        # elif isinstance(ts_struct.one_step, pd.tslib.Timedelta):
-        #     self.request = multiply_pd_time_delta(ts_struct.one_step.days, ts_struct.request)
-        # else:
-        #     self.request = ts_struct.request * ts_struct.one_step
-        # self.request = general_time_delta_to_float(self.request, frequency)
-
         self.request = ts_struct.request * ts_struct.one_step
-
-        # if not isinstance(ts_struct.one_step, pd.tslib.Timedelta):
-        #     self.history = ts_struct.history * ts_struct.one_step
             
         if ts_struct.history is None:
             n_historical = n_historical * ts_struct.request
@@ -89,13 +75,6 @@ class RegMatrix:
             n_historical = ts_struct.history
 
         self.history = n_historical * ts_struct.one_step
-        # if isinstance(ts_struct.history, pd.tslib.Timedelta):
-        #     self.history = ts_struct.request
-        # elif isinstance(self.history, pd.tslib.Timedelta):
-        #     self.history = multiply_pd_time_delta(ts_struct.one_step.days, n_historical)
-        # else:
-        #     self.history = n_historical * ts_struct.request * ts_struct.one_step
-        # self.history = general_time_delta_to_float(self.history, frequency)
 
         # check arguments
         self.x_idx = _check_input_ts_idx(x_idx, range(self.nts))
