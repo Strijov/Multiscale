@@ -1,0 +1,181 @@
+
+<html>
+<h1>Multiscale forecasting</h1>
+<body>
+<h4>Loaded time series: EnergyWeather_missing_value_test_0.01 dataset</h4>
+ <br>
+Time series summary:
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>N. obs.</th>
+      <th>Min</th>
+      <th>Max</th>
+      <th>T. min</th>
+      <th>T.max</th>
+      <th>T. delta</th>
+      <th>Nans %</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Energy</th>
+      <td>21038</td>
+      <td>119995.000000</td>
+      <td>602703.000000</td>
+      <td>1973-01-01</td>
+      <td>1976-01-01 23:00:00</td>
+      <td>0 days 01:00:00</td>
+      <td>20.019769</td>
+    </tr>
+    <tr>
+      <th>Max Temperature</th>
+      <td>823</td>
+      <td>-13.549000</td>
+      <td>34.525000</td>
+      <td>1973-01-01</td>
+      <td>1976-01-01 00:00:00</td>
+      <td>1 days 00:00:00</td>
+      <td>24.908759</td>
+    </tr>
+    <tr>
+      <th>Min Temperature</th>
+      <td>1087</td>
+      <td>-25.578000</td>
+      <td>24.086000</td>
+      <td>1973-01-01</td>
+      <td>1976-01-01 00:00:00</td>
+      <td>1 days 00:00:00</td>
+      <td>0.821168</td>
+    </tr>
+    <tr>
+      <th>Precipitation</th>
+      <td>388</td>
+      <td>0.000000</td>
+      <td>24.873700</td>
+      <td>1973-01-01</td>
+      <td>1976-01-01 00:00:00</td>
+      <td>1 days 00:00:00</td>
+      <td>64.598540</td>
+    </tr>
+    <tr>
+      <th>Wind</th>
+      <td>1087</td>
+      <td>0.755140</td>
+      <td>9.065740</td>
+      <td>1973-01-01</td>
+      <td>1976-01-01 00:00:00</td>
+      <td>1 days 00:00:00</td>
+      <td>0.821168</td>
+    </tr>
+    <tr>
+      <th>Relative Humidity</th>
+      <td>1083</td>
+      <td>0.316711</td>
+      <td>0.997183</td>
+      <td>1973-01-01</td>
+      <td>1976-01-01 00:00:00</td>
+      <td>1 days 00:00:00</td>
+      <td>1.186131</td>
+    </tr>
+    <tr>
+      <th>Solar</th>
+      <td>1048</td>
+      <td>0.300825</td>
+      <td>29.604100</td>
+      <td>1973-01-01</td>
+      <td>1976-01-01 00:00:00</td>
+      <td>1 days 00:00:00</td>
+      <td>4.379562</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<h4>Forecasting results (MAE and MAPE):</h4>
+Forecasting model: Lasso, feature generation: Identity, feature selection: Identity <br>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>(MAE, train)</th>
+      <th>(MAPE, train)</th>
+      <th>(MAE, test)</th>
+      <th>(MAPE, test)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Energy</th>
+      <td>11199.022254</td>
+      <td>0.036924</td>
+      <td>34242.589461</td>
+      <td>0.115414</td>
+    </tr>
+    <tr>
+      <th>Max Temperature</th>
+      <td>1.536625</td>
+      <td>0.630967</td>
+      <td>3.970066</td>
+      <td>0.713042</td>
+    </tr>
+    <tr>
+      <th>Min Temperature</th>
+      <td>1.525309</td>
+      <td>0.765570</td>
+      <td>3.414868</td>
+      <td>5.680707</td>
+    </tr>
+    <tr>
+      <th>Precipitation</th>
+      <td>0.733384</td>
+      <td>4.075582</td>
+      <td>3.067428</td>
+      <td>18.090180</td>
+    </tr>
+    <tr>
+      <th>Wind</th>
+      <td>0.283722</td>
+      <td>0.104307</td>
+      <td>1.053224</td>
+      <td>0.408058</td>
+    </tr>
+    <tr>
+      <th>Relative Humidity</th>
+      <td>0.022995</td>
+      <td>0.034143</td>
+      <td>0.107128</td>
+      <td>0.148902</td>
+    </tr>
+    <tr>
+      <th>Solar</th>
+      <td>0.961803</td>
+      <td>0.236784</td>
+      <td>4.847759</td>
+      <td>0.840631</td>
+    </tr>
+  </tbody>
+</table>
+
+<!---
+<img rel src='./../fig/Energy.png'/><br>
+<img rel src='./../fig/Max_Temperature.png'/><br>
+<img rel src='./../fig/Min_Temperature.png'/><br>
+<img rel src='./../fig/Precipitation.png'/><br>
+<img rel src='./../fig/Wind.png'/><br>
+<img rel src='./../fig/Relative_Humidity.png'/><br>
+<img rel src='./../fig/Solar.png'/><br>
+
+-->
+
+<br>
+<br>
+<form id  =  "back"
+action    =  "/"
+method    =  "get"
+>
+Back to data submission:
+<input id='submit' type="submit" value="Start" name="submit">
+</form>
+</body>
+</html>

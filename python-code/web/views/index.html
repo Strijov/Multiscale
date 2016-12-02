@@ -1,0 +1,91 @@
+<style>
+  .bottom-skip {
+     margin-bottom: 1cm;
+  }
+</style>
+
+<style>
+  .left-skip {
+     margin-left: 0.5cm;
+  }
+</style>
+
+<script>
+
+function onclick_pars() {
+    if (document.getElementById('lstm').checked) {
+        document.getElementById('lstm_pars').style.display = 'block';
+        document.getElementById('submit').disabled = false;
+    }
+    else document.getElementById('lstm_pars').style.display = 'none';
+
+    if (document.getElementById('lasso').checked) {
+        document.getElementById('lasso_pars').style.display = 'block';
+        document.getElementById('submit').disabled = false;
+    }
+    else document.getElementById('lasso_pars').style.display = 'none';
+}
+
+</script>
+
+
+<h1>Multiscale Forecasting</h1>
+<p>To proceed, select forecasting model. </p>
+
+<form id        =  "submitForm"
+     action    =  "/api/par"
+     method    =  "post"
+>
+<h4> Forecasting parameters:</h4>
+<div id="frc_pars">
+<input type="text" name="n_req" value="1">
+<label for="n_req">Number of requested points (to forecast)</label><br>
+<input type="text" name="n_hist" value="5">
+<label for="n_hist">Number of historical points</label><br>
+<input type="text" name="train_test" value="0.75">
+<label for="train_test">Train ratio</label><br>
+    </div>
+
+<h4>Forecasting method:</h4>
+<label>LSTM</label>
+<input type="radio" name="method" id="lstm" value="lstm" onclick="onclick_pars()"><br>    
+<label for="lasso">Lasso</label>
+<input type="radio" name="method" id="lasso" value="lasso" onclick="onclick_pars()"><br>
+<div id="lstm_pars" style="display:none">
+        <h4> LSTM parameters:</h4>
+<input type="text" name="learn_rate" value="2e-5">
+<label for="learn_rate">Learning rate</label><br>
+<input type="text" name="lstm_units" value="500">
+<label for="lstm_units">Number of LSTM units</label><br>
+    </div>
+
+<div id="lasso_pars" style="display:none">
+        <h4> Lasso parameters:</h4>
+<input type="text" name="alpha" value="0.001">
+<label for="alpha">Regularization parameter alpha</label><br>
+    </div>
+
+<h4> Feature generation:</h4>
+<p>...</p>
+<h4> Feature selection: </h4>
+<p>...</p>
+
+<br>
+
+<input id='submit' type="submit" value="Forecast!" name="submit" disabled>
+</form>
+
+<br>
+<br>
+<form id  =  "back"
+action    =  "/"
+method    =  "get"
+>
+Back to data submission:
+<input type="submit" value="Start" name="back">
+</form>
+</body>
+</html>
+
+
+
