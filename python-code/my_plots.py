@@ -8,13 +8,17 @@ import glob
 
 
 
-def formatted_plot(y, x=None, ls=None, title=None, legend=None, xlabel=None, ylabel=None):
+def formatted_plot(y, x=None, ls=None, title=None, legend=None, xlabel=None, ylabel=None, plt_ref=None):
     if ls is None:
         ls = "-"
     if legend is None:
         label = ""
     else:
         label = legend
+
+    # if not plt_ref is None:
+    #     plt = plt_ref
+
     if x is None:
         plt.plot(y, ls=ls, label=label)
     else:
@@ -30,6 +34,27 @@ def formatted_plot(y, x=None, ls=None, title=None, legend=None, xlabel=None, yla
         plt.ylabel(ylabel)
 
     return plt
+
+
+
+def plot_multiple_ts_sharedx(ts_list):
+
+    f, axarr = plt.subplots(len(ts_list), sharex=True)
+    for i, ts in enumerate(ts_list):
+        formatted_plot(ts.T, x=ts.index, plt_ref=axarr[i])
+
+    plt.show()
+
+def plot_multiple_ts(ts_list, shared_x=False):
+
+    if shared_x:
+        plot_multiple_ts_sharedx(ts_list)
+        return None
+
+    for i, ts in enumerate(ts_list):
+        plt = formatted_plot(ts.T, x=ts.index)
+
+    plt.show()
 
 def plot_forecast(ts, forecasts, idx_ts=None, idx_frc=None, filename=None, folder=""):
     if idx_frc is None:
@@ -62,10 +87,12 @@ def plot_forecast(ts, forecasts, idx_ts=None, idx_frc=None, filename=None, folde
         plt.savefig(filename)
         plt.close()
 
+    return filename
+
 
 def imagesc(matrix, xlabel="", ylabel="", xticks=None, yticks=None):
 
-    plt.imshow(matrix, interpolation='none')
+    plt.imshow(matrix, interpolation='none', aspect='auto')
     plt.colorbar()
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
@@ -95,7 +122,7 @@ def input_latex_headers():
 
     return latex_header, latex_end
 
-def save_to_latex(df_list, df_names=None, file_name=None, folder=""):
+def save_to_latex(df_list=(), df_names=None, text="", file_name=None, folder="", rewrite=False):
 
     if not folder == "" and not os.path.exists(folder):
         os.mkdir(folder)
@@ -108,8 +135,18 @@ def save_to_latex(df_list, df_names=None, file_name=None, folder=""):
     if df_names is None:
         df_names = ["Table" + str(i + 1) for i in range(len(df_list))]
 
+    old_text = ""
+    if not rewrite:
+        with open(file_name, "r+") as f:
+            old_text = f.read()
+            old_text = re.sub(latex_end, '', old_text)
+        f.close()
+
     with open(file_name, "w+") as f:
-        f.write(latex_header)
+        f.write(old_text)
+        if rewrite:
+            f.write(latex_header)
+        f.write(text)
         for i, df in enumerate(df_list):
             f.write("\n"+ check_text_for_latex(df_names[i])  + "\\\ \n")
             f.write(df.to_latex())
