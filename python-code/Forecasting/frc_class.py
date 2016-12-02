@@ -16,7 +16,7 @@ class IdentityModel(BaseEstimator):
     """ Base class for prediction, feature selection and generation """
 
     def __init__(self, name=None):
-        self.name = name
+        self.name = str(name)
         self.is_fitted = False
 
     def fit(self, X, Y):
