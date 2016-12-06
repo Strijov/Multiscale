@@ -123,7 +123,23 @@ def input_latex_headers():
     return latex_header, latex_end
 
 def save_to_latex(df_list=(), df_names=None, text="", file_name=None, folder="", rewrite=False):
+    """
+    Saves results of the experiment into .tex file
 
+    :param df_list: list of tables with results
+    :type df_list: list
+    :param df_names: list of table headers, optional
+    :type df_names: list
+    :param text: any additional text, optional
+    :type text: str
+    :param file_name: file name for saving, optional
+    :type file_name: str
+    :param folder: folder name for saving, optional
+    :type folder: str
+    :param rewrite: defines if the contents of file_name should be rewritten
+    :type rewrite: bool
+    :return: None
+    """
     if not folder == "" and not os.path.exists(folder):
         os.mkdir(folder)
     if file_name is None:
@@ -133,10 +149,13 @@ def save_to_latex(df_list=(), df_names=None, text="", file_name=None, folder="",
     latex_header, latex_end = input_latex_headers()
 
     if df_names is None:
-        df_names = ["Table" + str(i + 1) for i in range(len(df_list))]
+        df_names = []
+
+
+    df_names.extend(["Table" + str(i + 1) for i in range(len(df_names), len(df_list))])
 
     old_text = ""
-    if not rewrite:
+    if not rewrite and os.path.exists(file_name):
         with open(file_name, "r+") as f:
             old_text = f.read()
             old_text = re.sub(latex_end, '', old_text)
