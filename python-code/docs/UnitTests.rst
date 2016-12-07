@@ -20,6 +20,14 @@ UnitTests.test_reg_matrix module
     :undoc-members:
     :show-inheritance:
 
+UnitTests.test_ts_struct module
+-------------------------------
+
+.. automodule:: UnitTests.test_ts_struct
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

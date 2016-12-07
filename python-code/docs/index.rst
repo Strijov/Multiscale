@@ -14,7 +14,15 @@ Contents:
    LoadAndSaveData
    RegressionMatrix
    Forecasting
+   Features
    UnitTests
+
+Inheritance diagrams
+--------------------
+
+.. inheritance-diagram:: Forecasting
+
+.. _sphinx_literal:
 
 
 Indices and tables

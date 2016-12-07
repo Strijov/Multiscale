@@ -29,7 +29,7 @@ LoadAndSaveData.load_time_series module
     :show-inheritance:
 
 LoadAndSaveData.raw_time_series module
------------------------------------
+--------------------------------------
 
 .. automodule:: LoadAndSaveData.raw_time_series
     :members:
