@@ -49,9 +49,9 @@ VERBOSE = False
 SAVE_DIR = "results"
 FNAME_PREFIX = ""
 
-
 TRAIN_TEST_RATIO = 0.75
 N_STEPS = 1 # forecast only one requested interval
+
 
 def main():
     """
@@ -59,19 +59,18 @@ def main():
 
     The model consists of three main components: feature generation, feature selection and forecasting model.
     Feature generation and selection may be empty:
-    generation = frc_class.IdentityGenerator(name="Identity generator")
-    selection = frc_class.IdentityModel(name="Identity selector")
+    generation = None
+    selection = None
 
-    If generation model is not empty, it should have transform method:
-    def transform(X):  # should be defined in __main__; otherwise will cause problems in save
-        return np.hstack((X, np.power(X, 2)))
-    generator.transform = transform
+    which is the same as
+    generator = gnt_class.FeatureGeneration(name="Identity generator")
+    selector = sel_class.FeatureSelection(name="Identity selector", on=False)
 
     Other options for feature generation:
-    generator = gnt_class.FeatureGeneration(name="univariate", replace=False, transformations="univariate_transformation")
+    generator = gnt_class.FeatureGeneration(name="univariate", replace=False, norm=True
+                                            transformations=["univariate_transformation", "centroids"])
     generator = gnt_class.Nonparametric()
     generator = gnt_class.Monotone()
-    generator = gnt_class.CentroidDistances()
 
     Examples of using sklearn solutions:
     frc_class.CustomModel(PCA, name="Randomized PCA", svd_solver="randomized")
@@ -87,7 +86,7 @@ def main():
     # Load and prepare dataset.
     ts_list = load_energy_weather_data()
 
-    generator = gnt_class.CentroidDistances() #gnt_class.Monotone()
+    generator = gnt_class.FeatureGeneration(transformations='centroids') #gnt_class.Monotone()
 
     # feature selection model can be defined in the same way. If you don't use any, just leave as is
     selector = sel_class.FeatureSelection(on=False) #
@@ -133,9 +132,9 @@ def demo_train(ts_struct_list, frc_model=None, fg_mdl=None, fs_mdl=None, verbose
     Train and save the model.
 
     :param ts_struct_list: list of namedtuples tsStruct
-    :param frc_model: list of dictionaries which specify model structure
-    :param fg_mdl: list of dictionaries which specify feature generators
-    :param fs_mdl: list of dictionaries which specify feature selection strategies
+    :param frc_model: forecasting model, instance of CustomModel
+    :param fg_mdl: feature generation model, instance of FeatureGeneration
+    :param fs_mdl: feature selection model, instance of FeatureSelection
     :param verbose: controls the output
     :return: testError, trainError, bias, model
     """
@@ -168,7 +167,6 @@ def demo_train(ts_struct_list, frc_model=None, fg_mdl=None, fs_mdl=None, verbose
 
         selection_res = "\n Feature selection results: problem status {}, selected {} from {} \\\\ \n".\
             format(sel.status, len(sel.selected), sel.n_vars)
-
 
         frcY, _ = data.forecast(model) # returns forecasted matrix of the same shape as data.Y
         # frcY, idx_frc = data.forecast(model, idx_rows=data.idx_test) # this would return forecasts only for data.testY
