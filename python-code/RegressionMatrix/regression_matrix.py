@@ -422,7 +422,20 @@ class RegMatrix:
         return filenames
 
     def _frc_indices_for_errors(self, idx_frc=None, idx_rows=None, y_idx=None, idx_original=None):
+        """
+        Finds indices of the forecast that should be used to calculate errors
 
+        :param idx_frc: Enumerating indices of forecasted/target TS entries used to compute MAE
+        :type idx_frc: list
+        :param idx_rows: Alternatively, specify raw indices for matrix Y. If idx_frc is specified, idx_rows is ignored
+        :type idx_rows: list
+        :param y_idx: Specifies time series to compute errors for
+        :type y_idx: list
+        :param idx_original: time indices of the original time series (floats, ints or pd.timestamps)
+        :type idx_original: np.ndarray
+        :return: for each time series returns list enumerating indices
+        :rtype: list
+        """
         idx = [0] * self.nts
         if idx_frc is None:
             if idx_rows is None:
@@ -504,6 +517,7 @@ def _denormalize(ts_list):
         if not ts.norm_div == 0:
             ts_list[i].s = (ts + ts.norm_subt) * ts.norm_div
     return ts_list
+
 
 def truncate(ts_struct, n_hist, n_req, n_rows):
     """
