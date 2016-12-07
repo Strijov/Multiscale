@@ -3,7 +3,6 @@ from __future__ import print_function
 
 import os
 import dill
-# import cloudpickle
 
 import numpy as np
 from sklearn.base import BaseEstimator
@@ -256,7 +255,7 @@ def cv_train(raw_model, X, Y, hyperpars, n_cvs):
     :type hyperpars: dict
     :param n_cvs: number of cross-validation splits
     :type n_cvs: int
-    :return: 
+    :return:
     :rtype: list
     """
     from sklearn.model_selection import KFold
