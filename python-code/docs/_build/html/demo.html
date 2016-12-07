@@ -49,7 +49,7 @@
 <dl class="function">
 <dt id="demo.competition_errors">
 <code class="descclassname">demo.</code><code class="descname">competition_errors</code><span class="sig-paren">(</span><em>model</em>, <em>names</em>, <em>y_idx=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/demo.html#competition_errors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#demo.competition_errors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reaturns MAPE, averaged over a set of multivariate time series, specified by names</p>
+<dd><p>Returns MAPE, averaged over a set of multivariate time series, specified by names</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -73,7 +73,7 @@
 
 <dl class="function">
 <dt id="demo.demo_train">
-<code class="descclassname">demo.</code><code class="descname">demo_train</code><span class="sig-paren">(</span><em>ts_struct_list</em>, <em>frc_model=None</em>, <em>fg_mdl=None</em>, <em>fs_mdl=None</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/demo.html#demo_train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#demo.demo_train" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">demo.</code><code class="descname">demo_train</code><span class="sig-paren">(</span><em>ts_struct_list</em>, <em>frc_model=None</em>, <em>fg_mdl=None</em>, <em>fs_mdl=None</em>, <em>verbose=False</em>, <em>return_model=False</em>, <em>rewrite=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/demo.html#demo_train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#demo.demo_train" title="Permalink to this definition">¶</a></dt>
 <dd><p>Train and save the model.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -81,9 +81,9 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>ts_struct_list</strong> &#8211; list of namedtuples tsStruct</li>
-<li><strong>model</strong> &#8211; list of dictionaries which specify model structure</li>
-<li><strong>generators</strong> &#8211; list of dictionaries which specify feature generators</li>
-<li><strong>feature_selection_mdl</strong> &#8211; list of dictionaries which specify feature selection strategies</li>
+<li><strong>frc_model</strong> &#8211; list of dictionaries which specify model structure</li>
+<li><strong>fg_mdl</strong> &#8211; list of dictionaries which specify feature generators</li>
+<li><strong>fs_mdl</strong> &#8211; list of dictionaries which specify feature selection strategies</li>
 <li><strong>verbose</strong> &#8211; controls the output</li>
 </ul>
 </td>
@@ -96,9 +96,43 @@
 </dd></dl>
 
 <dl class="function">
+<dt id="demo.feature_generation_demo">
+<code class="descclassname">demo.</code><code class="descname">feature_generation_demo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/demo.html#feature_generation_demo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#demo.feature_generation_demo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="demo.load_energy_weather_data">
+<code class="descclassname">demo.</code><code class="descname">load_energy_weather_data</code><span class="sig-paren">(</span><em>load_raw=None, fnames=['missing_value_train']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/demo.html#load_energy_weather_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#demo.load_energy_weather_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load data from the EnergyWeather dataset</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="demo.main">
 <code class="descclassname">demo.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/demo.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#demo.main" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Provides an example of usage of the system.</p>
+<p>The model consists of three main components: feature generation, feature selection and forecasting model.
+Feature generation and selection may be empty:
+generation = frc_class.IdentityGenerator(name=&#8221;Identity generator&#8221;)
+selection = frc_class.IdentityModel(name=&#8221;Identity selector&#8221;)</p>
+<p>If generation model is not empty, it should have transform method:
+def transform(X):  # should be defined in __main__; otherwise will cause problems in save</p>
+<blockquote>
+<div>return np.hstack((X, np.power(X, 2)))</div></blockquote>
+<p>generator.transform = transform</p>
+<p>Other options for feature generation:
+generator = gnt_class.FeatureGeneration(name=&#8221;univariate&#8221;, replace=False, transformations=&#8221;univariate_transformation&#8221;)
+generator = gnt_class.Nonparametric()
+generator = gnt_class.Monotone()
+generator = gnt_class.CentroidDistances()</p>
+<p>Examples of using sklearn solutions:
+frc_class.CustomModel(PCA, name=&#8221;Randomized PCA&#8221;, svd_solver=&#8221;randomized&#8221;)
+frc_class.CustomModel(PCA, name=&#8221;PCA&#8221;)</p>
+<p>Examples of custom models:
+* Mixture of experts:
+frc_model = frc_class.CustomModel(GatingEnsemble, name=&#8221;Mixture&#8221;, estimators=[Lasso(alpha=0.01), Lasso(alpha=0.001)])
+* LSTM network:
+frc_model = frc_class.CustomModel(LSTM.LSTM, name=&#8221;LSTM&#8221;)</p>
+</dd></dl>
 
 </div>
 

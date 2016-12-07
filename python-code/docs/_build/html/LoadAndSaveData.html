@@ -295,7 +295,7 @@
 <span id="loadandsavedata-raw-time-series-module"></span><h2>LoadAndSaveData.raw_time_series module<a class="headerlink" href="#module-LoadAndSaveData.raw_time_series" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="LoadAndSaveData.raw_time_series.TsStruct">
-<em class="property">class </em><code class="descclassname">LoadAndSaveData.raw_time_series.</code><code class="descname">TsStruct</code><span class="sig-paren">(</span><em>data</em>, <em>request=1</em>, <em>history=1</em>, <em>name=''</em>, <em>readme=''</em>, <em>allow_empty=False</em>, <em>as_floats=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#TsStruct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.TsStruct" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">LoadAndSaveData.raw_time_series.</code><code class="descname">TsStruct</code><span class="sig-paren">(</span><em>data</em>, <em>request=1</em>, <em>history=1</em>, <em>name=''</em>, <em>readme=''</em>, <em>allow_empty=False</em>, <em>as_floats=False</em>, <em>max_one_step=30</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#TsStruct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.TsStruct" title="Permalink to this definition">¶</a></dt>
 <dd><p>This structure stores input data. The fields are:</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -329,6 +329,23 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="LoadAndSaveData.raw_time_series.TsStruct.interpolate_data">
+<code class="descname">interpolate_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#TsStruct.interpolate_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.TsStruct.interpolate_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is used when original indices do not intersect, or the intersection is too small.
+Defines a new uniform grid of time indices, which includes time steps from all the
+time series in the set. Overwrites data and intervals fields, but leaves history, request
+and one_step as they are</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="LoadAndSaveData.raw_time_series.TsStruct.replace_nans">
 <code class="descname">replace_nans</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#TsStruct.replace_nans"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.TsStruct.replace_nans" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -345,7 +362,7 @@
 <dl class="method">
 <dt id="LoadAndSaveData.raw_time_series.TsStruct.to_floats">
 <code class="descname">to_floats</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#TsStruct.to_floats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.TsStruct.to_floats" title="Permalink to this definition">¶</a></dt>
-<dd><p>Forces TsStruct instance to as_floats format</p>
+<dd><p>Forces TsStruct instance to as_floats format.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -359,7 +376,8 @@
 <dl class="method">
 <dt id="LoadAndSaveData.raw_time_series.TsStruct.train_test_split">
 <code class="descname">train_test_split</code><span class="sig-paren">(</span><em>train_test_ratio=0.75</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#TsStruct.train_test_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.TsStruct.train_test_split" title="Permalink to this definition">¶</a></dt>
-<dd><p>Splits time series sequentially into train and test time series</p>
+<dd><p>Splits time series sequentially into train and test time series.
+! Values of one_step are the same as those in the splitted TsStruct instance</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -417,7 +435,7 @@
 
 <dl class="function">
 <dt id="LoadAndSaveData.raw_time_series.assign_one_step_requests">
-<code class="descclassname">LoadAndSaveData.raw_time_series.</code><code class="descname">assign_one_step_requests</code><span class="sig-paren">(</span><em>intervals</em>, <em>as_floats=True</em>, <em>index_type='s'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#assign_one_step_requests"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.assign_one_step_requests" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">LoadAndSaveData.raw_time_series.</code><code class="descname">assign_one_step_requests</code><span class="sig-paren">(</span><em>intervals</em>, <em>as_floats=True</em>, <em>index_type='s'</em>, <em>max_request=1000</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#assign_one_step_requests"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.assign_one_step_requests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Assigns request as the lowest common multiple of one step requests for each time series</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -443,6 +461,11 @@
 <dl class="function">
 <dt id="LoadAndSaveData.raw_time_series.data_index_type">
 <code class="descclassname">LoadAndSaveData.raw_time_series.</code><code class="descname">data_index_type</code><span class="sig-paren">(</span><em>data</em>, <em>as_float</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#data_index_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.data_index_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="LoadAndSaveData.raw_time_series.from_floats_to_index_type">
+<code class="descclassname">LoadAndSaveData.raw_time_series.</code><code class="descname">from_floats_to_index_type</code><span class="sig-paren">(</span><em>floats</em>, <em>freq</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#from_floats_to_index_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.from_floats_to_index_type" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -474,7 +497,7 @@
 
 <dl class="function">
 <dt id="LoadAndSaveData.raw_time_series.pd_time_stamps_to_floats">
-<code class="descclassname">LoadAndSaveData.raw_time_series.</code><code class="descname">pd_time_stamps_to_floats</code><span class="sig-paren">(</span><em>time_stamps_array</em>, <em>frequency</em>, <em>from_zero=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#pd_time_stamps_to_floats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.pd_time_stamps_to_floats" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">LoadAndSaveData.raw_time_series.</code><code class="descname">pd_time_stamps_to_floats</code><span class="sig-paren">(</span><em>time_stamps_array</em>, <em>frequency</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LoadAndSaveData/raw_time_series.html#pd_time_stamps_to_floats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#LoadAndSaveData.raw_time_series.pd_time_stamps_to_floats" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>

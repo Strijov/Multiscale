@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="MultiscaleForecasting 0 documentation" href="index.html" />
-    <link rel="next" title="UnitTests package" href="UnitTests.html" />
+    <link rel="next" title="Features package" href="Features.html" />
     <link rel="prev" title="RegressionMatrix package" href="RegressionMatrix.html" /> 
   </head>
   <body role="document">
@@ -38,7 +38,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="UnitTests.html" title="UnitTests package"
+          <a href="Features.html" title="Features package"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="RegressionMatrix.html" title="RegressionMatrix package"
@@ -62,7 +62,7 @@
 <p>Created on 06 October 2016. Author: Radoslav Neychev</p>
 <dl class="class">
 <dt id="Forecasting.GatingEnsemble.GatingEnsemble">
-<em class="property">class </em><code class="descclassname">Forecasting.GatingEnsemble.</code><code class="descname">GatingEnsemble</code><span class="sig-paren">(</span><em>estimators</em>, <em>estimator_loss=&lt;function &lt;lambda&gt; at 0x0000000008F4C898&gt;</em>, <em>n_hidden_units=50</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/GatingEnsemble.html#GatingEnsemble"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.GatingEnsemble.GatingEnsemble" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">Forecasting.GatingEnsemble.</code><code class="descname">GatingEnsemble</code><span class="sig-paren">(</span><em>estimators</em>, <em>estimator_loss=&lt;function &lt;lambda&gt; at 0x0000000008FCC208&gt;</em>, <em>n_hidden_units=50</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/GatingEnsemble.html#GatingEnsemble"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.GatingEnsemble.GatingEnsemble" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="Forecasting.GatingEnsemble.GatingEnsemble.build_gating_function">
 <code class="descname">build_gating_function</code><span class="sig-paren">(</span><em>x_shape</em>, <em>n_gates</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/GatingEnsemble.html#GatingEnsemble.build_gating_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.GatingEnsemble.GatingEnsemble.build_gating_function" title="Permalink to this definition">¶</a></dt>
@@ -126,7 +126,7 @@
 
 <dl class="method">
 <dt id="Forecasting.LSTM.LSTM.fit">
-<code class="descname">fit</code><span class="sig-paren">(</span><em>trainX</em>, <em>trainY</em>, <em>n_epochs=None</em>, <em>fname=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#LSTM.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.LSTM.fit" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fit</code><span class="sig-paren">(</span><em>trainX</em>, <em>trainY</em>, <em>n_epochs=None</em>, <em>fname=None</em>, <em>verbose=True</em>, <em>save_results=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/LSTM.html#LSTM.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.LSTM.LSTM.fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Train module for LSTM network</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -265,13 +265,6 @@
 </dd></dl>
 
 <dl class="class">
-<dt id="Forecasting.frc_class.IdentityGenerator">
-<em class="property">class </em><code class="descclassname">Forecasting.frc_class.</code><code class="descname">IdentityGenerator</code><span class="sig-paren">(</span><em>name=None</em>, <em>replace=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#IdentityGenerator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.IdentityGenerator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#Forecasting.frc_class.IdentityModel" title="Forecasting.frc_class.IdentityModel"><code class="xref py py-class docutils literal"><span class="pre">Forecasting.frc_class.IdentityModel</span></code></a></p>
-<p>Helper class for feature generation</p>
-</dd></dl>
-
-<dl class="class">
 <dt id="Forecasting.frc_class.IdentityModel">
 <em class="property">class </em><code class="descclassname">Forecasting.frc_class.</code><code class="descname">IdentityModel</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#IdentityModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.IdentityModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sklearn.base.BaseEstimator</span></code></p>
@@ -359,7 +352,7 @@
 
 <dl class="class">
 <dt id="Forecasting.frc_class.PipelineModel">
-<em class="property">class </em><code class="descclassname">Forecasting.frc_class.</code><code class="descname">PipelineModel</code><span class="sig-paren">(</span><em>steps=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#PipelineModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.PipelineModel" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">Forecasting.frc_class.</code><code class="descname">PipelineModel</code><span class="sig-paren">(</span><em>steps=None</em>, <em>frc_mdl=None</em>, <em>gen_mdl=None</em>, <em>sel_mdl=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#PipelineModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.PipelineModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sklearn.pipeline.Pipeline</span></code></p>
 <p>A pipeline forecasting model</p>
 <dl class="method">
@@ -410,321 +403,65 @@
 </table>
 </dd></dl>
 
-</dd></dl>
-
-</div>
-<div class="section" id="module-Forecasting.periodogram">
-<span id="forecasting-periodogram-module"></span><h2>Forecasting.periodogram module<a class="headerlink" href="#module-Forecasting.periodogram" title="Permalink to this headline">¶</a></h2>
-<p>Frequency estimation via periodograms</p>
-<dl class="function">
-<dt id="Forecasting.periodogram.periodogram">
-<code class="descclassname">Forecasting.periodogram.</code><code class="descname">periodogram</code><span class="sig-paren">(</span><em>data</em>, <em>min_period=4</em>, <em>max_period=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/periodogram.html#periodogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.periodogram.periodogram" title="Permalink to this definition">¶</a></dt>
-<dd><p>score periodicities by their spectral power.</p>
-<p>Produce a robust periodogram estimate for each possible periodicity
-of the (possibly noisy) data.</p>
-<dl class="docutils">
-<dt>data</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>Data series, having at least three periods of data.</dd>
-<dt>min_period</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Disregard periods shorter than this number of samples.
-Defaults to 4</dd>
-<dt>max_period</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Disregard periods longer than this number of samples.
-Defaults to the smaller of len(data)/MIN_FFT_CYCLES or MAX_FFT_PERIOD</dd>
-</dl>
-<dl class="docutils">
-<dt>periods, power</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray, ndarray</span><dd>Periods is an array of Fourier periods in descending order,
-beginning with the first one greater than max_period.
-Power is an array of spectral power values for the periods</dd>
-</dl>
-<p>This uses Welch&#8217;s method (no relation) of periodogram
-averaging[1]_, which trades off frequency precision for better
-noise resistance. We don&#8217;t look for sharp period estimates from
-it, as it uses the FFT, which evaluates at periods N, N/2, N/3, ...,
-so that longer periods are sparsely sampled.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="Forecasting.periodogram.periodogram_peaks">
-<code class="descclassname">Forecasting.periodogram.</code><code class="descname">periodogram_peaks</code><span class="sig-paren">(</span><em>data</em>, <em>min_period=4</em>, <em>max_period=None</em>, <em>thresh=0.9</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/periodogram.html#periodogram_peaks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.periodogram.periodogram_peaks" title="Permalink to this definition">¶</a></dt>
-<dd><p>return a list of intervals containg high-scoring periods</p>
-<p>Use a robust periodogram to estimate ranges containing
-high-scoring periodicities in possibly short, noisy data. Returns
-each peak period along with its adjacent bracketing periods from
-the FFT coefficient sequence.</p>
-<p>Data should be detrended for sharpest results, but trended data
-can be accommodated by lowering thresh (resulting in more
-intervals being returned)</p>
-<dl class="docutils">
-<dt>data</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>Data series, evenly spaced samples.</dd>
-<dt>min_period</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Disregard periods shorter than this number of samples.
-Defaults to 4</dd>
-<dt>max_period</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Disregard periods longer than this number of samples.
-Defaults to the smaller of len(data)/MIN_FFT_CYCLES or MAX_FFT_PERIOD</dd>
-<dt>thresh</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">float (0..1)</span><dd>Retain periods scoring above thresh*maxscore. Defaults to 0.9</dd>
-</dl>
-<dl class="docutils">
-<dt>periods</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">array of quads, or None</span><dd>Array of (period, power, period-, period+), maximizing period
-and its score, and FFT periods bracketing the maximizing
-period, returned in decreasing order of score</dd>
-</dl>
-</dd></dl>
-
-</div>
-<div class="section" id="module-Forecasting.seasonal">
-<span id="forecasting-seasonal-module"></span><h2>Forecasting.seasonal module<a class="headerlink" href="#module-Forecasting.seasonal" title="Permalink to this headline">¶</a></h2>
-<p>Seasonal adjustment.</p>
-<p>Robustly estimate trend and periodicity in a timeseries.</p>
-<p><cite>Seasonal</cite> can recover additive periodic variation from noisy
-timeseries data with only a few periods.  It is intended for
-estimating seasonal effects when initializing structural timeseries
-models like Holt-Winters. Input samples are assumed evenly-spaced from
-a continuous-time signal with noise (white or impulsive) but no
-longer-term structural anomalies like level shifts.</p>
-<p>The seasonal estimate will be a list of period-over-period averages at
-each seasonal offset. You may specify a period length, or have it
-estimated from the data. The latter is an interesting capability of
-this package.</p>
-<dl class="function">
-<dt id="Forecasting.seasonal.adjust_seasons">
-<code class="descclassname">Forecasting.seasonal.</code><code class="descname">adjust_seasons</code><span class="sig-paren">(</span><em>data</em>, <em>trend='spline'</em>, <em>period=None</em>, <em>seasons=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/seasonal.html#adjust_seasons"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.seasonal.adjust_seasons" title="Permalink to this definition">¶</a></dt>
-<dd><p>Seasonally adjust the data.</p>
-<p>Remove seasonal variation (one dominant frequency), while leaving any trend.
-estimate trend and seasonal components if not provided.</p>
-<dl class="docutils">
-<dt>data</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>series values</dd>
-<dt>trend</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray or string (&#8220;median&#8221;, &#8220;spline&#8221;, &#8220;line&#8221; or None)</span><dd>If ndarray, remove this trend series prior to fitting seasons.
-If string, fit a trend of named type (see fit_trend() for details).
-If seasons is provided, the trend parameter is ignored</dd>
-<dt>period</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">integer or None</span><dd>Use the specified period (number of samples), or estimate if None.</dd>
-<dt>seasons</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray or None</span><dd>use these seasonal offsets instead of estimating</dd>
-</dl>
-<dl class="docutils">
-<dt>adjusted</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray or None</span><dd>seasonally adjusted data, or None if no seasonality detected</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="Forecasting.seasonal.fit_seasons">
-<code class="descclassname">Forecasting.seasonal.</code><code class="descname">fit_seasons</code><span class="sig-paren">(</span><em>data</em>, <em>trend='spline'</em>, <em>period=None</em>, <em>min_ev=0.05</em>, <em>periodogram_thresh=0.5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/seasonal.html#fit_seasons"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.seasonal.fit_seasons" title="Permalink to this definition">¶</a></dt>
-<dd><p>Estimate seasonal effects in a series.</p>
-<p>Estimate the major period of the data by testing seasonal
-differences for various period lengths and returning the seasonal
-offsets that best predict out-of-sample variation.</p>
-<dl class="docutils">
-<dt>data</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>Series data. assumes at least 2 periods of data are provided.</dd>
-<dt>trend</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray or string (&#8220;median&#8221;, &#8220;spline&#8221;, &#8220;line&#8221; or None)</span><dd>If ndarray, remove this trend series prior to fitting seasons.
-If string, fit a trend of named type (see fit_trend() for details)</dd>
-<dt>period</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">integer or None</span><dd>Use the specified period (number of samples), or estimate if None.
-Note that if a specified period does not yield a seasonal effect that
-is better than no seasonal adjustment, None will be returned.</dd>
-<dt>min_ev</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">0..1</span><dd>Minimum variance explained by seasonal adjustment.
-reject a seasonal effect if the expected explained variance of the
-specified or estimated period is less than this.</dd>
-<dt>periodogram_thresh</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">float (0..1) or None</span><dd>As a speedup, restrict attention to a range of periods
-derived from the input signal&#8217;s periodogram (see periodogram_peaks()).
-If None, test all periods.</dd>
-</dl>
-<dl class="docutils">
-<dt>seasons, trend</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray or None, ndarray</span><dd>seasons: estimated seasonal factor array, or None if no
-periodicity is detected. The array length is the period.
-trend: fitted (or supplied) trend prior to seasonal fit.</dd>
-</dl>
-<p>Two steps:</p>
-<p>First, a range of likely periods is estimated via periodogram
-averaging <a class="footnote-reference" href="#id4" id="id1">[2]</a>.  This is an optional, ad-hoc optimization, and
-though it works well for all our tests and examples there are
-surely classes of signal that will fool it.</p>
-<p>Next, a time-domain period estimator chooses the best integer
-period based on cross-validated residual errors <a href="#id7"><span class="problematic" id="id8"><span id="id2"></span>[1]_</span></a>. It also
-tests the strength of the seasonal effect using the R^2 of the
-leave-one-out cross-validation. For the seasonal model used here,
-this is the expected fraction of variance explained by the best
-seasonal estimate.</p>
-<table class="docutils footnote" frame="void" id="id3" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
+<dl class="method">
+<dt id="Forecasting.frc_class.PipelineModel.train_model">
+<code class="descname">train_model</code><span class="sig-paren">(</span><em>train_x</em>, <em>train_y</em>, <em>retrain=True</em>, <em>hyperpars=None</em>, <em>n_cvs=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#PipelineModel.train_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.PipelineModel.train_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes and train feature generation, selection and forecasting model in a pipeline</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
 <tbody valign="top">
-<tr><td class="label">[1]</td><td>Hastie, Tibshirani, and Friedman, _The Elements of Statistical
-Learning (2nd ed)_, eqn 7.52, Springer, 2009</td></tr>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>train_x</strong> (<em>numpy.ndarray</em>) &#8211; training data, inputs</li>
+<li><strong>train_y</strong> (<em>numpy.ndarray</em>) &#8211; training data, targets</li>
+<li><strong>retrain</strong> (<em>bool</em>) &#8211; Flag that specifies if the model needs retraining</li>
+<li><strong>hyperpars</strong> &#8211; defines ranges of hyperparameters to tune with cross-validation. If None is specified,</li>
+</ul>
+</td>
+</tr>
 </tbody>
 </table>
-<table class="docutils footnote" frame="void" id="id4" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
+<p>no hyperparameters will be optimized
+:type hyperpars: dict
+:param n_cvs: number of folds in k-fold cross-validation
+:type n_cvs: int
+:return: trained model, forecasting model, generator and selector
+:rtype: tuple</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="Forecasting.frc_class.cv_train">
+<code class="descclassname">Forecasting.frc_class.</code><code class="descname">cv_train</code><span class="sig-paren">(</span><em>raw_model</em>, <em>X</em>, <em>Y</em>, <em>hyperpars</em>, <em>n_cvs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#cv_train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.cv_train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use cross-validation to choose optimal hyperparameter values from the given range</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[2]</a></td><td>Welch, P.D. (1967) &#8220;The Use of Fast Fourier Transform for the
-Estimation of Power Spectra: A Method Based on Time Averaging Over
-Short, Modified Periodograms&#8221;, IEEE Transactions on Audio
-Electroacoustics, AU-15, 70–73.</td></tr>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>raw_model</strong> (<em>instance of PipelineModel</em>) &#8211; model</li>
+<li><strong>X</strong> (<em>numpy.ndarray</em>) &#8211; training data, inputs</li>
+<li><strong>Y</strong> (<em>numpy.ndarray</em>) &#8211; training data, targets</li>
+<li><strong>hyperpars</strong> (<em>dict</em>) &#8211; contains ranges of frc_model hyperparameters</li>
+<li><strong>n_cvs</strong> (<em>int</em>) &#8211; number of cross-validation splits</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="function">
-<dt id="Forecasting.seasonal.gcv">
-<code class="descclassname">Forecasting.seasonal.</code><code class="descname">gcv</code><span class="sig-paren">(</span><em>data</em>, <em>period</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/seasonal.html#gcv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.seasonal.gcv" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generalized cross-validation for seasonality.</p>
-<p>Use GCV <a href="#id9"><span class="problematic" id="id10"><span id="id5"></span>[1]_</span></a> to compute leave-one-out CV error from deseasonalizing
-data using given period choice.
-yhat(x_i) = mean(y) of same-seasoned y&#8217;s</p>
-<dl class="docutils">
-<dt>data</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>series values (must be of length &gt;= 2 * period)</dd>
-<dt>period</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>hypothesized number of samples per period</dd>
-</dl>
-<dl class="docutils">
-<dt>cvmse, seasons</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">float, ndarray</span><dd>cvmse is the mean out-of-sample residual^2 after deseasonalizing.
-seasons is a vector of CV-fitted seasonal offsets.</dd>
-</dl>
-<table class="docutils footnote" frame="void" id="id6" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label">[1]</td><td>Hastie, Tibshirani, and Friedman, _The Elements of Statistical
-Learning (2nd ed)_, eqn 7.52, Springer, 2009</td></tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="Forecasting.seasonal.rsquared_cv">
-<code class="descclassname">Forecasting.seasonal.</code><code class="descname">rsquared_cv</code><span class="sig-paren">(</span><em>data</em>, <em>period</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/seasonal.html#rsquared_cv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.seasonal.rsquared_cv" title="Permalink to this definition">¶</a></dt>
-<dd><p>estimate the out-of-sample R^2 for the given period</p>
-<dl class="docutils">
-<dt>data</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>series values (must be of length &gt;= 2 * period)</dd>
-<dt>period</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>hypothesized number of samples per period</dd>
-</dl>
-<p>cvmse : float</p>
-</dd></dl>
-
-</div>
-<div class="section" id="module-Forecasting.trend">
-<span id="forecasting-trend-module"></span><h2>Forecasting.trend module<a class="headerlink" href="#module-Forecasting.trend" title="Permalink to this headline">¶</a></h2>
-<p>Trend estimation for timeseries.</p>
-<p>Estimate and remove trend in a timeseries.</p>
-<p>In this package, trend removal is in service of isolating and
-estimating periodic (non-trend) variation. &#8220;trend&#8221; is in the sense of
-Cleveland&#8217;s STL decomposition &#8211; a lowpass smoothing of
-the data that, when removed from the original series, preserves
-original seasonal variation.  Detrending is accomplishd by a coarse
-fitted spline, mean or median filters, or a fitted line.</p>
-<p>Input samples are assumed evenly-spaced from an anomaly-free
-continuous-time signal.</p>
-<dl class="function">
-<dt id="Forecasting.trend.aglet">
-<code class="descclassname">Forecasting.trend.</code><code class="descname">aglet</code><span class="sig-paren">(</span><em>src</em>, <em>window</em>, <em>dst=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/trend.html#aglet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.trend.aglet" title="Permalink to this definition">¶</a></dt>
-<dd><p>straigten the ends of a windowed sequence.</p>
-<p>Replace the window/2 samples at each end of the sequence with
-lines fit to the full window at each end.  This boundary treatment
-for windowed smoothers is better behaved for detrending than
-decreasing window sizes at the ends.</p>
-<dl class="docutils">
-<dt>src</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>list of observed values</dd>
-<dt>window</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>odd integer window size (as would be provided to a windowed smoother)</dd>
-<dt>dst</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>if provided, write aglets into the boundaries of this array.
-if dst=src, overwrite ends of src in place. If None, allocate result.</dd>
-</dl>
-<dl class="docutils">
-<dt>dst</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>array composed of src&#8217;s infield values with aglet ends.</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="Forecasting.trend.fit_trend">
-<code class="descclassname">Forecasting.trend.</code><code class="descname">fit_trend</code><span class="sig-paren">(</span><em>data</em>, <em>kind='spline'</em>, <em>period=None</em>, <em>ptimes=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/trend.html#fit_trend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.trend.fit_trend" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fit a trend for a possibly noisy, periodic timeseries.</p>
-<p>Trend may be modeled by a line, cubic spline, or mean or median
-filtered series.</p>
-<dl class="docutils">
-<dt>data</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>list of observed values</dd>
-<dt>kind</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">string (&#8220;mean&#8221;, &#8220;median&#8221;, &#8220;line&#8221;, &#8220;spline&#8221;, None)</span><dd>if mean, apply a period-based mean filter
-if median, apply a period-based median filter
-if line, fit a slope to median-filtered data.
-if spline, fit a piecewise cubic spline to the data
-if None, return zeros</dd>
-<dt>period</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd>seasonal periodicity, for filtering the trend.
-if None, will be estimated.</dd>
-<dt>ptimes</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd>multiple of period to use as smoothing window size</dd>
-</dl>
-<p>trend : ndarray</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="Forecasting.trend.guess_trended_period">
-<code class="descclassname">Forecasting.trend.</code><code class="descname">guess_trended_period</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/trend.html#guess_trended_period"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.trend.guess_trended_period" title="Permalink to this definition">¶</a></dt>
-<dd><p>return a rough estimate of the major period of trendful data.</p>
-<p>Periodogram wants detrended data to score periods reliably. To do
-that, apply a broad median filter based on a reasonable maximum
-period.  Return a weighted average of the plausible periodicities.</p>
-<dl class="docutils">
-<dt>data</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>list of observed values, evenly spaced in time.</dd>
-</dl>
-<p>period : int</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="Forecasting.trend.line_filter">
-<code class="descclassname">Forecasting.trend.</code><code class="descname">line_filter</code><span class="sig-paren">(</span><em>data</em>, <em>window</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/trend.html#line_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.trend.line_filter" title="Permalink to this definition">¶</a></dt>
-<dd><p>fit a line to the data, after filtering</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="Forecasting.trend.mean_filter">
-<code class="descclassname">Forecasting.trend.</code><code class="descname">mean_filter</code><span class="sig-paren">(</span><em>data</em>, <em>window</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/trend.html#mean_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.trend.mean_filter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply a windowed mean filter to the data.</p>
-<p>This implementation leaves partial windows at the ends untouched</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="Forecasting.trend.median_filter">
-<code class="descclassname">Forecasting.trend.</code><code class="descname">median_filter</code><span class="sig-paren">(</span><em>data</em>, <em>window</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/trend.html#median_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.trend.median_filter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply a median filter to the data.</p>
-<p>This implementation leaves partial windows at the ends untouched</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="Forecasting.trend.spline_filter">
-<code class="descclassname">Forecasting.trend.</code><code class="descname">spline_filter</code><span class="sig-paren">(</span><em>data</em>, <em>nsegs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/trend.html#spline_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.trend.spline_filter" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Detrend a possibly periodic timeseries by fitting a coarse piecewise</dt>
-<dd>smooth cubic spline</dd>
-</dl>
-<dl class="docutils">
-<dt>data</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>list of observed values</dd>
-<dt>nsegs</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd>number of spline segments</dd>
-</dl>
-<p>filtered : ndarray</p>
-</dd></dl>
+<dt id="Forecasting.frc_class.mean_squared_error_">
+<code class="descclassname">Forecasting.frc_class.</code><code class="descname">mean_squared_error_</code><span class="sig-paren">(</span><em>f</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Forecasting/frc_class.html#mean_squared_error_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Forecasting.frc_class.mean_squared_error_" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </div>
 <div class="section" id="module-Forecasting">
@@ -746,9 +483,6 @@ period.  Return a weighted average of the plausible periodicities.</p>
 <li><a class="reference internal" href="#module-Forecasting.LSTM">Forecasting.LSTM module</a></li>
 <li><a class="reference internal" href="#module-Forecasting.arima_model">Forecasting.arima_model module</a></li>
 <li><a class="reference internal" href="#module-Forecasting.frc_class">Forecasting.frc_class module</a></li>
-<li><a class="reference internal" href="#module-Forecasting.periodogram">Forecasting.periodogram module</a></li>
-<li><a class="reference internal" href="#module-Forecasting.seasonal">Forecasting.seasonal module</a></li>
-<li><a class="reference internal" href="#module-Forecasting.trend">Forecasting.trend module</a></li>
 <li><a class="reference internal" href="#module-Forecasting">Module contents</a></li>
 </ul>
 </li>
@@ -758,8 +492,8 @@ period.  Return a weighted average of the plausible periodicities.</p>
   <p class="topless"><a href="RegressionMatrix.html"
                         title="previous chapter">RegressionMatrix package</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="UnitTests.html"
-                        title="next chapter">UnitTests package</a></p>
+  <p class="topless"><a href="Features.html"
+                        title="next chapter">Features package</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -791,7 +525,7 @@ period.  Return a weighted average of the plausible periodicities.</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="UnitTests.html" title="UnitTests package"
+          <a href="Features.html" title="Features package"
              >next</a> |</li>
         <li class="right" >
           <a href="RegressionMatrix.html" title="RegressionMatrix package"

@@ -59,7 +59,7 @@
 <span class="kn">from</span> <span class="nn">.raw_time_series</span> <span class="k">import</span> <span class="n">TsStruct</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">load_energy_weather_data</span>
-<span class="n">DIRNAME</span> <span class="o">=</span> <span class="s1">&#39;ProcessedData&#39;</span> <span class="c1"># directory to store data (.pkl) in</span>
+<span class="n">DIRNAME</span> <span class="o">=</span> <span class="s1">&#39;../data/ProcessedData&#39;</span> <span class="c1"># directory to store data (.pkl) in</span>
 
 <span class="c1"># Define a dict of func names for data loading</span>
 <span class="n">LOAD_FUNCS_DICT</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;EnergyWeather&#39;</span><span class="p">:</span> <span class="n">load_energy_weather_data</span><span class="p">,</span>
@@ -67,8 +67,8 @@
               <span class="s1">&#39;Artifical&#39;</span><span class="p">:</span><span class="s1">&#39;load_energy_weather_data&#39;</span><span class="p">}</span> <span class="c1">#FIXIT</span>
 
 <span class="c1"># Define a dict for raw data directories</span>
-<span class="n">RAW_DIRS_DICT</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;EnergyWeather&#39;</span><span class="p">:</span> <span class="s1">&#39;../code/data/EnergyWeatherTS/orig&#39;</span><span class="p">,</span>
-              <span class="s1">&#39;NNcompetition&#39;</span><span class="p">:</span> <span class="s1">&#39;../code/data/NNcompetition&#39;</span><span class="p">}</span> <span class="c1">#FIXIT</span>
+<span class="n">RAW_DIRS_DICT</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;EnergyWeather&#39;</span><span class="p">:</span> <span class="s1">&#39;../data/EnergyWeatherTS/orig&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;NNcompetition&#39;</span><span class="p">:</span> <span class="s1">&#39;../data/NNcompetition&#39;</span><span class="p">}</span> <span class="c1">#FIXIT</span>
 
 
 
@@ -172,8 +172,7 @@
     <span class="k">if</span> <span class="n">dataset_idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">dataset_idx</span> <span class="o">=</span> <span class="n">datasets_indices</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dataset_idx</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datasets_indices</span><span class="p">))</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Specified dataset indices </span><span class="si">{}</span><span class="s2"> out of range for dataset indices </span><span class="si">{}</span><span class="s2"> read from file&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_idx</span><span class="p">,</span> <span class="n">datasets_indices</span><span class="p">))</span>
-        <span class="k">raise</span> <span class="ne">IndexError</span>
+        <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s2">&quot;Specified dataset indices </span><span class="si">{}</span><span class="s2"> out of range for dataset indices </span><span class="si">{}</span><span class="s2"> read from file&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_idx</span><span class="p">,</span> <span class="n">datasets_indices</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">dataset_idx</span><span class="p">:</span>
         <span class="n">dataset</span> <span class="o">=</span> <span class="n">datasets_indices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="n">ts_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">from_iot_to_struct</span><span class="p">(</span><span class="n">iot_ts_list</span><span class="p">,</span> <span class="n">host_ids</span><span class="p">[</span><span class="n">dataset</span><span class="p">],</span> <span class="n">dataset</span><span class="p">))</span>

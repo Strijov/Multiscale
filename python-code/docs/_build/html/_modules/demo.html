@@ -56,21 +56,42 @@
 <span class="kn">from</span> <span class="nn">RegressionMatrix</span> <span class="k">import</span> <span class="n">regression_matrix</span>
 <span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="k">import</span> <span class="n">Lasso</span>
 <span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="k">import</span> <span class="n">RandomForestRegressor</span>
+<span class="c1"># from sklearn.decomposition import PCA</span>
 <span class="kn">from</span> <span class="nn">LoadAndSaveData</span> <span class="k">import</span> <span class="n">load_time_series</span>
 <span class="kn">from</span> <span class="nn">Forecasting</span> <span class="k">import</span> <span class="n">frc_class</span>
-<span class="kn">from</span> <span class="nn">Forecasting.GatingEnsemble</span> <span class="k">import</span> <span class="n">GatingEnsemble</span>
-<span class="c1">#from Forecasting.LSTM import LSTM</span>
+<span class="kn">from</span> <span class="nn">Features</span> <span class="k">import</span> <span class="n">generation_models</span> <span class="k">as</span> <span class="n">gnt_class</span>
+<span class="kn">from</span> <span class="nn">Features</span> <span class="k">import</span> <span class="n">quadratic_feature_selection</span> <span class="k">as</span> <span class="n">sel_class</span>
+<span class="c1"># from Forecasting.GatingEnsemble import GatingEnsemble</span>
+<span class="c1"># from Forecasting.LSTM import LSTM</span>
 <span class="kn">import</span> <span class="nn">my_plots</span>
 
 <span class="c1"># Experiment data</span>
 <span class="n">DATASET</span> <span class="o">=</span> <span class="s1">&#39;EnergyWeather&#39;</span>
-<span class="n">TS_IDX</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">]</span> <span class="c1"># We exclude precipitation from the list of time series</span>
+<span class="n">TS_IDX</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]</span> <span class="c1"># We exclude precipitation from the list of time series</span>
 
 <span class="c1"># Example of partition. You may use all missing_values time series and both orig time series to test you model.</span>
 <span class="c1"># The final quality will be assesed on varying_rates time series, so don&#39;t look at them until you are finished</span>
 <span class="n">TRAIN_FILE_NAMES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;missing_value_train&#39;</span><span class="p">]</span>
 <span class="n">TEST_FILE_NAMES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;missing_value_test&#39;</span><span class="p">]</span>
 <span class="n">HIDDEN_TEST</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;varying&#39;</span><span class="p">]</span> <span class="c1">#</span>
+
+<span class="n">feature_gnt_names</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;univariate_transformation&#39;</span><span class="p">,</span>
+                       <span class="c1"># &#39;bivariate_transformation&#39;, this one has additional argument</span>
+                       <span class="s1">&#39;simple_statistics&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;haar_transformations&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;monotone_linear&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;monotone_polinomial_rate&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;monotone_sublinear_polinomial_rate&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;monotone_logarithmic_rate&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;monotone_slow_convergence&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;monotone_fast_convergence&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;monotone_soft_relu&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;monotone_sigmoid&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;monotone_soft_max&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;monotone_hyberbolic_tangent&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;monotone_softsign&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;centroids&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;all&#39;</span><span class="p">]</span>
 
 <span class="c1"># output and saving parameters</span>
 <span class="n">VERBOSE</span> <span class="o">=</span> <span class="kc">False</span>
@@ -81,36 +102,47 @@
 <span class="n">TRAIN_TEST_RATIO</span> <span class="o">=</span> <span class="mf">0.75</span>
 <span class="n">N_STEPS</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># forecast only one requested interval</span>
 
-
-
-
 <div class="viewcode-block" id="main"><a class="viewcode-back" href="../demo.html#demo.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Provides an example of usage of the system.</span>
+
+<span class="sd">    The model consists of three main components: feature generation, feature selection and forecasting model.</span>
+<span class="sd">    Feature generation and selection may be empty:</span>
+<span class="sd">    generation = frc_class.IdentityGenerator(name=&quot;Identity generator&quot;)</span>
+<span class="sd">    selection = frc_class.IdentityModel(name=&quot;Identity selector&quot;)</span>
+
+<span class="sd">    If generation model is not empty, it should have transform method:</span>
+<span class="sd">    def transform(X):  # should be defined in __main__; otherwise will cause problems in save</span>
+<span class="sd">        return np.hstack((X, np.power(X, 2)))</span>
+<span class="sd">    generator.transform = transform</span>
+
+<span class="sd">    Other options for feature generation:</span>
+<span class="sd">    generator = gnt_class.FeatureGeneration(name=&quot;univariate&quot;, replace=False, transformations=&quot;univariate_transformation&quot;)</span>
+<span class="sd">    generator = gnt_class.Nonparametric()</span>
+<span class="sd">    generator = gnt_class.Monotone()</span>
+<span class="sd">    generator = gnt_class.CentroidDistances()</span>
+
+<span class="sd">    Examples of using sklearn solutions:</span>
+<span class="sd">    frc_class.CustomModel(PCA, name=&quot;Randomized PCA&quot;, svd_solver=&quot;randomized&quot;)</span>
+<span class="sd">    frc_class.CustomModel(PCA, name=&quot;PCA&quot;)</span>
+
+<span class="sd">    Examples of custom models:</span>
+<span class="sd">    * Mixture of experts:</span>
+<span class="sd">    frc_model = frc_class.CustomModel(GatingEnsemble, name=&quot;Mixture&quot;, estimators=[Lasso(alpha=0.01), Lasso(alpha=0.001)])</span>
+<span class="sd">    * LSTM network:</span>
+<span class="sd">    frc_model = frc_class.CustomModel(LSTM.LSTM, name=&quot;LSTM&quot;)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Load and prepare dataset.</span>
-    <span class="n">load_raw</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;ProcessedData&quot;</span><span class="p">,</span> <span class="s2">&quot;EnergyWeather_orig_train.pkl&quot;</span><span class="p">))</span>
-    <span class="n">load_time_series</span><span class="o">.</span><span class="n">load_all_time_series</span><span class="p">(</span><span class="n">datasets</span><span class="o">=</span><span class="p">[</span><span class="n">DATASET</span><span class="p">],</span> <span class="n">load_raw</span><span class="o">=</span><span class="n">load_raw</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">VERBOSE</span><span class="p">)</span>
-    <span class="n">ts_list</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">TRAIN_FILE_NAMES</span><span class="p">:</span>
-        <span class="n">ts_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">load_time_series</span><span class="o">.</span><span class="n">load_all_time_series</span><span class="p">(</span><span class="n">datasets</span><span class="o">=</span><span class="p">[</span><span class="n">DATASET</span><span class="p">],</span> <span class="n">load_raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">name_pattern</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">ts_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">summarize_ts</span><span class="p">())</span>
+    <span class="n">ts_list</span> <span class="o">=</span> <span class="n">load_energy_weather_data</span><span class="p">()</span>
 
-
-    <span class="n">generator</span> <span class="o">=</span> <span class="n">frc_class</span><span class="o">.</span><span class="n">IdentityGenerator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Identity generator&quot;</span><span class="p">)</span>
-    <span class="c1"># Example: define a transformation function for feature generation</span>
-
-    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">X</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
-    <span class="n">generator</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">transform</span> <span class="c1"># defined in __main__; otherwise will cause problems in save</span>
+    <span class="n">generator</span> <span class="o">=</span> <span class="n">gnt_class</span><span class="o">.</span><span class="n">FeatureGeneration</span><span class="p">(</span><span class="n">transformations</span><span class="o">=</span><span class="s1">&#39;centroids&#39;</span><span class="p">)</span> <span class="c1">#gnt_class.Monotone()</span>
 
     <span class="c1"># feature selection model can be defined in the same way. If you don&#39;t use any, just leave as is</span>
-    <span class="n">selector</span> <span class="o">=</span> <span class="n">frc_class</span><span class="o">.</span><span class="n">IdentityModel</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Identity selector&quot;</span><span class="p">)</span>
-
+    <span class="n">selector</span> <span class="o">=</span> <span class="n">sel_class</span><span class="o">.</span><span class="n">FeatureSelection</span><span class="p">(</span><span class="n">on</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="c1">#</span>
     <span class="c1"># first argument is your model class, then follow optional parameters as keyword arguments</span>
-    <span class="n">frc_model</span> <span class="o">=</span> <span class="n">frc_class</span><span class="o">.</span><span class="n">CustomModel</span><span class="p">(</span><span class="n">Lasso</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Lasso&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>
-    <span class="c1"># Examples of custom models:</span>
-    <span class="c1"># Mixture of experts:</span>
-    <span class="c1"># frc_model = frc_class.CustomModel(GatingEnsemble, name=&quot;Mixture&quot;, estimators=[Lasso(alpha=0.01), Lasso(alpha=0.001)])</span>
-    <span class="c1"># LSTM network:</span>
-    <span class="c1"># frc_model = frc_class.CustomModel(LSTM.LSTM, name=&quot;LSTM&quot;)</span>
+    <span class="n">frc_model</span> <span class="o">=</span> <span class="n">frc_class</span><span class="o">.</span><span class="n">CustomModel</span><span class="p">(</span><span class="n">RandomForestRegressor</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;RF&quot;</span><span class="p">)</span>
+    <span class="c1">#frc_class.CustomModel(Lasso, name=&quot;Lasso&quot;, alpha=0.001)</span>
 
     <span class="c1"># train your model:</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">demo_train</span><span class="p">(</span><span class="n">ts_list</span><span class="p">,</span> <span class="n">frc_model</span><span class="o">=</span><span class="n">frc_model</span><span class="p">,</span> <span class="n">fg_mdl</span><span class="o">=</span><span class="n">generator</span><span class="p">,</span> <span class="n">fs_mdl</span><span class="o">=</span><span class="n">selector</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">VERBOSE</span><span class="p">)</span>
@@ -119,37 +151,55 @@
     <span class="n">train_error</span><span class="p">,</span> <span class="n">train_std</span> <span class="o">=</span> <span class="n">competition_errors</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">TRAIN_FILE_NAMES</span><span class="p">,</span> <span class="n">y_idx</span><span class="o">=</span><span class="n">TS_IDX</span><span class="p">)</span>
     <span class="n">test_error</span><span class="p">,</span> <span class="n">test_std</span> <span class="o">=</span> <span class="n">competition_errors</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">TEST_FILE_NAMES</span><span class="p">,</span> <span class="n">y_idx</span><span class="o">=</span><span class="n">TS_IDX</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Mean error across time series: train = </span><span class="si">{}</span><span class="s2"> with std </span><span class="si">{}</span><span class="s2">, test = </span><span class="si">{}</span><span class="s2"> with std </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">train_error</span><span class="p">,</span> <span class="n">train_std</span><span class="p">,</span> <span class="n">test_error</span><span class="p">,</span> <span class="n">test_std</span><span class="p">))</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Average MAPE across time series: train = </span><span class="si">{}</span><span class="s2"> with std </span><span class="si">{}</span><span class="s2">, test = </span><span class="si">{}</span><span class="s2"> with std </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span>
+          <span class="nb">format</span><span class="p">(</span><span class="n">train_error</span><span class="p">,</span> <span class="n">train_std</span><span class="p">,</span> <span class="n">test_error</span><span class="p">,</span> <span class="n">test_std</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">train_error</span><span class="p">,</span> <span class="n">test_error</span></div>
 
 
+<div class="viewcode-block" id="load_energy_weather_data"><a class="viewcode-back" href="../demo.html#demo.load_energy_weather_data">[docs]</a><span class="k">def</span> <span class="nf">load_energy_weather_data</span><span class="p">(</span><span class="n">load_raw</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fnames</span><span class="o">=</span><span class="n">TRAIN_FILE_NAMES</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load data from the EnergyWeather dataset &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">load_raw</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">load_raw</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;ProcessedData&quot;</span><span class="p">,</span> <span class="s2">&quot;EnergyWeather_orig_train.pkl&quot;</span><span class="p">))</span>
 
-<div class="viewcode-block" id="demo_train"><a class="viewcode-back" href="../demo.html#demo.demo_train">[docs]</a><span class="k">def</span> <span class="nf">demo_train</span><span class="p">(</span><span class="n">ts_struct_list</span><span class="p">,</span> <span class="n">frc_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fg_mdl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fs_mdl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="n">load_time_series</span><span class="o">.</span><span class="n">load_all_time_series</span><span class="p">(</span><span class="n">datasets</span><span class="o">=</span><span class="p">[</span><span class="n">DATASET</span><span class="p">],</span> <span class="n">load_raw</span><span class="o">=</span><span class="n">load_raw</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">VERBOSE</span><span class="p">)</span>
+    <span class="n">ts_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">fnames</span><span class="p">:</span>
+        <span class="n">ts_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+            <span class="n">load_time_series</span><span class="o">.</span><span class="n">load_all_time_series</span><span class="p">(</span><span class="n">datasets</span><span class="o">=</span><span class="p">[</span><span class="n">DATASET</span><span class="p">],</span> <span class="n">load_raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">name_pattern</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                                  <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">ts_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">summarize_ts</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">ts_list</span></div>
+
+
+<div class="viewcode-block" id="demo_train"><a class="viewcode-back" href="../demo.html#demo.demo_train">[docs]</a><span class="k">def</span> <span class="nf">demo_train</span><span class="p">(</span><span class="n">ts_struct_list</span><span class="p">,</span> <span class="n">frc_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fg_mdl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fs_mdl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+               <span class="n">return_model</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">rewrite</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Train and save the model.</span>
 
 <span class="sd">    :param ts_struct_list: list of namedtuples tsStruct</span>
-<span class="sd">    :param model: list of dictionaries which specify model structure</span>
-<span class="sd">    :param generators: list of dictionaries which specify feature generators</span>
-<span class="sd">    :param feature_selection_mdl: list of dictionaries which specify feature selection strategies</span>
+<span class="sd">    :param frc_model: list of dictionaries which specify model structure</span>
+<span class="sd">    :param fg_mdl: list of dictionaries which specify feature generators</span>
+<span class="sd">    :param fs_mdl: list of dictionaries which specify feature selection strategies</span>
 <span class="sd">    :param verbose: controls the output</span>
 <span class="sd">    :return: testError, trainError, bias, model</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Check arguments:</span>
     <span class="k">if</span> <span class="n">fg_mdl</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">fg_mdl</span> <span class="o">=</span> <span class="n">frc_class</span><span class="o">.</span><span class="n">IdentityGenerator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Identity generator&quot;</span><span class="p">)</span>
+        <span class="n">fg_mdl</span> <span class="o">=</span> <span class="n">frc_class</span><span class="o">.</span><span class="n">IdentityGenerator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Identity generator&quot;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">fs_mdl</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">fs_mdl</span> <span class="o">=</span> <span class="n">frc_class</span><span class="o">.</span><span class="n">IdentityModel</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Identity selector&quot;</span><span class="p">)</span>
+        <span class="n">fs_mdl</span> <span class="o">=</span> <span class="n">gnt_class</span><span class="o">.</span><span class="n">FeatureGeneration</span><span class="p">()</span>  <span class="c1"># IdentityModel(name=&quot;Identity selector&quot;)</span>
 
     <span class="k">if</span> <span class="n">frc_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">frc_model</span> <span class="o">=</span> <span class="n">frc_class</span><span class="o">.</span><span class="n">CustomModel</span><span class="p">(</span><span class="n">Lasso</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Lasso&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
 
-
-
-
+    <span class="n">model</span> <span class="o">=</span> <span class="n">frc_class</span><span class="o">.</span><span class="n">PipelineModel</span><span class="p">(</span><span class="n">gen_mdl</span><span class="o">=</span><span class="n">fg_mdl</span><span class="p">,</span> <span class="n">sel_mdl</span><span class="o">=</span><span class="n">fs_mdl</span><span class="p">,</span> <span class="n">frc_mdl</span><span class="o">=</span><span class="n">frc_model</span><span class="p">)</span>
     <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">res_text</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -163,22 +213,22 @@
         <span class="n">data</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span><span class="n">TRAIN_TEST_RATIO</span><span class="p">)</span>
 
         <span class="c1"># train the model. This returns trained pipeline and its steps</span>
-        <span class="n">model</span><span class="p">,</span> <span class="n">frc</span><span class="p">,</span> <span class="n">gen</span><span class="p">,</span> <span class="n">sel</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">train_model</span><span class="p">(</span><span class="n">frc_model</span><span class="o">=</span><span class="n">frc_model</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="n">fg_mdl</span><span class="p">,</span> <span class="n">selector</span><span class="o">=</span><span class="n">fs_mdl</span><span class="p">)</span>
+        <span class="n">model</span><span class="p">,</span> <span class="n">frc</span><span class="p">,</span> <span class="n">gen</span><span class="p">,</span> <span class="n">sel</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">train_model</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">trainX</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">trainY</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">model</span><span class="o">.</span><span class="n">print_pipeline_pars</span><span class="p">()</span>
-            <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">selection_res</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Feature selection results: problem status </span><span class="si">{}</span><span class="s2">, selected </span><span class="si">{}</span><span class="s2"> from </span><span class="si">{}</span><span class="s2"> </span><span class="se">\\\\</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span>\
+            <span class="nb">format</span><span class="p">(</span><span class="n">sel</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">sel</span><span class="o">.</span><span class="n">selected</span><span class="p">),</span> <span class="n">sel</span><span class="o">.</span><span class="n">n_vars</span><span class="p">)</span>
+
 
         <span class="n">frcY</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">forecast</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="c1"># returns forecasted matrix of the same shape as data.Y</span>
         <span class="c1"># frcY, idx_frc = data.forecast(model, idx_rows=data.idx_test) # this would return forecasts only for data.testY</span>
 
         <span class="n">data</span><span class="o">.</span><span class="n">plot_frc</span><span class="p">(</span><span class="n">n_frc</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">n_hist</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="n">SAVE_DIR</span><span class="p">)</span> <span class="c1">#this saves figures into SAVE_DIR</span>
 
-        <span class="n">train_mae</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mae</span><span class="p">(</span><span class="n">idx_rows</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">idx_train</span><span class="p">)</span>
-        <span class="n">train_mape</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mape</span><span class="p">(</span><span class="n">idx_rows</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">idx_train</span><span class="p">)</span>
+        <span class="n">train_mae</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mae</span><span class="p">(</span><span class="n">idx_rows</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">idx_train</span><span class="p">,</span> <span class="n">idx_original</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">original_index</span><span class="p">)</span>
+        <span class="n">train_mape</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mape</span><span class="p">(</span><span class="n">idx_rows</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">idx_train</span><span class="p">,</span> <span class="n">idx_original</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">original_index</span><span class="p">)</span>
 
-        <span class="n">test_mae</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mae</span><span class="p">(</span><span class="n">idx_rows</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">idx_test</span><span class="p">)</span>
-        <span class="n">test_mape</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mape</span><span class="p">(</span><span class="n">idx_rows</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">idx_test</span><span class="p">)</span>
+        <span class="n">test_mae</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mae</span><span class="p">(</span><span class="n">idx_rows</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">idx_test</span><span class="p">,</span> <span class="n">idx_original</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">original_index</span><span class="p">)</span>
+        <span class="n">test_mape</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mape</span><span class="p">(</span><span class="n">idx_rows</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">idx_test</span><span class="p">,</span> <span class="n">idx_original</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">original_index</span><span class="p">)</span>
 
         <span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="n">ts</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">TS_IDX</span><span class="p">]</span>
         <span class="n">res1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">train_mae</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;MAE&quot;</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">)])</span>
@@ -187,26 +237,33 @@
         <span class="n">res4</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">test_mape</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;MAPE&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">)])</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">res1</span><span class="p">,</span> <span class="n">res2</span><span class="p">,</span> <span class="n">res3</span><span class="p">,</span> <span class="n">res4</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
+        <span class="n">configuration_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Time series </span><span class="si">{}</span><span class="s2"> forecasted with </span><span class="si">{}</span><span class="s2"> + &#39;</span><span class="si">{}</span><span class="s2">&#39; feature generation model and  &quot;</span> \
+                            <span class="s2">&quot;&#39;</span><span class="si">{}</span><span class="s2">&#39; feature selection model </span><span class="se">\\\\</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">frc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">gen</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">sel</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">configuration_str</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">selection_res</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
 
         <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
-        <span class="n">res_text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Time series </span><span class="si">{}</span><span class="s2"> forecasted with </span><span class="si">{}</span><span class="s2"> + &#39;</span><span class="si">{}</span><span class="s2">&#39; feature generation model and &#39;</span><span class="si">{}</span><span class="s2">&#39; feature selection model </span><span class="se">\n</span><span class="s2"> </span><span class="se">\\\\</span><span class="s2">&quot;</span><span class="o">.</span>
-                        <span class="nb">format</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">frc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">gen</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">sel</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="n">res_text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">configuration_str</span><span class="p">)</span>
+        <span class="n">res_text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">selection_res</span><span class="p">)</span>
 
     <span class="n">saved_mdl_fname</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="n">file_name</span><span class="o">=</span><span class="n">FNAME_PREFIX</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="n">SAVE_DIR</span><span class="p">)</span> <span class="c1"># saving in not an option yet</span>
     <span class="c1"># model = frc_class.PipelineModel().load_model(file_name=fname)</span>
 
     <span class="c1"># write results into a latex file</span>
-    <span class="n">my_plots</span><span class="o">.</span><span class="n">save_to_latex</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">df_names</span><span class="o">=</span><span class="n">res_text</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="n">SAVE_DIR</span><span class="p">)</span>
+    <span class="n">my_plots</span><span class="o">.</span><span class="n">save_to_latex</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">df_names</span><span class="o">=</span><span class="n">res_text</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="n">rewrite</span><span class="o">=</span><span class="n">rewrite</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Results saved to folder </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">))</span>
 
+    <span class="k">if</span> <span class="n">return_model</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">saved_mdl_fname</span>
 
     <span class="k">return</span> <span class="n">saved_mdl_fname</span></div>
 
 
 <div class="viewcode-block" id="competition_errors"><a class="viewcode-back" href="../demo.html#demo.competition_errors">[docs]</a><span class="k">def</span> <span class="nf">competition_errors</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">y_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Reaturns MAPE, averaged over a set of multivariate time series, specified by names</span>
+<span class="sd">    Returns MAPE, averaged over a set of multivariate time series, specified by names</span>
 
 <span class="sd">    :param model: trained forecasting model</span>
 <span class="sd">    :type model: PipelineModel</span>
@@ -219,7 +276,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">frc_class</span><span class="o">.</span><span class="n">PipelineModel</span><span class="p">()</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="c1"># this doesn&#39;t work yet</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">frc_class</span><span class="o">.</span><span class="n">PipelineModel</span><span class="p">()</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 
     <span class="n">mape</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
@@ -234,9 +291,31 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">mape</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">mape</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="feature_generation_demo"><a class="viewcode-back" href="../demo.html#demo.feature_generation_demo">[docs]</a><span class="k">def</span> <span class="nf">feature_generation_demo</span><span class="p">():</span>
+
+    <span class="n">ts_list</span> <span class="o">=</span> <span class="n">load_energy_weather_data</span><span class="p">(</span><span class="n">load_raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fnames</span><span class="o">=</span><span class="n">TRAIN_FILE_NAMES</span><span class="p">)</span>
+    <span class="n">frc_model</span> <span class="o">=</span> <span class="n">frc_class</span><span class="o">.</span><span class="n">CustomModel</span><span class="p">(</span><span class="n">Lasso</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Lasso&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
+    <span class="n">selector</span> <span class="o">=</span> <span class="n">sel_class</span><span class="o">.</span><span class="n">FeatureSelection</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Katrutsa&quot;</span><span class="p">)</span>
+    <span class="n">rewrite</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">for</span> <span class="n">fg_name</span> <span class="ow">in</span> <span class="n">feature_gnt_names</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]:</span>  <span class="c1">#:[&quot;all&quot;]</span>
+        <span class="n">generator</span> <span class="o">=</span> <span class="n">gnt_class</span><span class="o">.</span><span class="n">FeatureGeneration</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">fg_name</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                <span class="n">transformations</span><span class="o">=</span><span class="p">[</span><span class="n">fg_name</span><span class="p">],</span> <span class="n">norm</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">model</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">demo_train</span><span class="p">(</span><span class="n">ts_list</span><span class="p">,</span> <span class="n">frc_model</span><span class="o">=</span><span class="n">frc_model</span><span class="p">,</span> <span class="n">fg_mdl</span><span class="o">=</span><span class="n">generator</span><span class="p">,</span> <span class="n">fs_mdl</span><span class="o">=</span><span class="n">selector</span><span class="p">,</span>
+                              <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_model</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rewrite</span><span class="o">=</span><span class="n">rewrite</span><span class="p">)</span>
+        <span class="n">rewrite</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="n">train_error</span><span class="p">,</span> <span class="n">train_std</span> <span class="o">=</span> <span class="n">competition_errors</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">TRAIN_FILE_NAMES</span><span class="p">,</span> <span class="n">y_idx</span><span class="o">=</span><span class="n">TS_IDX</span><span class="p">)</span>
+        <span class="n">test_error</span><span class="p">,</span> <span class="n">test_std</span> <span class="o">=</span> <span class="n">competition_errors</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">TEST_FILE_NAMES</span><span class="p">,</span> <span class="n">y_idx</span><span class="o">=</span><span class="n">TS_IDX</span><span class="p">)</span>
+
+        <span class="n">res_text</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Average MAPE across time series: train = </span><span class="si">{}</span><span class="s2"> with std </span><span class="si">{}</span><span class="s2">, test = </span><span class="si">{}</span><span class="s2"> with std </span><span class="si">{}</span><span class="s2"> </span><span class="se">\\\\</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span>\
+            <span class="nb">format</span><span class="p">(</span><span class="n">train_error</span><span class="p">,</span> <span class="n">train_std</span><span class="p">,</span> <span class="n">test_error</span><span class="p">,</span> <span class="n">test_std</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">res_text</span><span class="p">)</span>
+        <span class="n">my_plots</span><span class="o">.</span><span class="n">save_to_latex</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">res_text</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="n">rewrite</span><span class="o">=</span><span class="n">rewrite</span><span class="p">)</span></div>
 
 
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="c1">#feature_generation_demo()</span>
     <span class="n">main</span><span class="p">()</span>
 </pre></div>
 

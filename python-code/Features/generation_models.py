@@ -80,6 +80,7 @@ class FeatureTransformation(BaseEstimator):
     def transform(self, X):
         if self.transformation is None:
             return X
+
         if self.variables is not None:
             return self.transformation(X, np.squeeze(np.asarray(self.variables.value)))
 
@@ -90,10 +91,27 @@ class FeatureTransformation(BaseEstimator):
 
 
 class FeatureGeneration(BaseEstimator, Feature):
-    """ Applies feature transformations from package Features"""
+    """
+    Applies feature transformations from package Features
+    """
 
     def __init__(self, name="Nonparametric", replace=True,
                  transformations=None, norm=True):
+        """
+
+        :param name: optional
+        :type name: str
+        :param replace: defines if the results of feature generation should replace the original data matrix
+        :type replace: bool
+        :param transformations: names of feature transformation. Accepted options are: 'univariate_transformation',
+                    'simple_statistics', 'haar_transformations', 'monotone_linear', 'monotone_polinomial_rate',
+                    'monotone_sublinear_polinomial_rate', 'monotone_logarithmic_rate', 'monotone_slow_convergence',
+                    'monotone_fast_convergence', 'monotone_soft_relu', 'monotone_sigmoid', 'monotone_soft_max',
+                    'monotone_hyberbolic_tangent', 'monotone_softsign', 'centroids'
+        :type transformations: list
+        :param norm: defines if feature block should be standardized after transformation
+        :type norm: bool
+        """
         self.name = name
         self.transformations = []
         self.constraints = []
@@ -123,9 +141,6 @@ class FeatureGeneration(BaseEstimator, Feature):
 
         if len(self.transformations) == 0:
             raise ValueError("None of the functions names passed in 'transformations' are valid.")
-        # else:
-            #     raise TypeError("Parameter 'transformations' should be either list or string, got {}".
-            #                     format(type(transformations)))
 
         for i, transf in enumerate(self.transformations):
             new_transform = FeatureTransformation(transformation=transf)
@@ -178,10 +193,8 @@ class FeatureGeneration(BaseEstimator, Feature):
 
         for transf in self.transformations:
             new_transf = _replace_inf(transf.transform(X))
-            try:
-                self.norm_consts[transf.name] = StandardScaler().fit(new_transf)
-            except:
-                pass
+            self.norm_consts[transf.name] = StandardScaler().fit(new_transf)
+
         return self
 
 

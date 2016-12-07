@@ -8,6 +8,7 @@ from Features.generation_models import Feature
 def quad_problem_pars(X, y, sim, rel):
     """
     Function generates matrix Q and vector b which represent feature similarities and feature relevances
+
     :param X: design matrix
     :type X: numpy.ndarray
     :param y: target vector
@@ -33,19 +34,19 @@ def quad_problem_pars(X, y, sim, rel):
         if min_lambda < 0:
             Q = Q - min_lambda * np.eye(Q.shape[0])
     if rel == 'correl':
-        b = np.sum(corr2_coeff(X, y), axis=1) # FIXIT
+        b = np.max(_corr2_coeff(X, y), axis=1) # FIXIT
         # b = np.zeros([X.shape[1], 1])
         # for i in range(X.shape[1]):
         #     b[i] = np.abs(pearsonr(X[:, i], y.flatten())[0])
     if rel == 'mi':
         b = np.zeros([X.shape[1], 1])
         for i in range(X.shape[1]):
-            b[i] = 1.0 #information(y.T, X[:, i].T)
+            b[i] = 1.0  # information(y.T, X[:, i].T)
 
     return Q, b
 
 
-def corr2_coeff(A, B):
+def _corr2_coeff(A, B):
     # Row-wise mean of input arrays & subtract from input arrays themselves
     A_mA = A - A.mean(1)[:, None]
     B_mB = B - B.mean(1)[:, None]
@@ -59,8 +60,25 @@ def corr2_coeff(A, B):
 
 
 class FeatureSelection(Feature):
+    """
+    Implements feature selection based on cvxpy solvers.
+    """
 
     def __init__(self, name="Quadratic MIS", similarity='correl', relevance='correl', threshold=1e-6, on=True):
+        """
+
+        :param name: optional
+        :type name: str
+        :param similarity: name of similarity measure between features. For now the  only option is 'correl' (Pearson correlation)
+        :type similarity: str
+        :param relevance: name of relevance measure between features. 'correl' defines as max pearson correlation
+        between the current feature and each target vector
+        :type relevance: str
+        :param threshold: default threshold value of structure values in the relaxed problem
+        :type threshold: float
+        :param on: if on is False, no feature selection will be implemented
+        :type on: bool
+        """
         self.name = str(name)
         self.similarity = similarity
         self.relevance = relevance
@@ -79,6 +97,7 @@ class FeatureSelection(Feature):
 
         if Feature.selected is None:
             Feature.selected = range(self.n_vars)
+
         self.constraints = Feature.constraints
         self.variables = Feature.variables
 

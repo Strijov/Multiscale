@@ -23,7 +23,9 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="MultiscaleForecasting 0 documentation" href="index.html" /> 
+    <link rel="top" title="MultiscaleForecasting 0 documentation" href="index.html" />
+    <link rel="next" title="UnitTests package" href="UnitTests.html" />
+    <link rel="prev" title="Forecasting package" href="Forecasting.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -35,6 +37,12 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="UnitTests.html" title="UnitTests package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="Forecasting.html" title="Forecasting package"
+             accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">MultiscaleForecasting 0 documentation</a> &#187;</li> 
       </ul>
     </div>  
@@ -49,26 +57,107 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-Features.haar">
-<span id="features-haar-module"></span><h2>Features.haar module<a class="headerlink" href="#module-Features.haar" title="Permalink to this headline">¶</a></h2>
-<p>Created on 23 November 2016. Author: Alexey Goncharov</p>
-</div>
-<div class="section" id="module-Features.metric_">
-<span id="features-metric-module"></span><h2><a href="#id1"><span class="problematic" id="id2">Features.metric_</span></a> module<a class="headerlink" href="#module-Features.metric_" title="Permalink to this headline">¶</a></h2>
-<p>Created on 23 November 2016. Author: Alexey Goncharov</p>
+<div class="section" id="module-Features.generation_models">
+<span id="features-generation-models-module"></span><h2>Features.generation_models module<a class="headerlink" href="#module-Features.generation_models" title="Permalink to this headline">¶</a></h2>
+<p>Created on 23 November 2016. Author: Alexey Goncharov, Anastasia Motrenko</p>
 <dl class="class">
-<dt id="Features.metric_.CentroidDistances">
-<em class="property">class </em><code class="descclassname">Features.metric_.</code><code class="descname">CentroidDistances</code><a class="reference internal" href="_modules/Features/metric_.html#CentroidDistances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.metric_.CentroidDistances" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="Features.metric_.CentroidDistances.fit">
-<code class="descname">fit</code><span class="sig-paren">(</span><em>trainX</em>, <em>trainY=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/metric_.html#CentroidDistances.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.metric_.CentroidDistances.fit" title="Permalink to this definition">¶</a></dt>
+<dt id="Features.generation_models.CentroidDistances">
+<em class="property">class </em><code class="descclassname">Features.generation_models.</code><code class="descname">CentroidDistances</code><span class="sig-paren">(</span><em>name=None</em>, <em>replace=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/generation_models.html#CentroidDistances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.generation_models.CentroidDistances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#Features.generation_models.FeatureTransformation" title="Features.generation_models.FeatureTransformation"><code class="xref py py-class docutils literal"><span class="pre">Features.generation_models.FeatureTransformation</span></code></a></p>
+<p>Computes features based on distance to centriods</p>
+<dl class="method">
+<dt id="Features.generation_models.CentroidDistances.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>train_x</em>, <em>_=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/generation_models.html#CentroidDistances.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.generation_models.CentroidDistances.fit" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="Features.metric_.CentroidDistances.transform">
-<code class="descname">transform</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/metric_.html#CentroidDistances.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.metric_.CentroidDistances.transform" title="Permalink to this definition">¶</a></dt>
+<dt id="Features.generation_models.CentroidDistances.transform">
+<code class="descname">transform</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/generation_models.html#CentroidDistances.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.generation_models.CentroidDistances.transform" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+</dd></dl>
+
+<dl class="class">
+<dt id="Features.generation_models.Feature">
+<em class="property">class </em><code class="descclassname">Features.generation_models.</code><code class="descname">Feature</code><a class="reference internal" href="_modules/Features/generation_models.html#Feature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.generation_models.Feature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines shared variables for FeatureSelection and FeatureGeneration</p>
+<dl class="attribute">
+<dt id="Features.generation_models.Feature.constraints">
+<code class="descname">constraints</code><em class="property"> = []</em><a class="headerlink" href="#Features.generation_models.Feature.constraints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="Features.generation_models.Feature.selected">
+<code class="descname">selected</code><em class="property"> = None</em><a class="headerlink" href="#Features.generation_models.Feature.selected" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="Features.generation_models.Feature.variables">
+<code class="descname">variables</code><em class="property"> = []</em><a class="headerlink" href="#Features.generation_models.Feature.variables" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Features.generation_models.FeatureGeneration">
+<em class="property">class </em><code class="descclassname">Features.generation_models.</code><code class="descname">FeatureGeneration</code><span class="sig-paren">(</span><em>name='Nonparametric'</em>, <em>replace=True</em>, <em>transformations=None</em>, <em>norm=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/generation_models.html#FeatureGeneration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.generation_models.FeatureGeneration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sklearn.base.BaseEstimator</span></code>, <a class="reference internal" href="#Features.generation_models.Feature" title="Features.generation_models.Feature"><code class="xref py py-class docutils literal"><span class="pre">Features.generation_models.Feature</span></code></a></p>
+<p>Applies feature transformations from package Features</p>
+<dl class="method">
+<dt id="Features.generation_models.FeatureGeneration.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/generation_models.html#FeatureGeneration.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.generation_models.FeatureGeneration.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>For now, no stick with nonparametric transformation</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Features.generation_models.FeatureGeneration.transform">
+<code class="descname">transform</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/generation_models.html#FeatureGeneration.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.generation_models.FeatureGeneration.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies transformaions from self.transformations to matrix X and returns them horizontally stacked</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>numpy.ndarray</em>) &#8211; original feature matrix</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">transformed of the feature matrix. If self.replace is False, this also includes original matrix</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Features.generation_models.FeatureTransformation">
+<em class="property">class </em><code class="descclassname">Features.generation_models.</code><code class="descname">FeatureTransformation</code><span class="sig-paren">(</span><em>transformation=None</em>, <em>name=None</em>, <em>replace=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/generation_models.html#FeatureTransformation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.generation_models.FeatureTransformation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sklearn.base.BaseEstimator</span></code></p>
+<p>Describes feature transformation</p>
+<dl class="method">
+<dt id="Features.generation_models.FeatureTransformation.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/generation_models.html#FeatureTransformation.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.generation_models.FeatureTransformation.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Features.generation_models.FeatureTransformation.transform">
+<code class="descname">transform</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/generation_models.html#FeatureTransformation.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.generation_models.FeatureTransformation.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Features.generation_models.Monotone">
+<em class="property">class </em><code class="descclassname">Features.generation_models.</code><code class="descname">Monotone</code><span class="sig-paren">(</span><em>name='Monotone'</em>, <em>replace=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/generation_models.html#Monotone"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.generation_models.Monotone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#Features.generation_models.FeatureGeneration" title="Features.generation_models.FeatureGeneration"><code class="xref py py-class docutils literal"><span class="pre">Features.generation_models.FeatureGeneration</span></code></a></p>
+<p>Special case of FeatureGeneration model</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="Features.generation_models.Nonparametric">
+<em class="property">class </em><code class="descclassname">Features.generation_models.</code><code class="descname">Nonparametric</code><span class="sig-paren">(</span><em>name='Nonparametric'</em>, <em>replace=True</em>, <em>norm=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/generation_models.html#Nonparametric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.generation_models.Nonparametric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#Features.generation_models.FeatureGeneration" title="Features.generation_models.FeatureGeneration"><code class="xref py py-class docutils literal"><span class="pre">Features.generation_models.FeatureGeneration</span></code></a></p>
+<p>Special case of FeatureGeneration model</p>
 </dd></dl>
 
 </div>
@@ -77,12 +166,12 @@
 <p>Created on 23 November 2016. Author: Alexey Goncharov</p>
 <dl class="function">
 <dt id="Features.monotone.monotone_exponential_rate">
-<code class="descclassname">Features.monotone.</code><code class="descname">monotone_exponential_rate</code><span class="sig-paren">(</span><em>X</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/monotone.html#monotone_exponential_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.monotone.monotone_exponential_rate" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Features.monotone.</code><code class="descname">monotone_exponential_rate</code><span class="sig-paren">(</span><em>X</em>, <em>w=(1</em>, <em>0)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/monotone.html#monotone_exponential_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.monotone.monotone_exponential_rate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="Features.monotone.monotone_fast_convergence">
-<code class="descclassname">Features.monotone.</code><code class="descname">monotone_fast_convergence</code><span class="sig-paren">(</span><em>X</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/monotone.html#monotone_fast_convergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.monotone.monotone_fast_convergence" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Features.monotone.</code><code class="descname">monotone_fast_convergence</code><span class="sig-paren">(</span><em>X</em>, <em>w=(0.5</em>, <em>1)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/monotone.html#monotone_fast_convergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.monotone.monotone_fast_convergence" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -92,27 +181,27 @@
 
 <dl class="function">
 <dt id="Features.monotone.monotone_linear">
-<code class="descclassname">Features.monotone.</code><code class="descname">monotone_linear</code><span class="sig-paren">(</span><em>X</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/monotone.html#monotone_linear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.monotone.monotone_linear" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Features.monotone.</code><code class="descname">monotone_linear</code><span class="sig-paren">(</span><em>X</em>, <em>w=(0.5</em>, <em>1)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/monotone.html#monotone_linear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.monotone.monotone_linear" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="Features.monotone.monotone_logarithmic_rate">
-<code class="descclassname">Features.monotone.</code><code class="descname">monotone_logarithmic_rate</code><span class="sig-paren">(</span><em>X</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/monotone.html#monotone_logarithmic_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.monotone.monotone_logarithmic_rate" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Features.monotone.</code><code class="descname">monotone_logarithmic_rate</code><span class="sig-paren">(</span><em>X</em>, <em>w=(0.5</em>, <em>1)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/monotone.html#monotone_logarithmic_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.monotone.monotone_logarithmic_rate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="Features.monotone.monotone_polinomial_rate">
-<code class="descclassname">Features.monotone.</code><code class="descname">monotone_polinomial_rate</code><span class="sig-paren">(</span><em>X</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/monotone.html#monotone_polinomial_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.monotone.monotone_polinomial_rate" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Features.monotone.</code><code class="descname">monotone_polinomial_rate</code><span class="sig-paren">(</span><em>X</em>, <em>w=(2</em>, <em>1)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/monotone.html#monotone_polinomial_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.monotone.monotone_polinomial_rate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="Features.monotone.monotone_sigmoid">
-<code class="descclassname">Features.monotone.</code><code class="descname">monotone_sigmoid</code><span class="sig-paren">(</span><em>X</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/monotone.html#monotone_sigmoid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.monotone.monotone_sigmoid" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Features.monotone.</code><code class="descname">monotone_sigmoid</code><span class="sig-paren">(</span><em>X</em>, <em>w=(0.5</em>, <em>1)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/monotone.html#monotone_sigmoid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.monotone.monotone_sigmoid" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="Features.monotone.monotone_slow_convergence">
-<code class="descclassname">Features.monotone.</code><code class="descname">monotone_slow_convergence</code><span class="sig-paren">(</span><em>X</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/monotone.html#monotone_slow_convergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.monotone.monotone_slow_convergence" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Features.monotone.</code><code class="descname">monotone_slow_convergence</code><span class="sig-paren">(</span><em>X</em>, <em>w=(0.5</em>, <em>1)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/monotone.html#monotone_slow_convergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.monotone.monotone_slow_convergence" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -132,7 +221,7 @@
 
 <dl class="function">
 <dt id="Features.monotone.monotone_sublinear_polinomial_rate">
-<code class="descclassname">Features.monotone.</code><code class="descname">monotone_sublinear_polinomial_rate</code><span class="sig-paren">(</span><em>X</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/monotone.html#monotone_sublinear_polinomial_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.monotone.monotone_sublinear_polinomial_rate" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Features.monotone.</code><code class="descname">monotone_sublinear_polinomial_rate</code><span class="sig-paren">(</span><em>X</em>, <em>w=(0.5</em>, <em>1)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/monotone.html#monotone_sublinear_polinomial_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.monotone.monotone_sublinear_polinomial_rate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -179,78 +268,100 @@
 <span id="features-parametric-module"></span><h2>Features.parametric module<a class="headerlink" href="#module-Features.parametric" title="Permalink to this headline">¶</a></h2>
 <p>Created on 23 November 2016. Author: Alexey Goncharov</p>
 <dl class="function">
-<dt id="Features.parametric.SSA">
-<code class="descclassname">Features.parametric.</code><code class="descname">SSA</code><span class="sig-paren">(</span><em>X</em>, <em>k</em>, <em>p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#SSA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.SSA" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="Features.parametric.build_henkel_matrix">
-<code class="descclassname">Features.parametric.</code><code class="descname">build_henkel_matrix</code><span class="sig-paren">(</span><em>x</em>, <em>k</em>, <em>p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#build_henkel_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.build_henkel_matrix" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="Features.parametric.henkel_coefs">
-<code class="descclassname">Features.parametric.</code><code class="descname">henkel_coefs</code><span class="sig-paren">(</span><em>x</em>, <em>k</em>, <em>p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#henkel_coefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.henkel_coefs" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt id="Features.parametric.parametrc_quadratic">
-<code class="descclassname">Features.parametric.</code><code class="descname">parametrc_quadratic</code><span class="sig-paren">(</span><em>X</em>, <em>W</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#parametrc_quadratic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.parametrc_quadratic" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="Features.parametric.parametrc_qubic">
-<code class="descclassname">Features.parametric.</code><code class="descname">parametrc_qubic</code><span class="sig-paren">(</span><em>X</em>, <em>W</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#parametrc_qubic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.parametrc_qubic" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="Features.parametric.parametric_exponent">
-<code class="descclassname">Features.parametric.</code><code class="descname">parametric_exponent</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#parametric_exponent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.parametric_exponent" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Features.parametric.</code><code class="descname">parametrc_quadratic</code><span class="sig-paren">(</span><em>x</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#parametrc_quadratic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.parametrc_quadratic" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="Features.parametric.parametric_logarithmic_sigmoid">
-<code class="descclassname">Features.parametric.</code><code class="descname">parametric_logarithmic_sigmoid</code><span class="sig-paren">(</span><em>X</em>, <em>W</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#parametric_logarithmic_sigmoid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.parametric_logarithmic_sigmoid" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Features.parametric.</code><code class="descname">parametric_logarithmic_sigmoid</code><span class="sig-paren">(</span><em>x</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#parametric_logarithmic_sigmoid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.parametric_logarithmic_sigmoid" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="Features.parametric.parametric_monomial">
-<code class="descclassname">Features.parametric.</code><code class="descname">parametric_monomial</code><span class="sig-paren">(</span><em>X</em>, <em>W</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#parametric_monomial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.parametric_monomial" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Features.parametric.</code><code class="descname">parametric_monomial</code><span class="sig-paren">(</span><em>x</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#parametric_monomial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.parametric_monomial" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="Features.parametric.parametric_multiply">
-<code class="descclassname">Features.parametric.</code><code class="descname">parametric_multiply</code><span class="sig-paren">(</span><em>X</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#parametric_multiply"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.parametric_multiply" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Features.parametric.</code><code class="descname">parametric_multiply</code><span class="sig-paren">(</span><em>x</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#parametric_multiply"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.parametric_multiply" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="Features.parametric.parametric_normal">
-<code class="descclassname">Features.parametric.</code><code class="descname">parametric_normal</code><span class="sig-paren">(</span><em>X</em>, <em>W</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#parametric_normal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.parametric_normal" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Features.parametric.</code><code class="descname">parametric_normal</code><span class="sig-paren">(</span><em>x</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#parametric_normal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.parametric_normal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="Features.parametric.parametric_qubic">
+<code class="descclassname">Features.parametric.</code><code class="descname">parametric_qubic</code><span class="sig-paren">(</span><em>x</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#parametric_qubic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.parametric_qubic" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="Features.parametric.parametric_sum">
-<code class="descclassname">Features.parametric.</code><code class="descname">parametric_sum</code><span class="sig-paren">(</span><em>X</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#parametric_sum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.parametric_sum" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="Features.parametric.parametric_transform">
-<code class="descclassname">Features.parametric.</code><code class="descname">parametric_transform</code><span class="sig-paren">(</span><em>X</em>, <em>w_sum</em>, <em>w_quadratic</em>, <em>w_qubic</em>, <em>w_sigmoid</em>, <em>w_normal</em>, <em>w_multiply</em>, <em>w_monomial</em>, <em>w_weibul2</em>, <em>w_weibul3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#parametric_transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.parametric_transform" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Features.parametric.</code><code class="descname">parametric_sum</code><span class="sig-paren">(</span><em>x</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#parametric_sum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.parametric_sum" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="Features.parametric.parametric_weibul_2">
-<code class="descclassname">Features.parametric.</code><code class="descname">parametric_weibul_2</code><span class="sig-paren">(</span><em>X</em>, <em>W</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#parametric_weibul_2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.parametric_weibul_2" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Features.parametric.</code><code class="descname">parametric_weibul_2</code><span class="sig-paren">(</span><em>x</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#parametric_weibul_2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.parametric_weibul_2" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="Features.parametric.parametric_weibul_3">
-<code class="descclassname">Features.parametric.</code><code class="descname">parametric_weibul_3</code><span class="sig-paren">(</span><em>X</em>, <em>W</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#parametric_weibul_3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.parametric_weibul_3" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Features.parametric.</code><code class="descname">parametric_weibul_3</code><span class="sig-paren">(</span><em>x</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/parametric.html#parametric_weibul_3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.parametric.parametric_weibul_3" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
+<div class="section" id="module-Features.quadratic_feature_selection">
+<span id="features-quadratic-feature-selection-module"></span><h2>Features.quadratic_feature_selection module<a class="headerlink" href="#module-Features.quadratic_feature_selection" title="Permalink to this headline">¶</a></h2>
+<p>Created on 30 November 2016. Author: Roman Isachenko, Alexander Katrutsa</p>
+<dl class="class">
+<dt id="Features.quadratic_feature_selection.FeatureSelection">
+<em class="property">class </em><code class="descclassname">Features.quadratic_feature_selection.</code><code class="descname">FeatureSelection</code><span class="sig-paren">(</span><em>name='Quadratic MIS'</em>, <em>similarity='correl'</em>, <em>relevance='correl'</em>, <em>threshold=1e-06</em>, <em>on=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/quadratic_feature_selection.html#FeatureSelection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.quadratic_feature_selection.FeatureSelection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#Features.generation_models.Feature" title="Features.generation_models.Feature"><code class="xref py py-class docutils literal"><span class="pre">Features.generation_models.Feature</span></code></a></p>
+<p>Implements feature selection based on cvxpy solvers.</p>
+<dl class="method">
+<dt id="Features.quadratic_feature_selection.FeatureSelection.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/quadratic_feature_selection.html#FeatureSelection.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.quadratic_feature_selection.FeatureSelection.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Features.quadratic_feature_selection.FeatureSelection.transform">
+<code class="descname">transform</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/quadratic_feature_selection.html#FeatureSelection.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.quadratic_feature_selection.FeatureSelection.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="Features.quadratic_feature_selection.quad_problem_pars">
+<code class="descclassname">Features.quadratic_feature_selection.</code><code class="descname">quad_problem_pars</code><span class="sig-paren">(</span><em>X</em>, <em>y</em>, <em>sim</em>, <em>rel</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Features/quadratic_feature_selection.html#quad_problem_pars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Features.quadratic_feature_selection.quad_problem_pars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function generates matrix Q and vector b which represent feature similarities and feature relevances</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> (<em>numpy.ndarray</em>) &#8211; design matrix</li>
+<li><strong>y</strong> (<em>numpy.ndarray</em>) &#8211; target vector</li>
+<li><strong>sim</strong> (<em>str</em>) &#8211; indicator of the way to compute feature similarities</li>
+<li><strong>rel</strong> (<em>str</em>) &#8211; indicator of the way to compute feature significance</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">matrix of features similarities Q, vector of feature relevances b</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
 <div class="section" id="module-Features.ssa_">
-<span id="features-ssa-module"></span><h2><a href="#id3"><span class="problematic" id="id4">Features.ssa_</span></a> module<a class="headerlink" href="#module-Features.ssa_" title="Permalink to this headline">¶</a></h2>
+<span id="features-ssa-module"></span><h2><a href="#id1"><span class="problematic" id="id2">Features.ssa_</span></a> module<a class="headerlink" href="#module-Features.ssa_" title="Permalink to this headline">¶</a></h2>
 <p>Created on 23 November 2016. Author: Alexey Goncharov</p>
 </div>
 <div class="section" id="module-Features">
@@ -268,17 +379,23 @@
   <ul>
 <li><a class="reference internal" href="#">Features package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-Features.haar">Features.haar module</a></li>
-<li><a class="reference internal" href="#module-Features.metric_">Features.metric_ module</a></li>
+<li><a class="reference internal" href="#module-Features.generation_models">Features.generation_models module</a></li>
 <li><a class="reference internal" href="#module-Features.monotone">Features.monotone module</a></li>
 <li><a class="reference internal" href="#module-Features.nonparametric">Features.nonparametric module</a></li>
 <li><a class="reference internal" href="#module-Features.parametric">Features.parametric module</a></li>
+<li><a class="reference internal" href="#module-Features.quadratic_feature_selection">Features.quadratic_feature_selection module</a></li>
 <li><a class="reference internal" href="#module-Features.ssa_">Features.ssa_ module</a></li>
 <li><a class="reference internal" href="#module-Features">Module contents</a></li>
 </ul>
 </li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="Forecasting.html"
+                        title="previous chapter">Forecasting package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="UnitTests.html"
+                        title="next chapter">UnitTests package</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -309,6 +426,12 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="UnitTests.html" title="UnitTests package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="Forecasting.html" title="Forecasting package"
+             >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">MultiscaleForecasting 0 documentation</a> &#187;</li> 
       </ul>
     </div>

@@ -51,6 +51,7 @@
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="k">import</span> <span class="n">InterpolatedUnivariateSpline</span>
 
 <span class="n">TOL</span> <span class="o">=</span> <span class="nb">pow</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">)</span>
 
@@ -68,7 +69,8 @@
 <span class="sd">    :param readme: Dataset info</span>
 <span class="sd">    :type readme: string</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">request</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">history</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">readme</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">allow_empty</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">as_floats</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">request</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">history</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">readme</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">allow_empty</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">as_floats</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_one_step</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
         
         <span class="c1"># Check inputs:</span>
         <span class="c1"># Some tests might need to process empty data without errors</span>
@@ -89,10 +91,12 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;history should be int or float; got </span><span class="si">{}</span><span class="s2">, type </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">history</span><span class="p">)))</span>
                 
         <span class="bp">self</span><span class="o">.</span><span class="n">as_floats</span> <span class="o">=</span> <span class="n">as_floats</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_one_step</span> <span class="o">=</span> <span class="n">max_one_step</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_type</span> <span class="o">=</span> <span class="n">data_index_type</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">as_floats</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_index</span> <span class="o">=</span> <span class="p">[</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span> <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts_frequencies</span><span class="p">(),</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">one_step</span> <span class="o">=</span> <span class="n">assign_one_step_requests</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_floats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">one_step</span> <span class="o">=</span> <span class="n">assign_one_step_requests</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_floats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_one_step</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">request</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">history</span>
@@ -101,7 +105,7 @@
         
 <div class="viewcode-block" id="TsStruct.to_floats"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.TsStruct.to_floats">[docs]</a>    <span class="k">def</span> <span class="nf">to_floats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Forces TsStruct instance to as_floats format</span>
+<span class="sd">        Forces TsStruct instance to as_floats format.</span>
 
 <span class="sd">        :return: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -115,10 +119,13 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;history should be int or float; got </span><span class="si">{}</span><span class="s2">, type </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">history</span><span class="p">)))</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">as_floats</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_type</span> <span class="o">=</span> <span class="n">data_index_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_floats</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts_frequencies</span><span class="p">(),</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">one_step</span> <span class="o">=</span> <span class="n">assign_one_step_requests</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_floats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_type</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_type</span> <span class="o">==</span> <span class="s1">&#39;int&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_type</span> <span class="o">=</span> <span class="n">data_index_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_floats</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts_frequencies</span><span class="p">(),</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">one_step</span> <span class="o">=</span> <span class="n">assign_one_step_requests</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">,</span> <span class="n">as_floats</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">as_floats</span><span class="p">,</span>
+                                                     <span class="n">index_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_type</span><span class="p">,</span> <span class="n">max_request</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_one_step</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">original_index</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">original_index</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pd_time_stamps_to_floats</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_type</span><span class="p">)</span></div>
         
 
 <div class="viewcode-block" id="TsStruct.ts_frequencies"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.TsStruct.ts_frequencies">[docs]</a>    <span class="k">def</span> <span class="nf">ts_frequencies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -142,7 +149,8 @@
 
 <div class="viewcode-block" id="TsStruct.train_test_split"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.TsStruct.train_test_split">[docs]</a>    <span class="k">def</span> <span class="nf">train_test_split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_test_ratio</span><span class="o">=</span><span class="mf">0.75</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Splits time series sequentially into train and test time series</span>
+<span class="sd">        Splits time series sequentially into train and test time series.</span>
+<span class="sd">        ! Values of one_step are the same as those in the splitted TsStruct instance</span>
 
 <span class="sd">        :param train_test_ratio: ratio of train objects to original ts length</span>
 <span class="sd">        :type train_test_ratio: float</span>
@@ -155,16 +163,21 @@
         <span class="n">max_train_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">max_freq</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">n_train</span><span class="p">]</span>
 
         <span class="n">train_ts</span><span class="p">,</span> <span class="n">test_ts</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+        <span class="n">original_index_train</span><span class="p">,</span> <span class="n">original_index_test</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
             <span class="n">train_idx</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">index</span> <span class="o">&lt;=</span> <span class="n">max_train_index</span>
             <span class="n">test_idx</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">index</span> <span class="o">&gt;</span> <span class="n">max_train_index</span>
             <span class="n">train_ts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="n">train_idx</span><span class="p">])</span>
             <span class="n">test_ts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="n">test_idx</span><span class="p">])</span>
+            <span class="n">original_index_test</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">original_index</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">original_index</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">max_train_index</span><span class="p">])</span>
+            <span class="n">original_index_train</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">original_index</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">original_index</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">max_train_index</span><span class="p">])</span>
+
         <span class="n">train</span> <span class="o">=</span> <span class="n">TsStruct</span><span class="p">(</span><span class="n">train_ts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">readme</span><span class="p">)</span>
+        <span class="n">train</span><span class="o">.</span><span class="n">one_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">one_step</span>
         <span class="n">test</span> <span class="o">=</span> <span class="n">TsStruct</span><span class="p">(</span><span class="n">test_ts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">readme</span><span class="p">)</span>
+        <span class="n">test</span><span class="o">.</span><span class="n">one_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">one_step</span>
 
         <span class="k">return</span> <span class="n">train</span><span class="p">,</span> <span class="n">test</span></div>
-
 
 <div class="viewcode-block" id="TsStruct.replace_nans"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.TsStruct.replace_nans">[docs]</a>    <span class="k">def</span> <span class="nf">replace_nans</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
@@ -180,9 +193,6 @@
             <span class="n">ts_prop</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;pad&quot;</span><span class="p">)</span>
             <span class="n">ts_back</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">ts_prop</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;bfill&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ts_back</span>  <span class="c1"># (ts_back + ts_prop)[pd.isnull(ts)] / 2</span></div>
-
-
-
 
 <div class="viewcode-block" id="TsStruct.truncate"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.TsStruct.truncate">[docs]</a>    <span class="k">def</span> <span class="nf">truncate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_history</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">max_total</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -201,7 +211,6 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">align_time_series</span><span class="p">()</span></div>
 
-
 <div class="viewcode-block" id="TsStruct.align_time_series"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.TsStruct.align_time_series">[docs]</a>    <span class="k">def</span> <span class="nf">align_time_series</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_history</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Truncates time series in self.data so that the end points of all times series belong to the same requested interval</span>
@@ -210,38 +219,60 @@
 <span class="sd">        :rtype: list</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-
-        <span class="c1">#min_end_T = min([ts.index[-1] for ts in self.data]) # find earliest end-point index</span>
-        <span class="c1">#max_start_T = max([ts.index[0] for ts in self.data]) # find latest start-point index</span>
-
         <span class="k">if</span> <span class="ow">not</span> <span class="n">max_history</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="n">max_history</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
 
-        <span class="n">common_T</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
-        <span class="n">common_T</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
+        <span class="c1"># for index_type in [&#39;h&#39;, &#39;ns&#39;, &#39;s&#39;] returns pd.Timestamps</span>
+        <span class="n">intervals</span> <span class="o">=</span> <span class="n">from_floats_to_index_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_type</span> <span class="o">==</span> <span class="s2">&quot;int&quot;</span><span class="p">:</span>
+            <span class="n">common_t</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
+            <span class="n">common_t</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">intervals</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">common_t</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+            <span class="n">common_t</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">intervals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
-            <span class="n">index_plus_1</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
-            <span class="n">index_plus_1</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
-            <span class="c1">#print(max(index_plus_1) - max(common_T))</span>
-            <span class="n">common_T</span> <span class="o">=</span> <span class="n">common_T</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">index_plus_1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_type</span> <span class="o">==</span> <span class="s2">&quot;int&quot;</span><span class="p">:</span>
+                <span class="n">index_plus_1</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
+                <span class="n">index_plus_1</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">intervals</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">index_plus_1</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+                <span class="n">index_plus_1</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">intervals</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="n">common_t</span> <span class="o">=</span> <span class="n">common_t</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">index_plus_1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">common_t</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">interpolate_data</span><span class="p">()</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">align_time_series</span><span class="p">(</span><span class="n">max_history</span><span class="p">)</span>
 
-            <span class="c1">#ending_T = ending_T.intersection(set(ts.index[np.logical_and(ts.index &lt;= min_end_T, ts.index &gt;= min_end_T - self.request)]))</span>
-            <span class="c1">#self.data[i] = ts.iloc[np.logical_and(ts.index &lt; min_end_T + self.request, ts.index &gt;= max_start_T)]</span>
-            <span class="c1">#self.data[i] = ts.iloc[ts.index &lt; min_end_T + self.request]</span>
-
-
-
-        <span class="n">min_end_T</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">common_T</span><span class="p">)</span>
-        <span class="n">max_start_T</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">common_T</span><span class="p">)</span>
+        <span class="n">min_end_T</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">common_t</span><span class="p">)</span>
+        <span class="n">max_start_T</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">common_t</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span> <span class="o">&lt;</span> <span class="n">min_end_T</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">index</span> <span class="o">&gt;=</span> <span class="n">max_start_T</span><span class="p">)]</span>
 
-
-
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span></div>
 
+<div class="viewcode-block" id="TsStruct.interpolate_data"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.TsStruct.interpolate_data">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Is used when original indices do not intersect, or the intersection is too small.</span>
+<span class="sd">        Defines a new uniform grid of time indices, which includes time steps from all the</span>
+<span class="sd">        time series in the set. Overwrites data and intervals fields, but leaves history, request</span>
+<span class="sd">        and one_step as they are</span>
+
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="n">index</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">)))</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+        <span class="n">common_step</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">common_step</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ts</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">InterpolatedUnivariateSpline</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">index</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">s</span><span class="p">(</span><span class="n">index</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">ts</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts_frequencies</span><span class="p">(),</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="TsStruct.summarize_ts"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.TsStruct.summarize_ts">[docs]</a>    <span class="k">def</span> <span class="nf">summarize_ts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latex</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -297,6 +328,7 @@
 
     <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">preferred_type</span></div>
         
+        
 <div class="viewcode-block" id="infer_frequency"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.infer_frequency">[docs]</a><span class="k">def</span> <span class="nf">infer_frequency</span><span class="p">(</span><span class="n">ts_index</span><span class="p">):</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts_index</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">((</span><span class="s2">&quot;ts.index is too short!  len(ts.index) = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ts_index</span><span class="p">))))</span>
@@ -314,7 +346,8 @@
         
     <span class="k">return</span> <span class="n">frequency</span></div>
     
-<div class="viewcode-block" id="pd_time_stamps_to_floats"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.pd_time_stamps_to_floats">[docs]</a><span class="k">def</span> <span class="nf">pd_time_stamps_to_floats</span><span class="p">(</span><span class="n">time_stamps_array</span><span class="p">,</span> <span class="n">frequency</span><span class="p">,</span> <span class="n">from_zero</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    
+<div class="viewcode-block" id="pd_time_stamps_to_floats"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.pd_time_stamps_to_floats">[docs]</a><span class="k">def</span> <span class="nf">pd_time_stamps_to_floats</span><span class="p">(</span><span class="n">time_stamps_array</span><span class="p">,</span> <span class="n">frequency</span><span class="p">):</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_stamps_array</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ts.index is too short!&quot;</span><span class="p">)</span>
@@ -327,10 +360,8 @@
                         <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">timedelta64</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">frequency</span><span class="p">)</span>
     <span class="n">time_stamps_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">time_stamps_array</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">from_zero</span><span class="p">:</span>
-        <span class="n">time_stamps_array</span> <span class="o">=</span> <span class="n">time_stamps_array</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">time_stamps_array</span><span class="p">)</span>
-
     <span class="k">return</span> <span class="n">time_stamps_array</span><span class="p">,</span> <span class="n">frequency</span></div>
+
 
 <div class="viewcode-block" id="general_time_delta_to_float"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.general_time_delta_to_float">[docs]</a><span class="k">def</span> <span class="nf">general_time_delta_to_float</span><span class="p">(</span><span class="n">td</span><span class="p">,</span> <span class="n">freq</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">freq</span> <span class="o">==</span> <span class="s2">&quot;int&quot;</span><span class="p">:</span>
@@ -352,6 +383,17 @@
     <span class="k">return</span> <span class="n">total</span></div>
 
 
+<div class="viewcode-block" id="from_floats_to_index_type"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.from_floats_to_index_type">[docs]</a><span class="k">def</span> <span class="nf">from_floats_to_index_type</span><span class="p">(</span><span class="n">floats</span><span class="p">,</span> <span class="n">freq</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">freq</span> <span class="o">==</span> <span class="s2">&quot;int&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">floats</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">floats</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Inputs should be of type float or int, got </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">floats</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">floats</span>
+
+    <span class="n">time_deltas</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">floats</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">freq</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="s1">&#39;1970-01-01T00:00:00Z&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">time_deltas</span></div>
+
+
 <div class="viewcode-block" id="multiply_pd_time_delta"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.multiply_pd_time_delta">[docs]</a><span class="k">def</span> <span class="nf">multiply_pd_time_delta</span><span class="p">(</span><span class="n">time_delta</span><span class="p">,</span> <span class="n">multipl</span><span class="p">):</span>
     <span class="n">res</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">time_delta</span><span class="o">.</span><span class="n">days</span> <span class="o">*</span> <span class="n">multipl</span><span class="p">,</span>
                        <span class="c1"># hours=time_delta.hours * multipl,</span>
@@ -361,7 +403,7 @@
 
     <span class="k">return</span> <span class="n">res</span></div>
 
-<div class="viewcode-block" id="assign_one_step_requests"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.assign_one_step_requests">[docs]</a><span class="k">def</span> <span class="nf">assign_one_step_requests</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">as_floats</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">index_type</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="assign_one_step_requests"><a class="viewcode-back" href="../../LoadAndSaveData.html#LoadAndSaveData.raw_time_series.assign_one_step_requests">[docs]</a><span class="k">def</span> <span class="nf">assign_one_step_requests</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">as_floats</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">index_type</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="n">max_request</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Assigns request as the lowest common multiple of one step requests for each time series</span>
 
@@ -385,6 +427,7 @@
         <span class="n">request</span> <span class="o">=</span> <span class="n">lcm</span><span class="p">(</span><span class="n">intv</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
 
     <span class="n">request</span> <span class="o">*=</span> <span class="n">min_interval</span>
+    <span class="n">request</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">request</span><span class="p">,</span> <span class="n">max_request</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="n">as_floats</span> <span class="ow">or</span> <span class="n">index_type</span><span class="o">==</span><span class="s2">&quot;int&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">request</span>

@@ -171,8 +171,24 @@
 
     <span class="k">return</span> <span class="n">latex_header</span><span class="p">,</span> <span class="n">latex_end</span></div>
 
-<div class="viewcode-block" id="save_to_latex"><a class="viewcode-back" href="../my_plots.html#my_plots.save_to_latex">[docs]</a><span class="k">def</span> <span class="nf">save_to_latex</span><span class="p">(</span><span class="n">df_list</span><span class="p">,</span> <span class="n">df_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="save_to_latex"><a class="viewcode-back" href="../my_plots.html#my_plots.save_to_latex">[docs]</a><span class="k">def</span> <span class="nf">save_to_latex</span><span class="p">(</span><span class="n">df_list</span><span class="o">=</span><span class="p">(),</span> <span class="n">df_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">rewrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Saves results of the experiment into .tex file</span>
 
+<span class="sd">    :param df_list: list of tables with results</span>
+<span class="sd">    :type df_list: list</span>
+<span class="sd">    :param df_names: list of table headers, optional</span>
+<span class="sd">    :type df_names: list</span>
+<span class="sd">    :param text: any additional text, optional</span>
+<span class="sd">    :type text: str</span>
+<span class="sd">    :param file_name: file name for saving, optional</span>
+<span class="sd">    :type file_name: str</span>
+<span class="sd">    :param folder: folder name for saving, optional</span>
+<span class="sd">    :type folder: str</span>
+<span class="sd">    :param rewrite: defines if the contents of file_name should be rewritten</span>
+<span class="sd">    :type rewrite: bool</span>
+<span class="sd">    :return: None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">folder</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
         <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">file_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -182,10 +198,23 @@
     <span class="n">latex_header</span><span class="p">,</span> <span class="n">latex_end</span> <span class="o">=</span> <span class="n">input_latex_headers</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="n">df_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">df_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Table&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df_list</span><span class="p">))]</span>
+        <span class="n">df_names</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+    <span class="n">df_names</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;Table&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df_names</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_list</span><span class="p">))])</span>
+
+    <span class="n">old_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">rewrite</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_name</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="s2">&quot;r+&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">old_text</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">old_text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">latex_end</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">old_text</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="s2">&quot;w+&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">latex_header</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">old_text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rewrite</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">latex_header</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">df</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">df_list</span><span class="p">):</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">+</span> <span class="n">check_text_for_latex</span><span class="p">(</span><span class="n">df_names</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>  <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">\ </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">to_latex</span><span class="p">())</span>

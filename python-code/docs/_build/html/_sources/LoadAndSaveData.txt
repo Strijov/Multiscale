@@ -28,6 +28,14 @@ LoadAndSaveData.load_time_series module
     :undoc-members:
     :show-inheritance:
 
+LoadAndSaveData.raw_time_series module
+--------------------------------------
+
+.. automodule:: LoadAndSaveData.raw_time_series
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 LoadAndSaveData.write_data_to_iot_format module
 -----------------------------------------------
 

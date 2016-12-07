@@ -52,13 +52,13 @@
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">dill</span>
-<span class="c1"># import cloudpickle</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">BaseEstimator</span>
 <span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="k">import</span> <span class="n">Pipeline</span>
-
-
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">product</span>
+<span class="kn">from</span> <span class="nn">Features</span> <span class="k">import</span> <span class="n">generation_models</span> <span class="k">as</span> <span class="n">gnt_class</span>
+<span class="kn">from</span> <span class="nn">Features</span> <span class="k">import</span> <span class="n">quadratic_feature_selection</span> <span class="k">as</span> <span class="n">sel_class</span>
 
 
 <div class="viewcode-block" id="IdentityModel"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.IdentityModel">[docs]</a><span class="k">class</span> <span class="nc">IdentityModel</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
@@ -105,17 +105,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></div>
 
-
-    <span class="c1"># def fit_transform(self, X, Y):</span>
-    <span class="c1">#     &quot;&quot;&quot; fit-transform &quot;&quot;&quot;</span>
-    <span class="c1">#     self.fit(X, Y)</span>
-    <span class="c1">#     return self.transform(self, X)</span>
-
 <div class="viewcode-block" id="IdentityModel.print_pars"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.IdentityModel.print_pars">[docs]</a>    <span class="k">def</span> <span class="nf">print_pars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span>
         <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
-            <span class="c1">#if not &quot;__&quot; in par:</span>
+            <span class="c1"># if not &quot;__&quot; in par:</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">par</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__getattribute__</span><span class="p">(</span><span class="n">par</span><span class="p">))</span></div></div>
 
 <div class="viewcode-block" id="IdentityFrc"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.IdentityFrc">[docs]</a><span class="k">class</span> <span class="nc">IdentityFrc</span><span class="p">(</span><span class="n">IdentityModel</span><span class="p">):</span>
@@ -133,14 +127,6 @@
         <span class="k">return</span> <span class="n">X</span></div></div>
 
 
-<div class="viewcode-block" id="IdentityGenerator"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.IdentityGenerator">[docs]</a><span class="k">class</span> <span class="nc">IdentityGenerator</span><span class="p">(</span><span class="n">IdentityModel</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Helper class for feature generation&quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">IdentityGenerator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">replace</span> <span class="o">=</span> <span class="n">replace</span></div>
-
-
 <div class="viewcode-block" id="MartingalFrc"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.MartingalFrc">[docs]</a><span class="k">class</span> <span class="nc">MartingalFrc</span><span class="p">(</span><span class="n">IdentityModel</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Forecasts n_out Y values by last n_out values of X&quot;&quot;&quot;</span>
 
@@ -152,7 +138,6 @@
         <span class="k">return</span> <span class="n">X</span><span class="p">[:,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">n_out</span><span class="p">:]</span></div></div>
 
 
-
 <div class="viewcode-block" id="CustomModel"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.CustomModel">[docs]</a><span class="k">def</span> <span class="nf">CustomModel</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Defines a new class with double inheritance</span>
@@ -162,6 +147,7 @@
 <span class="sd">    :param kwargs: Optional keyword arguments</span>
 <span class="sd">    :return: instance of CustomModel class</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">class</span> <span class="nc">CustomModel_</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">IdentityModel</span><span class="p">):</span>
 
         <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -172,8 +158,6 @@
                 <span class="n">name</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">__name__</span>
             <span class="n">IdentityModel</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
             <span class="n">parent</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-
 
         <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">):</span>
             <span class="sd">&quot;&quot;&quot; Runs parent.fit after IndentityModel.fit&quot;&quot;&quot;</span>
@@ -186,15 +170,6 @@
             <span class="sd">&quot;&quot;&quot; Runs parent.predict after IndentityModel.predict&quot;&quot;&quot;</span>
             <span class="n">IdentityModel</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
             <span class="n">Y</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
-            <span class="c1"># if hasattr(parent, &quot;predict&quot;):</span>
-            <span class="c1">#     Y = parent.predict(self, X)</span>
-            <span class="c1"># elif hasattr(parent, &quot;forecast&quot;):</span>
-            <span class="c1">#     Y = parent.forecast(self, X)</span>
-            <span class="c1"># elif hasattr(parent, &quot;transform&quot;):</span>
-            <span class="c1">#     Y = parent.transform(self, X)</span>
-            <span class="c1"># else:</span>
-            <span class="c1">#     print(&quot;{} class has neither of predict, forecast or transform methods&quot;.format(parent.__name__))</span>
-            <span class="c1">#     raise AttributeError</span>
 
             <span class="k">return</span> <span class="n">Y</span>
 
@@ -207,19 +182,31 @@
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="k">return</span> <span class="p">(</span><span class="n">CustomModel</span><span class="p">,</span> <span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,),</span> <span class="n">state</span><span class="p">)</span>
-
-
     <span class="k">return</span> <span class="n">CustomModel_</span><span class="p">()</span></div>
-
 
 
 <div class="viewcode-block" id="PipelineModel"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.PipelineModel">[docs]</a><span class="k">class</span> <span class="nc">PipelineModel</span><span class="p">(</span><span class="n">Pipeline</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A pipeline forecasting model&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">steps</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">Pipeline</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">frc_mdl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gen_mdl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sel_mdl</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># if steps is None and frc_mdl is None:</span>
+        <span class="c1">#     raise ValueError(&quot;Steps are not defined in Pipeline model&quot;)</span>
 
+        <span class="k">if</span> <span class="n">steps</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">steps</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;gen&#39;</span><span class="p">,</span> <span class="n">gen_mdl</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;sel&#39;</span><span class="p">,</span> <span class="n">sel_mdl</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;frc&#39;</span><span class="p">,</span> <span class="n">frc_mdl</span><span class="p">)]</span>
+
+        <span class="n">named_steps</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">named_steps</span><span class="p">[</span><span class="s1">&#39;frc&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">frc_mdl</span> <span class="o">=</span> <span class="n">IdentityModel</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Identity&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">named_steps</span><span class="p">[</span><span class="s1">&#39;sel&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sel_mdl</span> <span class="o">=</span> <span class="n">sel_class</span><span class="o">.</span><span class="n">FeatureSelection</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;No feature selection&quot;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">named_steps</span><span class="p">[</span><span class="s1">&#39;gen&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">gen_mdl</span> <span class="o">=</span> <span class="n">gnt_class</span><span class="o">.</span><span class="n">FeatureGeneration</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;No feature generation&quot;</span><span class="p">)</span>
+
+        <span class="n">steps</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;gen&#39;</span><span class="p">,</span> <span class="n">gen_mdl</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;sel&#39;</span><span class="p">,</span> <span class="n">sel_mdl</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;frc&#39;</span><span class="p">,</span> <span class="n">frc_mdl</span><span class="p">)]</span>
+        <span class="n">Pipeline</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">frc_mdl</span><span class="o">.</span><span class="n">name</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">gen_mdl</span><span class="o">.</span><span class="n">name</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">sel_mdl</span><span class="o">.</span><span class="n">name</span><span class="p">)])</span>
 
 <div class="viewcode-block" id="PipelineModel.save_model"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.PipelineModel.save_model">[docs]</a>    <span class="k">def</span> <span class="nf">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="s2">&quot;models&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -242,7 +229,6 @@
             <span class="n">dill</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">file_name</span></div>
-
 
 <div class="viewcode-block" id="PipelineModel.load_model"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.PipelineModel.load_model">[docs]</a>    <span class="k">def</span> <span class="nf">load_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -267,11 +253,106 @@
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">step_model</span><span class="p">,</span> <span class="s1">&#39;print_pars&#39;</span><span class="p">):</span>
                 <span class="n">step_model</span><span class="o">.</span><span class="n">print_pars</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">step_model</span><span class="o">.</span><span class="n">get_params</span><span class="p">())</span></div></div>
+                <span class="nb">print</span><span class="p">(</span><span class="n">step_model</span><span class="o">.</span><span class="n">get_params</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="PipelineModel.train_model"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.PipelineModel.train_model">[docs]</a>    <span class="k">def</span> <span class="nf">train_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span> <span class="n">retrain</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">hyperpars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_cvs</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes and train feature generation, selection and forecasting model in a pipeline</span>
+
+<span class="sd">        :param train_x: training data, inputs</span>
+<span class="sd">        :type train_x: numpy.ndarray</span>
+<span class="sd">        :param train_y: training data, targets</span>
+<span class="sd">        :type train_y: numpy.ndarray</span>
+<span class="sd">        :param retrain: Flag that specifies if the model needs retraining</span>
+<span class="sd">        :type retrain: bool</span>
+<span class="sd">        :param hyperpars: defines ranges of hyperparameters to tune with cross-validation. If None is specified,</span>
+<span class="sd">        no hyperparameters will be optimized</span>
+<span class="sd">        :type hyperpars: dict</span>
+<span class="sd">        :param n_cvs: number of folds in k-fold cross-validation</span>
+<span class="sd">        :type n_cvs: int</span>
+<span class="sd">        :return: trained model, forecasting model, generator and selector</span>
+<span class="sd">        :rtype: tuple</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
 
+        <span class="c1"># once fitted, the model is retrained only if retrain = True</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">named_steps</span><span class="p">[</span><span class="s1">&#39;frc&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">is_fitted</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">retrain</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">named_steps</span><span class="p">[</span><span class="s1">&#39;frc&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">named_steps</span><span class="p">[</span><span class="s1">&#39;gen&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">named_steps</span><span class="p">[</span><span class="s1">&#39;sel&#39;</span><span class="p">]</span>
+
+        <span class="c1"># if a range of hyperparametr values is specify, tune it via k-fold cross-validation</span>
+        <span class="k">if</span> <span class="n">hyperpars</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">best_hyperpars</span> <span class="o">=</span> <span class="n">cv_train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span> <span class="n">hyperpars</span><span class="p">,</span> <span class="n">n_cvs</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">hyperpars</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">best_hyperpars</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">named_steps</span><span class="p">[</span><span class="s1">&#39;frc&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">named_steps</span><span class="p">[</span><span class="s1">&#39;frc&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">named_steps</span><span class="p">[</span><span class="s1">&#39;gen&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">named_steps</span><span class="p">[</span><span class="s1">&#39;sel&#39;</span><span class="p">]</span></div></div>
 
 
+<div class="viewcode-block" id="cv_train"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.cv_train">[docs]</a><span class="k">def</span> <span class="nf">cv_train</span><span class="p">(</span><span class="n">raw_model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">hyperpars</span><span class="p">,</span> <span class="n">n_cvs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Use cross-validation to choose optimal hyperparameter values from the given range</span>
+
+<span class="sd">    :param raw_model: model</span>
+<span class="sd">    :type raw_model: instance of PipelineModel</span>
+<span class="sd">    :param X: training data, inputs</span>
+<span class="sd">    :type X: numpy.ndarray</span>
+<span class="sd">    :param Y: training data, targets</span>
+<span class="sd">    :type Y: numpy.ndarray</span>
+<span class="sd">    :param hyperpars: contains ranges of frc_model hyperparameters</span>
+<span class="sd">    :type hyperpars: dict</span>
+<span class="sd">    :param n_cvs: number of cross-validation splits</span>
+<span class="sd">    :type n_cvs: int</span>
+<span class="sd">    :return:</span>
+<span class="sd">    :rtype: list</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">KFold</span>
+    <span class="kn">import</span> <span class="nn">sys</span>
+    <span class="k">if</span> <span class="n">n_cvs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">n_cvs</span> <span class="o">=</span> <span class="mi">5</span>
+
+    <span class="n">kf</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="n">n_cvs</span><span class="p">)</span>
+    <span class="n">kf</span><span class="o">.</span><span class="n">get_n_splits</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="n">par_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">hyperpars</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">par_values_range</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">hyperpars</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">hyperpars</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">par_values_range</span><span class="p">)):</span>
+        <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_cvs</span><span class="p">))</span>
+        <span class="n">pars</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">val</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">par_names</span><span class="p">,</span> <span class="n">hyperpars</span><span class="p">)}</span>
+
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">train_val_index</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">kf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">)):</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">raw_model</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">pars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">named_steps</span><span class="p">[</span><span class="s2">&quot;frc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\r</span><span class="si">{}</span><span class="s2">, kfold = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">k</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+            <span class="c1"># getting training and validation data</span>
+            <span class="n">train_index</span><span class="p">,</span> <span class="n">val_index</span> <span class="o">=</span> <span class="n">train_val_index</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">train_val_index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">x_train</span><span class="p">,</span> <span class="n">x_val</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">train_index</span><span class="p">],</span> <span class="n">X</span><span class="p">[</span><span class="n">val_index</span><span class="p">]</span>
+            <span class="n">y_train</span><span class="p">,</span> <span class="n">y_val</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="n">train_index</span><span class="p">],</span> <span class="n">Y</span><span class="p">[</span><span class="n">val_index</span><span class="p">]</span>
+            <span class="c1"># train the model and predict the MSE</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+                <span class="n">pred_val</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_val</span><span class="p">)</span>
+                <span class="n">scores</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean_squared_error_</span><span class="p">(</span><span class="n">pred_val</span><span class="p">,</span> <span class="n">y_val</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">scores</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">scores</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="n">scores</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">scores</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+    <span class="n">best_hyperpars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">par_values_range</span><span class="p">))[</span><span class="n">idx</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Best hyperpars combo: </span><span class="si">{}</span><span class="s2"> with mse </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">par_names</span><span class="p">,</span> <span class="n">best_hyperpars</span><span class="p">),</span> <span class="n">scores</span><span class="p">[</span><span class="n">idx</span><span class="p">]))</span>
+
+    <span class="k">return</span> <span class="n">best_hyperpars</span></div>
+
+<div class="viewcode-block" id="mean_squared_error_"><a class="viewcode-back" href="../../Forecasting.html#Forecasting.frc_class.mean_squared_error_">[docs]</a><span class="k">def</span> <span class="nf">mean_squared_error_</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">f</span> <span class="o">-</span> <span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span></div>
 
 
 </pre></div>

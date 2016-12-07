@@ -197,7 +197,7 @@
 <dl class="method">
 <dt id="RegressionMatrix.regression_matrix.RegMatrix.add_forecasts">
 <code class="descname">add_forecasts</code><span class="sig-paren">(</span><em>frc</em>, <em>idx_rows</em>, <em>replace</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#RegMatrix.add_forecasts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.RegMatrix.add_forecasts" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes flat indices of forecats and optionally replaces old forecast values new ones</p>
+<dd><p>Computes flat indices of forecasts and optionally replaces old forecast values new ones</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -297,7 +297,7 @@
 
 <dl class="method">
 <dt id="RegressionMatrix.regression_matrix.RegMatrix.mae">
-<code class="descname">mae</code><span class="sig-paren">(</span><em>idx_frc=None</em>, <em>idx_rows=None</em>, <em>out=None</em>, <em>y_idx=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#RegMatrix.mae"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.RegMatrix.mae" title="Permalink to this definition">¶</a></dt>
+<code class="descname">mae</code><span class="sig-paren">(</span><em>idx_frc=None</em>, <em>idx_rows=None</em>, <em>out=None</em>, <em>y_idx=None</em>, <em>idx_original=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#RegMatrix.mae"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.RegMatrix.mae" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mean Absolute Error calculation.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -323,7 +323,7 @@
 
 <dl class="method">
 <dt id="RegressionMatrix.regression_matrix.RegMatrix.mape">
-<code class="descname">mape</code><span class="sig-paren">(</span><em>idx_frc=None</em>, <em>idx_rows=None</em>, <em>out=None</em>, <em>y_idx=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#RegMatrix.mape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.RegMatrix.mape" title="Permalink to this definition">¶</a></dt>
+<code class="descname">mape</code><span class="sig-paren">(</span><em>idx_frc=None</em>, <em>idx_rows=None</em>, <em>out=None</em>, <em>y_idx=None</em>, <em>idx_original=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#RegMatrix.mape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.RegMatrix.mape" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mean Absolute Percentage Error calculation.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -334,6 +334,7 @@
 <li><strong>idx_rows</strong> (<em>list</em>) &#8211; Alternatively, specify raw indices for matrix Y. If idx_frc is specified, idx_rows is ignored</li>
 <li><strong>out</strong> (<em>string</em>) &#8211; Specification of out invokes printing MAPE values. out string is printed before the output</li>
 <li><strong>y_idx</strong> (<em>list</em>) &#8211; Specifies time series to compute errors for</li>
+<li><strong>idx_original</strong> (<em>list</em>) &#8211; Indices of the time series before any manipulations with frequencies</li>
 </ul>
 </td>
 </tr>
@@ -389,33 +390,6 @@
 </tr>
 </tbody>
 </table>
-</dd></dl>
-
-<dl class="method">
-<dt id="RegressionMatrix.regression_matrix.RegMatrix.train_model">
-<code class="descname">train_model</code><span class="sig-paren">(</span><em>frc_model</em>, <em>selector=None</em>, <em>generator=None</em>, <em>retrain=True</em>, <em>hyperpars=None</em>, <em>n_cvs=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#RegMatrix.train_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.RegMatrix.train_model" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initializes and train feature generation, selection and forecasting model in a pipeline</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>frc_model</strong> &#8211; Instance of CustomModel()</li>
-<li><strong>selector</strong> &#8211; Instance of model selection class</li>
-<li><strong>generator</strong> &#8211; Instance of model generation class</li>
-<li><strong>retrain</strong> (<em>bool</em>) &#8211; Flag that specifies if the model needs retraining</li>
-<li><strong>hyperpars</strong> &#8211; defines ranges of hyperparameters to tune with cross-validation. If None is specified,</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>no hyperparameters will be optimized 
-:type hyperpars: dict
-:param n_cvs: number of folds in k-fold cross-validation
-:type n_cvs: int
-:return: trained model, forecasting model, generator and selector
-:rtype: tuple</p>
 </dd></dl>
 
 <dl class="method">
@@ -485,11 +459,6 @@
 </dd></dl>
 
 <dl class="function">
-<dt id="RegressionMatrix.regression_matrix.cv_train">
-<code class="descclassname">RegressionMatrix.regression_matrix.</code><code class="descname">cv_train</code><span class="sig-paren">(</span><em>raw_model</em>, <em>data</em>, <em>hyperpars</em>, <em>n_cvs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#cv_train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.cv_train" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt id="RegressionMatrix.regression_matrix.matrix_idx">
 <code class="descclassname">RegressionMatrix.regression_matrix.</code><code class="descname">matrix_idx</code><span class="sig-paren">(</span><em>n_hist</em>, <em>n_req</em>, <em>n_rows</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#matrix_idx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.matrix_idx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns indices of ts entries in matrices X and Y given forecast parameters, by rows. Ts are enumerated from the latest entry</p>
@@ -529,11 +498,6 @@
 </pre></div>
 </div>
 </dd></dl>
-
-<dl class="function">
-<dt id="RegressionMatrix.regression_matrix.mean_squared_error_">
-<code class="descclassname">RegressionMatrix.regression_matrix.</code><code class="descname">mean_squared_error_</code><span class="sig-paren">(</span><em>f</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RegressionMatrix/regression_matrix.html#mean_squared_error_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RegressionMatrix.regression_matrix.mean_squared_error_" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="function">
 <dt id="RegressionMatrix.regression_matrix.replace_nans">
