@@ -5,19 +5,20 @@ import os
 import pandas as pd
 import numpy as np
 from RegressionMatrix import regression_matrix
-from sklearn.linear_model import Lasso, MultiTaskLassoCV
+from sklearn.linear_model import Lasso
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.decomposition import PCA
+# from sklearn.decomposition import PCA
 from LoadAndSaveData import load_time_series
 from Forecasting import frc_class
 from Features import generation_models as gnt_class
-#from Forecasting.GatingEnsemble import GatingEnsemble
-#from Forecasting.LSTM import LSTM
+from Features import quadratic_feature_selection as sel_class
+# from Forecasting.GatingEnsemble import GatingEnsemble
+# from Forecasting.LSTM import LSTM
 import my_plots
 
 # Experiment data
 DATASET = 'EnergyWeather'
-TS_IDX = [0,1,2,4,5,6] # We exclude precipitation from the list of time series
+TS_IDX = [0, 1, 2, 4, 5, 6] # We exclude precipitation from the list of time series
 
 # Example of partition. You may use all missing_values time series and both orig time series to test you model.
 # The final quality will be assesed on varying_rates time series, so don't look at them until you are finished
@@ -40,8 +41,8 @@ feature_gnt_names = [None, 'univariate_transformation',
                        'monotone_soft_max',
                        'monotone_hyberbolic_tangent',
                        'monotone_softsign',
-                     'centroids',
-                     'all']
+                       'centroids',
+                       'all']
 
 # output and saving parameters
 VERBOSE = False
@@ -51,9 +52,6 @@ FNAME_PREFIX = ""
 
 TRAIN_TEST_RATIO = 0.75
 N_STEPS = 1 # forecast only one requested interval
-
-
-
 
 def main():
     """
@@ -92,7 +90,7 @@ def main():
     generator = gnt_class.CentroidDistances() #gnt_class.Monotone()
 
     # feature selection model can be defined in the same way. If you don't use any, just leave as is
-    selector = None #
+    selector = sel_class.FeatureSelection(on=False) #
     # first argument is your model class, then follow optional parameters as keyword arguments
     frc_model = frc_class.CustomModel(RandomForestRegressor, name="RF")
     #frc_class.CustomModel(Lasso, name="Lasso", alpha=0.001)
@@ -114,14 +112,14 @@ def main():
 def load_energy_weather_data(load_raw=None, fnames=TRAIN_FILE_NAMES):
     """Load data from the EnergyWeather dataset """
     if load_raw is None:
-        load_raw = not os.path.exists(os.path.join("ProcessedData", "EnergyWeather_orig_train.pkl"))
+        load_raw = not os.path.exists(os.path.join("..", "data", "ProcessedData", "EnergyWeather_orig_train.pkl"))
 
     load_time_series.load_all_time_series(datasets=[DATASET], load_raw=load_raw, verbose=VERBOSE)
     ts_list = []
     for name in fnames:
         ts_list.extend(
             load_time_series.load_all_time_series(datasets=[DATASET], load_raw=False, name_pattern=name,
-                                                verbose=False)
+                                                  verbose=False)
         )
         print(name)
         print(ts_list[-1].summarize_ts())
@@ -135,23 +133,24 @@ def demo_train(ts_struct_list, frc_model=None, fg_mdl=None, fs_mdl=None, verbose
     Train and save the model.
 
     :param ts_struct_list: list of namedtuples tsStruct
-    :param model: list of dictionaries which specify model structure
-    :param generators: list of dictionaries which specify feature generators
-    :param feature_selection_mdl: list of dictionaries which specify feature selection strategies
+    :param frc_model: list of dictionaries which specify model structure
+    :param fg_mdl: list of dictionaries which specify feature generators
+    :param fs_mdl: list of dictionaries which specify feature selection strategies
     :param verbose: controls the output
     :return: testError, trainError, bias, model
     """
 
     # Check arguments:
     if fg_mdl is None:
-        fg_mdl = frc_class.IdentityGenerator(name="Identity generator")
+        fg_mdl = frc_class.IdentityGenerator(name="Identity generator", on=False)
 
     if fs_mdl is None:
-        fs_mdl = frc_class.IdentityModel(name="Identity selector")
+        fs_mdl = gnt_class.FeatureGeneration()  # IdentityModel(name="Identity selector")
 
     if frc_model is None:
         frc_model = frc_class.CustomModel(Lasso, name="Lasso", alpha=0.01)
 
+    model = frc_class.PipelineModel(gen_mdl=fg_mdl, sel_mdl=fs_mdl, frc_mdl=frc_model)
     results = []
     res_text = []
 
@@ -165,22 +164,22 @@ def demo_train(ts_struct_list, frc_model=None, fg_mdl=None, fs_mdl=None, verbose
         data.train_test_split(TRAIN_TEST_RATIO)
 
         # train the model. This returns trained pipeline and its steps
-        model, frc, gen, sel = data.train_model(frc_model=frc_model, generator=fg_mdl, selector=fs_mdl)
+        model, frc, gen, sel = model.train_model(data.trainX, data.trainY)
 
-        # if verbose:
-        #     model.print_pipeline_pars()
-        #     verbose = False
+        selection_res = "\n Feature selection results: problem status {}, selected {} from {} \\\\ \n".\
+            format(sel.status, len(sel.selected), sel.n_vars)
+
 
         frcY, _ = data.forecast(model) # returns forecasted matrix of the same shape as data.Y
         # frcY, idx_frc = data.forecast(model, idx_rows=data.idx_test) # this would return forecasts only for data.testY
 
         data.plot_frc(n_frc=5, n_hist=10, folder=SAVE_DIR) #this saves figures into SAVE_DIR
 
-        train_mae = data.mae(idx_rows=data.idx_train)
-        train_mape = data.mape(idx_rows=data.idx_train)
+        train_mae = data.mae(idx_rows=data.idx_train, idx_original=data.original_index)
+        train_mape = data.mape(idx_rows=data.idx_train, idx_original=data.original_index)
 
-        test_mae = data.mae(idx_rows=data.idx_test)
-        test_mape = data.mape(idx_rows=data.idx_test)
+        test_mae = data.mae(idx_rows=data.idx_test, idx_original=data.original_index)
+        test_mape = data.mape(idx_rows=data.idx_test, idx_original=data.original_index)
 
         index = [ts.data[i].name for i in TS_IDX]
         res1 = pd.DataFrame(train_mae, index=index, columns=[("MAE", "train")])
@@ -189,16 +188,16 @@ def demo_train(ts_struct_list, frc_model=None, fg_mdl=None, fs_mdl=None, verbose
         res4 = pd.DataFrame(test_mape, index=index, columns=[("MAPE", "test")])
         res = pd.concat([res1, res2, res3, res4], axis=1)
 
-
-        conf_str = "Time series {} forecasted with {} + '{}' feature generation model and  " \
-                   "'{}' feature selection model \n \\\\".format(ts.name, frc.name, gen.name, sel.name)
+        configuration_str = "\n Time series {} forecasted with {} + '{}' feature generation model and  " \
+                            "'{}' feature selection model \\\\ \n".format(ts.name, frc.name, gen.name, sel.name)
         if verbose:
-            print(conf_str)
+            print(configuration_str)
+            print(selection_res)
             print(res)
 
         results.append(res)
-        res_text.append(conf_str)
-
+        res_text.append(configuration_str)
+        res_text.append(selection_res)
 
     saved_mdl_fname = model.save_model(file_name=FNAME_PREFIX, folder=SAVE_DIR) # saving in not an option yet
     # model = frc_class.PipelineModel().load_model(file_name=fname)
@@ -243,23 +242,21 @@ def competition_errors(model, names, y_idx=None):
     return np.mean(mape), np.std(mape)
 
 
-
 def feature_generation_demo():
 
     ts_list = load_energy_weather_data(load_raw=False, fnames=TRAIN_FILE_NAMES)
-    frc_model = frc_class.CustomModel(Lasso, name="lasso", alpha=0.001)
-    selector = frc_class.CustomModel(PCA)
+    frc_model = frc_class.CustomModel(Lasso, name="Lasso", alpha=0.0001)
+    selector = sel_class.FeatureSelection(name="Katrutsa")
     rewrite = True
-    for fg_name in feature_gnt_names:
+    for fg_name in feature_gnt_names[:-2]:  #:["all"]
         generator = gnt_class.FeatureGeneration(name=fg_name, replace=False,
-                 transformations=[fg_name], norm=True)
+                                                transformations=[fg_name], norm=True)
         model, _ = demo_train(ts_list, frc_model=frc_model, fg_mdl=generator, fs_mdl=selector,
-                           verbose=True, return_model=True, rewrite=rewrite)
+                              verbose=True, return_model=True, rewrite=rewrite)
         rewrite = False
 
         train_error, train_std = competition_errors(model=model, names=TRAIN_FILE_NAMES, y_idx=TS_IDX)
         test_error, test_std = competition_errors(model=model, names=TEST_FILE_NAMES, y_idx=TS_IDX)
-
 
         res_text = "\n Average MAPE across time series: train = {} with std {}, test = {} with std {} \\\\ \n".\
             format(train_error, train_std, test_error, test_std)
@@ -269,4 +266,5 @@ def feature_generation_demo():
 
 
 if __name__ == '__main__':
+    #feature_generation_demo()
     main()

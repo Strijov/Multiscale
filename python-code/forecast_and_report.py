@@ -39,30 +39,28 @@ def main(file_name=None, line_indices="all", header=True, format_="date"):
     latex_str = ""
     time_at_start = time.time()
     if format_ == "date":
-        folder = os.path.join("fig", datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d'))
+        folder = os.path.join("results", datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d'))
     else:
-        folder = os.path.join("fig", datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d-%H-%M-%S'))
+        folder = os.path.join("results", datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d-%H-%M-%S'))
     if not os.path.exists(folder):
         os.makedirs(folder)
 
     # Load data in IoT format
-    file_name = "test.csv"
     try:
         data, metric_ids, host_ids, header_names = get_iot_data.get_data(file_name, line_indices, header)
     except BaseException as e:
         print("{}. Line indices: {}. Filename {}".format(e.message, line_indices, file_name))
         return None
 
-
     # Select only data from first dataset in host_ids:
     dataset = list(host_ids.keys())[0] # select the first dataset # FIXIT
-    ts = load_time_series.from_iot_to_struct(data, host_ids[dataset], dataset) # get all time series from dataset in TsStruct format
+    ts = load_time_series.from_iot_to_struct(data, host_ids[dataset], dataset)  # get all time series from dataset in TsStruct format
     ts.replace_nans()
-    ts.align_time_series(max_history=50000) # truncate time series to align starting and ending points
+    ts.align_time_series(max_history=50000)  # truncate time series to align starting and ending points
     latex_str += ts.summarize_ts(latex=True)
 
     # split time series into train and validation
-    train, test = ts.train_test_split(train_test_ratio=0.75) # split raw time series into train and test parts
+    train, test = ts.train_test_split(train_test_ratio=0.75)  # split raw time series into train and test parts
 
     # Plot periodics:
     for i, tsi in enumerate(ts.data):
@@ -76,24 +74,20 @@ def main(file_name=None, line_indices="all", header=True, format_="date"):
         latex_str += msg
         latex_str += arima_model.make_report(os.path.join(save_to), write=False) # adds figures from "save_to" to latex_str
 
-
-
-
-
     # Declare models to compare:
     random_forest = frc_class.CustomModel(RandomForestRegressor, n_jobs=24, name="RandomForest")
     # mixture_experts = frc_class.CustomModel(GatingEnsemble.GatingEnsemble, name="Mixture",
     #                                          estimators=[RidgeCV(), LassoCV()])
-    #lstm = frc_class.CustomModel(LSTM.LSTM, name="LSTM", n_epochs=50, plot_loss=True)
+    # lstm = frc_class.CustomModel(LSTM.LSTM, name="LSTM", n_epochs=50, plot_loss=True)
     lasso = frc_class.CustomModel(Lasso, name="Lasso", fit_intercept=True, alpha=2.0)
-    model_list = [lasso] # random_forest, mixture_experts, lstm
+    lasso_model = frc_class.PipelineModel(frc_mdl=lasso)
+    model_list = [lasso_model] # random_forest, mixture_experts, lstm
 
     params_range ={}
     params_range["RandomForest"] = {"n_estimators": [3000]}
     params_range["Mixture"] = {"n_hidden_units":[10, 20, 30, 50, 100]}
     params_range["LSTM"] = {"batch_size": [20, 30, 50, 100]}
     params_range["Lasso"] = {"alpha": [float(i) / 10000 for i in  range(1, 11, 1)]  + [0.01, 0.05]}  # [20, 30, 50, 100]} #[1.0, 1.25, 1.5, 1.75, 2.0]
-
 
     WINDOWS = [2, 5, 7, 10, 15, 20]
     N_FOLDS = 2
@@ -106,13 +100,12 @@ def main(file_name=None, line_indices="all", header=True, format_="date"):
         # select number of trees and history parameter:
         # (history parameter is divisible by request)
         n_req, params, best_train_mse, plt = train_model_CV(train, model, n_fold=N_FOLDS, windows=WINDOWS,
-                                        params=params_range[model.name], plot=True)#windows=[5, 10, 25, 50, 75, 100, 150])
+                                        params=params_range[model.named_steps['frc'].name], plot=True)#windows=[5, 10, 25, 50, 75, 100, 150])
 
         plt.savefig(os.path.join(model_save_path, "cv_optimization.png"))
         plt.clf()
 
-        #n_req, nr_tree, best_train_mse = 10, 500, 0.00658112163657  # previously estimated
-
+        # n_req, nr_tree, best_train_mse = 10, 500, 0.00658112163657  # previously estimated
         opt_string = model.name + ". Best CV error: {0}, estimated parameters: history = {1}, {2} = {3} " \
                      "\\\\ \n".format(best_train_mse, n_req, my_plots.check_text_for_latex(list(params.keys())[0]),
                                       list(params.values())[0])
@@ -128,10 +121,11 @@ def main(file_name=None, line_indices="all", header=True, format_="date"):
         data.create_matrix()
         data.train_test_split()
 
-        model, frc, _, _ = data.train_model(frc_model=model)
+        model, frc, _, _ = model.train_model(data.trainX, data.trainY)
 
-        # if hasattr(frc, "msg"):
-        #     latex_str += msg
+        if hasattr(frc, "msg"):
+            latex_str += frc.msg
+
         if hasattr(frc, "fig"):
             frc.fig.savefig(os.path.join(model_save_path, "fitting.png"))
 
@@ -145,7 +139,7 @@ def main(file_name=None, line_indices="all", header=True, format_="date"):
         latex_str += "Train error for estimated parameters: {0}, " \
                      "test error with estimated parameters {1} \\\\ \n".format(train_mse, test_mse)
 
-        err_all = forecasting_errors(data)
+        err_all = forecasting_errors(data, ts.original_index)
         column_names = [("MAE", "train"), ("MAPE", "train"), ("MAE", "test"), ("MAPE", "test")]
         res_all = data_frame_res(err_all, column_names, ts)
 
@@ -165,8 +159,6 @@ def main(file_name=None, line_indices="all", header=True, format_="date"):
     return latex_str
 
 
-
-
 def data_frame_res(columns, column_names, ts):
     res = []
     for col, name in zip(columns, column_names):
@@ -176,16 +168,16 @@ def data_frame_res(columns, column_names, ts):
     return res
 
 
-def forecasting_errors(data):
-    train_mae = data.mae(idx_rows=data.idx_train)
-    train_mape = data.mape(idx_rows=data.idx_train)
-    test_mae = data.mae(idx_rows=data.idx_test)
-    test_mape = data.mape(idx_rows=data.idx_test)
+def forecasting_errors(data, idx_original):
+    train_mae = data.mae(idx_rows=data.idx_train, idx_original=idx_original)
+    train_mape = data.mape(idx_rows=data.idx_train, idx_original=idx_original)
+    test_mae = data.mae(idx_rows=data.idx_test, idx_original=idx_original)
+    test_mape = data.mape(idx_rows=data.idx_test, idx_original=idx_original)
 
     return train_mae, train_mape, test_mae, test_mape
 
 
-def train_model_CV(data, model, n_fold=5, windows=[5, 10, 25, 50, 75, 100, 150],
+def train_model_CV(data, model, n_fold=5, windows=(5, 10, 25, 50, 75, 100, 150),
                    params={}, f_horizon=1, plot=False):
 
     if len(params) == 0:
@@ -202,14 +194,12 @@ def train_model_CV(data, model, n_fold=5, windows=[5, 10, 25, 50, 75, 100, 150],
         mat.create_matrix(f_horizon)
         w_train = mat.X
         y_wtrain = mat.Y
-        # (w_train, y_wtrain) = windowize(data, windows[w_ind], f_horizon=f_horizon)
 
         # cross-validation
-        r, c = w_train.shape
         kf = KFold(n_splits=n_fold)
         kf.get_n_splits(w_train)
         for par_ind in range(0, len(params_range)):
-            model.__setattr__(par_name, params_range[par_ind])
+            model.named_steps['frc'].__setattr__(par_name, params_range[par_ind])
             n = 0
             for train_index, val_index in kf.split(w_train):
                 print("\rWindow size: {0}, {1} = {2}, kfold = {3}".format(windows[w_ind], par_name, params_range[par_ind], n), end="")
@@ -219,7 +209,7 @@ def train_model_CV(data, model, n_fold=5, windows=[5, 10, 25, 50, 75, 100, 150],
                 y_train, y_val = y_wtrain[train_index], y_wtrain[val_index]
                 # train the model and predict the MSE
                 try:
-                    model.fit(X_train, y_train)
+                    model.train_model(X_train, y_train)
                     pred_val = model.predict(X_val)
                     scores[w_ind, par_ind, n] = mean_squared_error(pred_val, y_val)
                 except BaseException as e:
@@ -233,13 +223,13 @@ def train_model_CV(data, model, n_fold=5, windows=[5, 10, 25, 50, 75, 100, 150],
     mse = m_scores.min()
 
     # select best window_size and best n_tree with smallest MSE
-    (b_w_ind, b_tree_ind) = np.where(m_scores == mse)
+    b_w_ind, b_tree_ind = np.where(m_scores == mse)
     b_w_ind, b_tree_ind = b_w_ind[0], b_tree_ind[0]
     window_size, best_par = windows[b_w_ind], params_range[b_tree_ind]
     best_par = {par_name:best_par}
 
     if not plot:
-        return (window_size, best_par, mse)
+        return window_size, best_par, mse
 
     plt = my_plots.imagesc(m_scores, xlabel=par_name, ylabel="n_req", yticks=windows, xticks=params_range)
     return window_size, best_par, mse, plt
@@ -247,8 +237,6 @@ def train_model_CV(data, model, n_fold=5, windows=[5, 10, 25, 50, 75, 100, 150],
 
 def mean_squared_error(f, y):
     return np.mean((f-y)**2)
-
-
 
 
 if __name__ == '__main__':
