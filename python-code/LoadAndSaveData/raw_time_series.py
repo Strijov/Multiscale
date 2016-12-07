@@ -2,6 +2,7 @@ from __future__ import print_function
 from __future__ import division
 import numpy as np
 import pandas as pd
+from scipy.interpolate import InterpolatedUnivariateSpline
 
 TOL = pow(10, -10)
 
@@ -19,7 +20,8 @@ class TsStruct():
     :param readme: Dataset info
     :type readme: string
     """
-    def __init__(self, data, request=1, history=1, name='', readme='', allow_empty=False, as_floats=False):
+    def __init__(self, data, request=1, history=1, name='', readme='', allow_empty=False,
+                 as_floats=False, max_one_step=30):
         
         # Check inputs:
         # Some tests might need to process empty data without errors
@@ -40,10 +42,12 @@ class TsStruct():
             raise TypeError("history should be int or float; got {}, type {}".format(history, type(history)))
                 
         self.as_floats = as_floats
+        self.max_one_step = max_one_step
         self.data, self.index_type = data_index_type(data, as_floats)
+        self.original_index = [ts.index for ts in self.data]
 
         self.intervals = np.around(self.ts_frequencies(), decimals=5)
-        self.one_step = assign_one_step_requests(self.intervals, self.as_floats, self.index_type)
+        self.one_step = assign_one_step_requests(self.intervals, self.as_floats, self.index_type, self.max_one_step)
 
         self.request = request
         self.history = history
@@ -52,7 +56,7 @@ class TsStruct():
         
     def to_floats(self):
         """
-        Forces TsStruct instance to as_floats format
+        Forces TsStruct instance to as_floats format.
 
         :return: None
         """
@@ -66,10 +70,13 @@ class TsStruct():
             raise TypeError("history should be int or float; got {}, type {}".format(history, type(history)))
         
         self.as_floats = True
-        self.data, self.index_type = data_index_type(self.data, self.as_floats)
-
-        self.intervals = np.around(self.ts_frequencies(), decimals=5)
-        self.one_step = assign_one_step_requests(self.intervals, self.as_floats, self.index_type)
+        if not self.index_type == 'int':
+            self.data, self.index_type = data_index_type(self.data, self.as_floats)
+            self.intervals = np.around(self.ts_frequencies(), decimals=5)
+            self.one_step = assign_one_step_requests(self.intervals, as_floats=self.as_floats,
+                                                     index_type=self.index_type, max_request=self.max_one_step)
+            for i, idx in enumerate(self.original_index):
+                self.original_index[i], _ = pd_time_stamps_to_floats(idx, self.index_type)
         
 
     def ts_frequencies(self):
@@ -93,7 +100,8 @@ class TsStruct():
 
     def train_test_split(self, train_test_ratio=0.75):
         """
-        Splits time series sequentially into train and test time series
+        Splits time series sequentially into train and test time series.
+        ! Values of one_step are the same as those in the splitted TsStruct instance
 
         :param train_test_ratio: ratio of train objects to original ts length
         :type train_test_ratio: float
@@ -106,16 +114,21 @@ class TsStruct():
         max_train_index = self.data[max_freq].index[n_train]
 
         train_ts, test_ts = [], []
-        for ts in self.data:
+        original_index_train, original_index_test = [], []
+        for i, ts in enumerate(self.data):
             train_idx = ts.index <= max_train_index
             test_idx = ts.index > max_train_index
             train_ts.append(ts[train_idx])
             test_ts.append(ts[test_idx])
+            original_index_test.append(self.original_index[i][self.original_index[i] > max_train_index])
+            original_index_train.append(self.original_index[i][self.original_index[i] <= max_train_index])
+
         train = TsStruct(train_ts, self.request, self.history, self.name, self.readme)
+        train.one_step = self.one_step
         test = TsStruct(test_ts, self.request, self.history, self.name, self.readme)
+        test.one_step = self.one_step
 
         return train, test
-
 
     def replace_nans(self):
         for i, ts in enumerate(self.data):
@@ -131,9 +144,6 @@ class TsStruct():
             ts_prop = pd.Series(ts).fillna(method="pad")
             ts_back = pd.Series(ts_prop).fillna(method="bfill")
             self.data[i] = ts_back  # (ts_back + ts_prop)[pd.isnull(ts)] / 2
-
-
-
 
     def truncate(self, max_history=50000, max_total = None):
         """
@@ -152,7 +162,6 @@ class TsStruct():
 
         self.align_time_series()
 
-
     def align_time_series(self, max_history=None):
         """
         Truncates time series in self.data so that the end points of all times series belong to the same requested interval
@@ -161,38 +170,60 @@ class TsStruct():
         :rtype: list
         """
 
-
-        #min_end_T = min([ts.index[-1] for ts in self.data]) # find earliest end-point index
-        #max_start_T = max([ts.index[0] for ts in self.data]) # find latest start-point index
-
         if not max_history is None:
             self.truncate(max_history)
             return self.data
 
-        common_T = set(np.around(self.data[0].index, decimals=5))
-        common_T.add(np.around(self.data[0].index[-1] + self.intervals[0], decimals=5))
+        # for index_type in ['h', 'ns', 's'] returns pd.Timestamps
+        intervals = from_floats_to_index_type(self.intervals, self.index_type)
+        if self.index_type == "int":
+            common_t = set(np.around(self.data[0].index, decimals=5))
+            common_t.add(np.around(self.data[0].index[-1] + intervals[0], decimals=5))
+        else:
+            common_t = set(self.data[0].index)
+            common_t.add(self.data[0].index[-1] + intervals[0])
+
         for i, ts in enumerate(self.data[1:]):
-            index_plus_1 = set(np.around(ts.index, decimals=5))
-            index_plus_1.add(np.around(ts.index[-1] + self.intervals[i+1], decimals=5))
-            #print(max(index_plus_1) - max(common_T))
-            common_T = common_T.intersection(index_plus_1)
+            if self.index_type == "int":
+                index_plus_1 = set(np.around(ts.index, decimals=5))
+                index_plus_1.add(np.around(ts.index[-1] + intervals[i+1], decimals=5))
+            else:
+                index_plus_1 = set(ts.index)
+                index_plus_1.add(ts.index[-1] + intervals[i + 1])
+            common_t = common_t.intersection(index_plus_1)
+            if len(common_t) == 0:
+                self.interpolate_data()
+                return self.align_time_series(max_history)
 
-            #ending_T = ending_T.intersection(set(ts.index[np.logical_and(ts.index <= min_end_T, ts.index >= min_end_T - self.request)]))
-            #self.data[i] = ts.iloc[np.logical_and(ts.index < min_end_T + self.request, ts.index >= max_start_T)]
-            #self.data[i] = ts.iloc[ts.index < min_end_T + self.request]
-
-
-
-        min_end_T = max(common_T)
-        max_start_T = min(common_T)
+        min_end_T = max(common_t)
+        max_start_T = min(common_t)
 
         for i, ts in enumerate(self.data):
             self.data[i] = ts.iloc[np.logical_and(ts.index < min_end_T, ts.index >= max_start_T)]
 
-
-
         return self.data
 
+    def interpolate_data(self):
+        """
+        Is used when original indices do not intersect, or the intersection is too small.
+        Defines a new uniform grid of time indices, which includes time steps from all the
+        time series in the set. Overwrites data and intervals fields, but leaves history, request
+        and one_step as they are
+
+        :return: None
+        """
+        index = set(np.array(self.data[0].index))
+        for ts in self.data:
+            index.update(set(np.array(ts.index)))
+        index = np.sort(list(index))
+        common_step = np.min(np.diff(index))
+        index = np.arange(index[0], index[-1], common_step)
+
+        for i, ts in enumerate(self.data):
+            s = InterpolatedUnivariateSpline(np.array(ts.index), np.array(ts.T), k=1)
+            self.data[i] = pd.Series(s(index), index=index, name=ts.name)
+
+        self.intervals = np.around(self.ts_frequencies(), decimals=5)
 
 
     def summarize_ts(self, latex=False):
@@ -248,6 +279,7 @@ def data_index_type(data, as_float):
 
     return data, preferred_type
         
+        
 def infer_frequency(ts_index):
     if len(ts_index) < 2:
         raise ValueError(("ts.index is too short!  len(ts.index) = {}".format(len(ts_index))))
@@ -265,7 +297,8 @@ def infer_frequency(ts_index):
         
     return frequency
     
-def pd_time_stamps_to_floats(time_stamps_array, frequency, from_zero=False):
+    
+def pd_time_stamps_to_floats(time_stamps_array, frequency):
 
     if len(time_stamps_array) < 2:
         print("ts.index is too short!")
@@ -278,10 +311,8 @@ def pd_time_stamps_to_floats(time_stamps_array, frequency, from_zero=False):
                         / np.timedelta64(1, frequency)
     time_stamps_array = np.array(time_stamps_array)
 
-    if from_zero:
-        time_stamps_array = time_stamps_array - np.min(time_stamps_array)
-
     return time_stamps_array, frequency
+
 
 def general_time_delta_to_float(td, freq):
     if freq == "int":
@@ -303,6 +334,17 @@ def general_time_delta_to_float(td, freq):
     return total
 
 
+def from_floats_to_index_type(floats, freq):
+    if freq == "int":
+        if not isinstance(floats, float) and not isinstance(floats, int):
+            raise TypeError("Inputs should be of type float or int, got {}".format(type(floats)))
+        return floats
+
+    time_deltas = pd.to_datetime(floats, unit=freq) - np.datetime64('1970-01-01T00:00:00Z')
+
+    return time_deltas
+
+
 def multiply_pd_time_delta(time_delta, multipl):
     res = pd.Timedelta(days=time_delta.days * multipl,
                        # hours=time_delta.hours * multipl,
@@ -312,7 +354,7 @@ def multiply_pd_time_delta(time_delta, multipl):
 
     return res
 
-def assign_one_step_requests(intervals, as_floats=True, index_type="s"):
+def assign_one_step_requests(intervals, as_floats=True, index_type="s", max_request=1000):
     """
     Assigns request as the lowest common multiple of one step requests for each time series
 
@@ -336,6 +378,7 @@ def assign_one_step_requests(intervals, as_floats=True, index_type="s"):
         request = lcm(intv, request)
 
     request *= min_interval
+    request = min([request, max_request])
 
     if as_floats or index_type=="int":
         return request
