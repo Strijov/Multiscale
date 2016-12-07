@@ -26,17 +26,23 @@ all_transformations = ['univariate_transformation',
                        'monotone_sigmoid',
                        'monotone_soft_max',
                        'monotone_hyberbolic_tangent',
-                       'monotone_softsign']
+                       'monotone_softsign',
+                       'centroids']
 
 
 class Feature():
+    """
+    Defines shared variables for FeatureSelection and FeatureGeneration
+    """
     constraints = []
     variables = []
     selected = None
 
 
-class FeatureTransformation():
-
+class FeatureTransformation(BaseEstimator):
+    """
+    Describes feature transformation
+    """
     def __init__(self, transformation=None, name=None, replace=True):
 
         self.name = name
@@ -47,6 +53,10 @@ class FeatureTransformation():
 
         self.transformation = None
         if transformation is None:
+            return
+
+        if transformation.lower() == 'centroids':
+            self = CentroidDistances(name=self.name, replace=False)  # FIXIT
             return
 
         for module in MODULES:
@@ -79,12 +89,11 @@ class FeatureTransformation():
         return self
 
 
-class FeatureGeneration(BaseEstimator):
-    """ Applies feature transformation from package Features"""
+class FeatureGeneration(BaseEstimator, Feature):
+    """ Applies feature transformations from package Features"""
 
     def __init__(self, name="Nonparametric", replace=True,
-                 transformations=all_transformations,
-                 norm=True):
+                 transformations=None, norm=True):
         self.name = name
         self.transformations = []
         self.constraints = []
@@ -105,9 +114,6 @@ class FeatureGeneration(BaseEstimator):
                 return
             elif transf.lower() in all_transformations:
                 self.transformations.append(transf.lower())
-            elif transf.lower() == 'centroids':
-                self = CentroidDistances(name=self.name, replace=False)  # FIXIT
-                return
             elif transf.lower() == 'all':
                 self.transformations = all_transformations
                 break
@@ -130,7 +136,6 @@ class FeatureGeneration(BaseEstimator):
 
         Feature.constraints = self.constraints
         Feature.variables = self.variables
-
 
     def transform(self, X):
         """
@@ -165,17 +170,18 @@ class FeatureGeneration(BaseEstimator):
 
         return np.hstack((X, new_feats))
 
-
     def fit(self, X, y):
         """ For now, no stick with nonparametric transformation """
 
         if not self.norm:
             return self
 
-
         for transf in self.transformations:
             new_transf = _replace_inf(transf.transform(X))
-            self.norm_consts[transf.name] = StandardScaler().fit(new_transf)
+            try:
+                self.norm_consts[transf.name] = StandardScaler().fit(new_transf)
+            except:
+                pass
         return self
 
 
@@ -209,10 +215,11 @@ class Monotone(FeatureGeneration):
         FeatureGeneration.__init__(self, name, replace, monotone_transformations)
 
 
-class CentroidDistances(BaseEstimator):
+class CentroidDistances(FeatureTransformation):
     """ Computes features based on distance to centriods """
 
     def __init__(self, name=None, replace=False):
+        FeatureTransformation.__init__(self)
         self.centroids_distances = []
         if name is None:
             self.name = "Centroids"
@@ -235,7 +242,7 @@ class CentroidDistances(BaseEstimator):
         if self.replace:
             return np.hstack(self.centroids_distances)
 
-        return np.hstack( (X, np.hstack(self.centroids_distances)) )
+        return np.hstack([X, np.hstack(self.centroids_distances)])
 
 
 def _replace_inf(X):
