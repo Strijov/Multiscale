@@ -5,7 +5,6 @@ Created on 30 September 2016
 from __future__ import division
 from __future__ import print_function
 
-import copy
 import warnings
 import pandas as pd
 import numpy as np
@@ -15,8 +14,9 @@ from collections import namedtuple
 
 import my_plots
 
-
 TsMiniStruct_ = namedtuple('TsMiniStruct', 's norm_div norm_subt name index')
+
+
 class TsMiniStruct(TsMiniStruct_):
     """ This structure stores a particular time series. The fields are:
 

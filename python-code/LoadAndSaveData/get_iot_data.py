@@ -66,14 +66,15 @@ def read_all_lines(file_name, header):
     nline = 1 + header
     new_line = linecache.getline(file_name, nline)
     while len(new_line) > 0:
-        # retrieve  different fields of a line
+        # retrieve the fields of a line
         b = new_line.split(',')
-        # stores the metricID and hostID against line numbers
         #if header == True:
         metric_ids.append(b[0])
         host_ids[b[1]].append(nline - (1 + header) )
         # values of the current metric, v1..vn
         V, T = [], []
+        if "\n" in b:
+            b.remove("\n")
         for i in range(8, len(b)):
             c = b[i]
             vst = c.split(":")  # value:status:time
