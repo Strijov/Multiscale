@@ -8,8 +8,9 @@ from collections import defaultdict
 
 import nonparametric
 import monotone
+import parametric
 
-
+MODULES = [parametric, nonparametric, monotone]
 
 all_transformations = ['univariate_transformation',
                        # 'bivariate_transformation', this one has additional argument
@@ -28,6 +29,56 @@ all_transformations = ['univariate_transformation',
                        'monotone_softsign']
 
 
+class Feature():
+    constraints = []
+    variables = []
+    selected = None
+
+
+class FeatureTransformation():
+
+    def __init__(self, transformation=None, name=None, replace=True):
+
+        self.name = name
+        self.replace = replace
+
+        self.constraints = []
+        self.variables = None
+
+        self.transformation = None
+        if transformation is None:
+            return
+
+        for module in MODULES:
+            try:
+                self.transformation = getattr(module, transformation)
+                break
+            except AttributeError:
+                pass
+        if self.transformation is None:
+            raise ValueError("Transformation {} was not found in modules {}"
+                              .format(transformation, MODULES))
+
+        if name is None:
+            self.name = self.transformation.__name__
+
+        try:
+            self.variables, self.constraints = getattr(module, "_set_"+transformation)()
+        except AttributeError:
+            pass
+
+    def transform(self, X):
+        if self.transformation is None:
+            return X
+        if self.variables is not None:
+            return self.transformation(X, np.squeeze(np.asarray(self.variables.value)))
+
+        return self.transformation(X)
+
+    def fit(self, X):
+        return self
+
+
 class FeatureGeneration(BaseEstimator):
     """ Applies feature transformation from package Features"""
 
@@ -36,20 +87,18 @@ class FeatureGeneration(BaseEstimator):
                  norm=True):
         self.name = name
         self.transformations = []
+        self.constraints = []
+        self.variables = []
         self.replace = replace
         self.feature_dict = {}
         self.norm = norm
         self.norm_consts = defaultdict(list)
+        self.variables = []
+        self.constraints = []
 
         if not isinstance(transformations, list):
             transformations = [transformations]
-        # if isinstance(transformations, str):
-        #     if transformations.lower() == "all":
-        #         transformations = all_transformations
-        #     else:
-        #         transformations = [transformations.lower()]
 
-        # if isinstance(transformations, list) and len(self.transformations) == 0:
         for transf in transformations:
             if transf is None:
                 self.transformations = []
@@ -73,13 +122,14 @@ class FeatureGeneration(BaseEstimator):
             #                     format(type(transformations)))
 
         for i, transf in enumerate(self.transformations):
-            for module in [nonparametric, monotone]:
-                try:
-                    self.transformations[i] = getattr(module, transf)
-                    break
-                except:
-                    pass
+            new_transform = FeatureTransformation(transformation=transf)
+            self.transformations[i] = new_transform
+            self.variables.append(new_transform.variables)
+            self.constraints.extend(new_transform.constraints)
+            self.replace = self.replace or new_transform.replace
 
+        Feature.constraints = self.constraints
+        Feature.variables = self.variables
 
 
     def transform(self, X):
@@ -102,16 +152,14 @@ class FeatureGeneration(BaseEstimator):
             n_feats = 0
 
         for transf in self.transformations:
-            new_transf = _replace_inf(transf(X))
+            new_transf = _replace_inf(transf.transform(X))
             if self.norm:
-                new_transf = self.norm_consts[transf.__name__].transform(new_transf)
+                new_transf = self.norm_consts[transf.name].transform(new_transf)
 
             new_feats.append(new_transf)
-            self.feature_dict[transf.__name__] = range(n_feats, n_feats + new_transf.shape[1])
             n_feats += new_transf.shape[1]
 
         new_feats = np.hstack(new_feats)
-        #new_feats = _replace_inf(new_feats)
         if self.replace:
             return new_feats
 
@@ -124,9 +172,10 @@ class FeatureGeneration(BaseEstimator):
         if not self.norm:
             return self
 
+
         for transf in self.transformations:
-            new_transf = _replace_inf(transf(X))
-            self.norm_consts[transf.__name__] = StandardScaler().fit(new_transf)
+            new_transf = _replace_inf(transf.transform(X))
+            self.norm_consts[transf.name] = StandardScaler().fit(new_transf)
         return self
 
 
