@@ -61,13 +61,13 @@ class RegMatrix:
         self.ts = []
         names = []  # used in feature_dict
 
+        self.original_index = ts_struct.original_index
         for ts in ts_struct_data:
             self.ts.append(TsMiniStruct(ts.as_matrix(), 1, 0, ts.name, ts.index))
             names.append(ts.name)
         self.feature_dict = dict.fromkeys(names)
 
         self.request = ts_struct.request * ts_struct.one_step
-            
         if ts_struct.history is None:
             n_historical = n_historical * ts_struct.request
             print("History is not defined.  Do not forget to optimize it!")  # FIXIT
@@ -115,10 +115,10 @@ class RegMatrix:
         for i, ts in enumerate(self.ts):
             if i in self.x_idx:
                 self.n_hist_points[i] = sum(ts.index < (ts.index[0] + self.history))
-            n_req_points = sum(ts.index < (ts.index[0] + self.request) )*nsteps
+            n_req_points = sum(ts.index < (ts.index[0] + self.request))*nsteps
 
             if i in self.y_idx:
-                self.n_req_points[i] = n_req_points # here we assume time stamps are uniform
+                self.n_req_points[i] = n_req_points  # here we assume time stamps are uniform
 
             if self.n_req_points[i] >= ts.s.shape[0]:
                 print("Request: {}".format(self.request))
@@ -258,52 +258,6 @@ class RegMatrix:
         self.testX, self.testY = self.X[idx_test, :], self.Y[idx_test]
         self.idx_train, self.idx_test = idx_train, idx_test
 
-    def train_model(self, frc_model, selector=None, generator=None, retrain=True, hyperpars=None, n_cvs=5):
-        """
-        Initializes and train feature generation, selection and forecasting model in a pipeline
-
-        :param frc_model: Instance of CustomModel()
-        :param selector: Instance of model selection class
-        :param generator: Instance of model generation class
-        :param retrain: Flag that specifies if the model needs retraining
-        :type retrain: bool
-        :param hyperpars: defines ranges of hyperparameters to tune with cross-validation. If None is specified, 
-        no hyperparameters will be optimized 
-        :type hyperpars: dict
-        :param n_cvs: number of folds in k-fold cross-validation
-        :type n_cvs: int
-        :return: trained model, forecasting model, generator and selector
-        :rtype: tuple
-        """
-
-        from Forecasting import frc_class
-        if selector is None:
-            selector = frc_class.IdentityModel()
-
-        if generator is None:
-            generator = frc_class.IdentityGenerator()
-
-        selector.feature_dict = copy.deepcopy(self.feature_dict)
-        generator.feature_dict = copy.deepcopy(self.feature_dict)
-
-        # create pipeline with named steps
-        model = frc_class.PipelineModel([('gen', generator), ('sel', selector), ('frc', frc_model)]) # pipeline.Pipeline([('gen', generator), ('sel', selector), ('frc', frc_model)])
-        model.name = "_".join([str(frc_model.name), str(generator.name), str(selector.name)])
-
-        # once fitted, the model is retrained only if retrain = True
-        if frc_model.is_fitted and not retrain:
-            return model, model.named_steps['frc'],  model.named_steps['gen'], model.named_steps['sel']
-
-        # if a range of hyperparametr values is specify, tune it via k-fold cross-validation
-        if hyperpars is not None:
-            best_hyperpars = cv_train(model, self, hyperpars, n_cvs)
-            for k, v in zip(hyperpars.keys(), best_hyperpars):
-                model.named_steps['frc'].__setattr__(k, v)
-
-        model.fit(self.trainX, self.trainY)
-
-        return model, model.named_steps['frc'], model.named_steps['gen'], model.named_steps['sel']
-
     def forecast(self, model, idx_rows=None, replace=True):
         """
         Apply trained model to forecast the data
@@ -331,7 +285,7 @@ class RegMatrix:
 
     def add_forecasts(self, frc, idx_rows, replace):
         """
-        Computes flat indices of forecats and optionally replaces old forecast values new ones
+        Computes flat indices of forecasts and optionally replaces old forecast values new ones
 
         :param frc: Forecasted matrix Y
         :type frc: ndarray
@@ -355,7 +309,7 @@ class RegMatrix:
 
         return idx_flat
 
-    def mae(self, idx_frc=None, idx_rows=None, out=None, y_idx=None):
+    def mae(self, idx_frc=None, idx_rows=None, out=None, y_idx=None, idx_original=None):
         """
         Mean Absolute Error calculation.
 
@@ -371,18 +325,7 @@ class RegMatrix:
         :rtype: list
         """
         y_idx = _check_input_ts_idx(y_idx, self.y_idx)
-
-        idx = [0] * self.nts
-        if idx_frc is None:
-            if idx_rows is None:
-                for i in y_idx:
-                    idx[i] = range(self.n_hist_points[i], len(self.forecasts[i]))
-
-            else:
-                for i in y_idx:
-                    idx[i] = _ravel_idx(self.idxY[i][idx_rows, :], len(self.forecasts[i]))
-        else:
-            idx = idx_frc
+        idx = self._frc_indices_for_errors(idx_frc=idx_frc, idx_rows=idx_rows, y_idx=y_idx, idx_original=idx_original)
 
         errors = np.zeros(self.nts)
         for i in y_idx:
@@ -397,7 +340,7 @@ class RegMatrix:
 
         return errors[y_idx]
 
-    def mape(self, idx_frc=None, idx_rows=None, out=None, y_idx=None):
+    def mape(self, idx_frc=None, idx_rows=None, out=None, y_idx=None, idx_original=None):
         """
         Mean Absolute Percentage Error calculation.
 
@@ -409,24 +352,15 @@ class RegMatrix:
         :type out: string
         :param y_idx: Specifies time series to compute errors for
         :type y_idx: list
+        :param idx_original: Indices of the time series before any manipulations with frequencies
+        :type idx_original: list
         :return: list of MAPE values, one for each input time series
         :rtype: list
         """
         y_idx = _check_input_ts_idx(y_idx, self.y_idx)
+        idx = self._frc_indices_for_errors(idx_frc=idx_frc, idx_rows=idx_rows, y_idx=y_idx, idx_original=idx_original)
 
-        idx = [0] * self.nts
-        if idx_frc is None:
-            if idx_rows is None:
-                for i in y_idx:
-                    idx[i] = range(self.n_hist_points[i], len(self.forecasts[i]))
-
-            else:
-                for i in y_idx:
-                    idx[i] = _ravel_idx(self.idxY[i][idx_rows], len(self.forecasts[i]))
-        else:
-            idx = idx_frc
-
-        errors = np.zeros((self.nts))
+        errors = np.zeros(self.nts)
         for i in y_idx:
             ind = idx[i]
             denom = np.abs(self.ts[i].s[ind])
@@ -486,6 +420,30 @@ class RegMatrix:
             my_plots.plot_forecast(self.ts[i], self.forecasts[i], idx_frc=idx[i], idx_ts=idx_ts[i], folder=folder, filename=filename)
 
         return filenames
+
+    def _frc_indices_for_errors(self, idx_frc=None, idx_rows=None, y_idx=None, idx_original=None):
+
+        idx = [0] * self.nts
+        if idx_frc is None:
+            if idx_rows is None:
+                for i in y_idx:
+                    idx[i] = range(self.n_hist_points[i], len(self.forecasts[i]))
+
+            else:
+                for i in y_idx:
+                    idx[i] = _ravel_idx(self.idxY[i][idx_rows], len(self.forecasts[i]))
+        else:
+            idx = idx_frc
+
+        if idx_original is None:
+            return idx
+
+        for i in y_idx:
+            time_index = self.ts[i].index[idx[i]]
+            intersect_mask = np.in1d(time_index, idx_original[i])
+            idx[i] = idx[i][intersect_mask]
+
+        return idx
 
     # def optimize_history(self, frc_model, sel_model=None, gen_model=None,  hist_range=None, n_fold=5):
     #     """
@@ -569,6 +527,7 @@ def truncate(ts_struct, n_hist, n_req, n_rows):
     ts_struct = TsMiniStruct(ts, ts_struct.norm_div, ts_struct.norm_subt, ts_struct.name, ts_struct.index[:n_points])
     return ts_struct
 
+
 def check_time(y, x):
     """
     Checks that all x time entries preceed corresponding y time entries
@@ -584,7 +543,6 @@ def check_time(y, x):
     for ty, tx in product(y, x):
         check.append(np.all(ty > tx))
 
-
     return np.all(check)
 
 
@@ -593,7 +551,6 @@ def replace_nans(ts, name=None):
     if not np.isnan(ts).any():
         return ts
 
-    #print("Filling NaNs for TS", name)
     if np.isnan(ts).all():
         print("All inputs if {} are NaN, replacing with zeros".format(name))
         ts = np.zeros_like(ts)
@@ -650,6 +607,7 @@ def _ravel_y(y_mat, norm_div, norm_subt):
     y = np.ravel(y_mat) * norm_div + norm_subt
     return y
 
+
 def _check_input_ts_idx(idx, default):
     if idx is None:
         idx = default
@@ -663,66 +621,3 @@ def _check_input_ts_idx(idx, default):
         
     return list(idx)
 
-
-def cv_train(raw_model, data, hyperpars, n_cvs):
-    from sklearn.model_selection import KFold
-    import sys
-    if n_cvs is None:
-        n_cvs = 5
-
-    X = data.trainX
-    Y = data.trainY
-
-    kf = KFold(n_splits=n_cvs)
-    kf.get_n_splits(X)
-
-    par_names = list(hyperpars.keys())
-    par_values_range = list(hyperpars.values())
-    scores = []
-    for i, hyperpars in enumerate(product(*par_values_range)):
-        scores.append(np.zeros(n_cvs))
-        pars = {key: val for key, val in zip(par_names, hyperpars)}
-
-        for k, train_val_index in enumerate(kf.split(X)):
-            model = raw_model
-            for key, val in pars.items():
-                model.named_steps["frc"].__setattr__(key, val)
-            print("\r{}, kfold = {}".format(pars, k), end="")
-            sys.stdout.flush()
-            # getting training and validation data
-            train_index, val_index = train_val_index[0], train_val_index[1]
-            x_train, x_val = X[train_index], X[val_index]
-            y_train, y_val = Y[train_index], Y[val_index]
-            # train the model and predict the MSE
-            try:
-                model.fit(x_train, y_train)
-                pred_val = model.predict(x_val)
-                scores[-1][k] = mean_squared_error_(pred_val, y_val)
-            except BaseException as e:
-                print(e)
-                if k > 0:
-                    scores[-1][k] = scores[-1][k-1]
-                else:
-                    scores[-1][k] = 1
-
-        scores[-1] = np.mean(scores[-1])
-    idx = np.argmin(scores)
-    best_hyperpars = list(product(*par_values_range))[idx]
-    print("Best hyperpars combo: {} with mse {}".format(zip(par_names, best_hyperpars), scores[idx]))
-
-    return best_hyperpars
-
-def mean_squared_error_(f, y):
-    return np.mean((f - y) ** 2)
-
-
-# def history_from_periods(ts_list, n_periods=3):
-#     import Forecasting
-#     history = []
-#     for ts in ts_list:
-#         print(ts.name)
-#         history.append(n_periods*Forecasting.preprocess_time_series.find_period(ts))
-
-
-
-    
