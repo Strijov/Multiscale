@@ -336,7 +336,8 @@ def general_time_delta_to_float(td, freq):
 
 def from_floats_to_index_type(floats, freq):
     if freq == "int":
-        if not isinstance(floats, float) and not isinstance(floats, int):
+        if not isinstance(floats, float) and not isinstance(floats, int) \
+                and not isinstance(floats, np.ndarray):
             raise TypeError("Inputs should be of type float or int, got {}".format(type(floats)))
         return floats
 

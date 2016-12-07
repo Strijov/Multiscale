@@ -17,8 +17,8 @@ class TestRegMatrix(unittest.TestCase):
         data.X = data.Y  # for identity frc
         data.train_test_split(0.25)
 
-        model = frc_class.IdentityFrc()
-        model,_,_,_ = data.train_model(frc_model=model)  # model parameters are changed inside
+        model = frc_class.PipelineModel(frc_mdl=frc_class.IdentityFrc())
+        model.train_model(data.trainX, data.trainY)  # model parameters are changed inside
 
         frc, idx_frc = data.forecast(model, idx_rows=data.idx_train, replace=True)
         self.assertTrue((frc == data.trainY).all()) # first check  that identity frc works
@@ -44,17 +44,17 @@ class TestRegMatrix(unittest.TestCase):
         data.create_matrix()
         data.train_test_split(0.25)
 
-        model = frc_class.MartingalFrc()
-        model,_,_,_ = data.train_model(frc_model=model)  # model parameters are changed inside
+        model = frc_class.PipelineModel(frc_mdl=frc_class.MartingalFrc())
+        model.train_model(data.trainX, data.trainY)  # model parameters are changed inside
         frc1, idx_frc = data.forecast(model)
 
-        # let the model define infer y_idx
+        # let the model define y_idx
         data = regression_matrix.RegMatrix(input_ts)
         data.create_matrix()
         data.train_test_split(0.25)
 
-        model = frc_class.MartingalFrc()
-        model, _, _, _ = data.train_model(frc_model=model)  # model parameters are changed inside
+        model = frc_class.PipelineModel(frc_mdl=frc_class.MartingalFrc())
+        model.train_model(data.trainX, data.trainY)
 
         frc2, idx_frc = data.forecast(model)
 
@@ -62,8 +62,8 @@ class TestRegMatrix(unittest.TestCase):
         data.create_matrix(y_idx=range(len(input_ts.data)))
         data.train_test_split(0.25)
 
-        model = frc_class.MartingalFrc()
-        model, _, _, _ = data.train_model(frc_model=model)  # model parameters are changed inside
+        model = frc_class.PipelineModel(frc_mdl=frc_class.MartingalFrc())
+        model.train_model(data.trainX, data.trainY)  # model parameters are changed inside
         frc3, idx_frc = data.forecast(model)
 
         self.assertTrue((frc1 == frc2).all())
@@ -80,8 +80,8 @@ class TestRegMatrix(unittest.TestCase):
         # then construct the matrix just for one ts:
         data.create_matrix(y_idx=0, x_idx=0)
         data.train_test_split(0.25)
-        model = frc_class.MartingalFrc()
-        model, _, _, _ = data.train_model(frc_model=model)  # model parameters are changed inside
+        model = frc_class.PipelineModel(frc_mdl=frc_class.MartingalFrc())
+        model.train_model(data.trainX, data.trainY)  # model parameters are changed inside
         frc0, idx_frc = data.forecast(model)
         # Remember the first ts:
         ts0 = input_ts.data[0]
@@ -96,8 +96,8 @@ class TestRegMatrix(unittest.TestCase):
             data = regression_matrix.RegMatrix(input_ts)
             data.create_matrix(y_idx=0, x_idx=0)
             data.train_test_split(0.25)
-            model = frc_class.MartingalFrc()
-            model, _, _, _ = data.train_model(frc_model=model)  # model parameters are changed inside
+            model = frc_class.PipelineModel(frc_mdl=frc_class.MartingalFrc())
+            model.train_model(data.trainX, data.trainY)  # model parameters are changed inside
             frc, idx_frc = data.forecast(model)
             self.assertTrue((frc0 == frc).all())
 
@@ -116,8 +116,8 @@ class TestRegMatrix(unittest.TestCase):
             data.create_matrix()
             data.train_test_split(0.25)
 
-            model = frc_class.MartingalFrc()
-            model, _, _, _ = data.train_model(frc_model=model)  # model parameters are changed inside
+            model = frc_class.PipelineModel(frc_mdl=frc_class.MartingalFrc())
+            model.train_model(data.trainX, data.trainY)  # model parameters are changed inside
             frc1, idx_frc = data.forecast(model)
             Y1 = data.Y
 
@@ -127,8 +127,8 @@ class TestRegMatrix(unittest.TestCase):
             data.create_matrix()
             data.train_test_split(0.25)
 
-            model = frc_class.MartingalFrc()
-            model, _, _, _ = data.train_model(frc_model=model)  # model parameters are changed inside
+            model = frc_class.PipelineModel(frc_mdl=frc_class.MartingalFrc())
+            model.train_model(data.trainX, data.trainY) # model parameters are changed inside
             frc2, idx_frc = data.forecast(model)
             Y2 = data.Y
 
@@ -136,7 +136,6 @@ class TestRegMatrix(unittest.TestCase):
             self.assertTrue((Y1 == Y2).all())
 
         return None
-
 
 
 if __name__ == '__main__':
