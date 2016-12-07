@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import utils_
 
-from sklearn.linear_model import Lasso, LinearRegression
+from sklearn.linear_model import Lasso
 
 from RegressionMatrix import regression_matrix
 from Forecasting import frc_class
@@ -15,6 +15,7 @@ from Forecasting import frc_class
 TRAIN_TEST_RATIO = 0.75
 N_PREDICTIONS = 10
 N_EXPERTS = 4
+
 
 def main(file_name, line_indices, header):
     """
@@ -30,8 +31,6 @@ def main(file_name, line_indices, header):
     """
 
     ts = utils_.safe_read_iot_data(file_name, line_indices, header)
-
-
     err_all = forecating_errors(ts, range(len(ts.data)))
     column_names = [("MAE", "train"), ("MAPE", "train"), ("MAE", "test"), ("MAPE", "test")]
 
@@ -40,9 +39,8 @@ def main(file_name, line_indices, header):
     train_mae, train_mape, test_mae, test_mape = [None]*len(ts.data), [None]*len(ts.data),[None]*len(ts.data),[None]*len(ts.data)
     for i in xrange(len(ts.data)):
         train_mae[i], train_mape[i], test_mae[i], test_mape[i] = forecating_errors(ts, i)
-
         train_mae, train_mape = np.hstack(train_mae), np.hstack(train_mape)
-        test_mae, test_mape =  np.hstack(test_mae), np.hstack(test_mape)
+        test_mae, test_mape = np.hstack(test_mae), np.hstack(test_mape)
 
     err_by_one = [train_mae, train_mape, test_mae, test_mape]
     res_by_one = data_frame_res(err_by_one, column_names, ts)
@@ -56,11 +54,7 @@ def main(file_name, line_indices, header):
 
     print("\nPerformance increase (in percents of individual errors)")
     print(diff_res)
-
-
     return res_all, res_by_one
-
-
 
 
 def forecating_errors(ts, ts_idx):
@@ -76,15 +70,15 @@ def forecating_errors(ts, ts_idx):
 
     # Split data for training and testing
     data.train_test_split(TRAIN_TEST_RATIO)
-    model, _, _, _ = data.train_model(frc_model=frc_model, generator=None,
-                                      selector=None)  # model parameters are changed inside
+    model = frc_class.PipelineModel(gen_mdl=None, sel_mdl=None, frc_mdl=frc_model)
+    model, _, _, _ = model.train_model(data.trainX, data.trainY)  # model parameters are changed inside
 
     data.forecast(model, replace=True)
 
-    train_mae = data.mae(idx_rows=data.idx_train)
-    train_mape = data.mape(idx_rows=data.idx_train)
-    test_mae = data.mae(idx_rows=data.idx_test)
-    test_mape = data.mape(idx_rows=data.idx_test)
+    train_mae = data.mae(idx_rows=data.idx_train, idx_original=data.original_index)
+    train_mape = data.mape(idx_rows=data.idx_train, idx_original=data.original_index)
+    test_mae = data.mae(idx_rows=data.idx_test, idx_original=data.original_index)
+    test_mape = data.mape(idx_rows=data.idx_test, idx_original=data.original_index)
 
     return train_mae, train_mape, test_mae, test_mape
 
@@ -96,10 +90,6 @@ def data_frame_res(columns, column_names, ts):
 
     res = pd.concat(res, axis=1)
     return res
-
-
-
-
 
 if __name__ == '__main__':
     file_name, line_indices, header, _ = utils_.parse_options()
