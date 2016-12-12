@@ -1,2 +1,2 @@
-nb gaps: 55.4761904762
-average len of gaps: 42.0
+nb gaps: 54.0
+average len of gaps: 43.0
