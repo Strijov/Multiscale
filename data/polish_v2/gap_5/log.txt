@@ -1,2 +1,2 @@
-nb gaps: 52.75
-average len of gaps: 44.0
+nb gaps: 54.0
+average len of gaps: 43.0
