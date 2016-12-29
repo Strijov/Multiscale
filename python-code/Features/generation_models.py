@@ -29,34 +29,39 @@ all_transformations = ['univariate_transformation',
                        'monotone_softsign',
                        'centroids']
 
+class Feature:
+    pass
 
-class Feature():
-    """
-    Defines shared variables for FeatureSelection and FeatureGeneration
-    """
-    constraints = []
-    variables = []
-    selected = None
-
-
-class FeatureTransformation(BaseEstimator):
+class BaseFeatureTransformation(BaseEstimator):
     """
     Describes feature transformation
     """
-    def __init__(self, transformation=None, name=None, replace=True):
+    def __init__(self):
+        pass
+
+    def transform(self, X):
+        return X
+
+    def fit(self, X, y=None):
+        return self
+
+
+class FeatureTransformation(BaseFeatureTransformation):
+    """Describes feature transformation
+
+    :param name: feature transformation. Accepted options are: 'univariate_transformation',
+                'simple_statistics', 'haar_transformations', 'monotone_linear', 'monotone_polinomial_rate',
+                'monotone_sublinear_polinomial_rate', 'monotone_logarithmic_rate', 'monotone_slow_convergence',
+                'monotone_fast_convergence', 'monotone_soft_relu', 'monotone_sigmoid', 'monotone_soft_max',
+                'monotone_hyberbolic_tangent', 'monotone_softsign'
+    :type transformations: str
+    """
+    def __init__(self, name=None):
 
         self.name = name
-        self.replace = replace
 
-        self.constraints = []
-        self.variables = None
-
-        self.transformation = None
-        if transformation is None:
-            return
-
-        if transformation.lower() == 'centroids':
-            self = CentroidDistances(name=self.name, replace=False)  # FIXIT
+        if self.name == 'centroids':
+            self = CentroidDistances(name=self.name, replace=False)
             return
 
         for module in MODULES:
@@ -68,10 +73,6 @@ class FeatureTransformation(BaseEstimator):
         if self.transformation is None:
             raise ValueError("Transformation {} was not found in modules {}"
                               .format(transformation, MODULES))
-
-        if name is None:
-            self.name = self.transformation.__name__
-
         try:
             self.variables, self.constraints = getattr(module, "_set_"+transformation)()
         except AttributeError:
@@ -90,67 +91,33 @@ class FeatureTransformation(BaseEstimator):
         return self
 
 
-class FeatureGeneration(BaseEstimator, Feature):
+class FeatureGeneration(BaseEstimator):
     """
     Applies feature transformations from package Features
     """
 
-    def __init__(self, name="Nonparametric", replace=True,
-                 transformations=None, norm=True):
+    def __init__(self, name, transformations=[]):
         """
-
         :param name: optional
         :type name: str
-        :param replace: defines if the results of feature generation should replace the original data matrix
-        :type replace: bool
-        :param transformations: names of feature transformation. Accepted options are: 'univariate_transformation',
-                    'simple_statistics', 'haar_transformations', 'monotone_linear', 'monotone_polinomial_rate',
-                    'monotone_sublinear_polinomial_rate', 'monotone_logarithmic_rate', 'monotone_slow_convergence',
-                    'monotone_fast_convergence', 'monotone_soft_relu', 'monotone_sigmoid', 'monotone_soft_max',
-                    'monotone_hyberbolic_tangent', 'monotone_softsign', 'centroids'
+        :param transformations: instances inherited from BaseFeatureTransformation
         :type transformations: list
         :param norm: defines if feature block should be standardized after transformation
         :type norm: bool
         """
         self.name = name
-        self.transformations = []
-        self.constraints = []
-        self.variables = []
-        self.replace = replace
-        self.feature_dict = {}
-        self.norm = norm
-        self.norm_consts = defaultdict(list)
-        self.variables = []
-        self.constraints = []
 
         if not isinstance(transformations, list):
             transformations = [transformations]
 
-        for transf in transformations:
-            if transf is None:
-                self.transformations = []
-                return
-            elif transf.lower() in all_transformations:
-                self.transformations.append(transf.lower())
-            elif transf.lower() == 'all':
-                self.transformations = all_transformations
-                break
-            else:
-                print("Invalid transformation function name {}. Valid options for nonparametric feature "
-                      "transformation are {}".format(transf, all_transformations))
+        self.transformations = transformations
 
         if len(self.transformations) == 0:
-            raise ValueError("None of the functions names passed in 'transformations' are valid.")
+            raise ValueError("None of the functions names passed in 'transformations' are valid")
 
-        for i, transf in enumerate(self.transformations):
-            new_transform = FeatureTransformation(transformation=transf)
-            self.transformations[i] = new_transform
-            self.variables.append(new_transform.variables)
-            self.constraints.extend(new_transform.constraints)
-            self.replace = self.replace or new_transform.replace
-
-        Feature.constraints = self.constraints
-        Feature.variables = self.variables
+        for transf in transformations:
+            if not isinstance(transf, BaseFeatureTransformation):
+                raise ValueError("Feature transforms must be inherited from FeatureTransformation")
 
     def transform(self, X):
         """
@@ -161,89 +128,38 @@ class FeatureGeneration(BaseEstimator, Feature):
         :return: transformed of the feature matrix. If self.replace is False, this also includes original matrix
         :rtype: numpy.ndarray
         """
-        if len(self.transformations) == 0:
-            return X
+        return np.hstack([transf.transform(X) for transf in self.transformations])
 
-        new_feats = []
-
-        n_feats = X.shape[1]
-        if self.replace:
-            self.feature_dict = {}
-            n_feats = 0
-
-        for transf in self.transformations:
-            new_transf = _replace_inf(transf.transform(X))
-            if self.norm:
-                new_transf = self.norm_consts[transf.name].transform(new_transf)
-
-            new_feats.append(new_transf)
-            n_feats += new_transf.shape[1]
-
-        new_feats = np.hstack(new_feats)
-        if self.replace:
-            return new_feats
-
-        return np.hstack((X, new_feats))
+    def fit_transform(self, X, y):
+        return np.hstack([
+            transf.fit_transform(X, y)
+                if hasattr(transf, "fit_transform")
+                else transf.fit(X, y).transform(X)
+            for transf in self.transformations
+        ])
 
     def fit(self, X, y):
-        """ For now, no stick with nonparametric transformation """
-
-        if not self.norm:
-            return self
-
         for transf in self.transformations:
-            new_transf = _replace_inf(transf.transform(X))
-            self.norm_consts[transf.name] = StandardScaler().fit(new_transf)
-
+            transf.fit(X, y)
         return self
 
 
-class Nonparametric(FeatureGeneration):
-    """ Special case of FeatureGeneration model """
-
-    def __init__(self, name="Nonparametric", replace=True, norm=True):
-        np_transformations = ['univariate_transformation',
-                              # 'bivariate_transformation', this one has additional argument
-                              'simple_statistics',
-                              'haar_transformations']
-        FeatureGeneration.__init__(self, name, replace, np_transformations)
-
-
-class Monotone(FeatureGeneration):
-    """ Special case of FeatureGeneration model """
-
-    def __init__(self, name="Monotone", replace=True):
-        monotone_transformations = ['monotone_linear',
-                                    'monotone_polinomial_rate',
-                                    'monotone_sublinear_polinomial_rate',
-                                    'monotone_logarithmic_rate',
-                                    'monotone_slow_convergence',
-                                    'monotone_fast_convergence',
-                                    'monotone_soft_relu',
-                                    'monotone_sigmoid',
-                                    'monotone_soft_max',
-                                    'monotone_hyberbolic_tangent',
-                                    'monotone_softsign']
-
-        FeatureGeneration.__init__(self, name, replace, monotone_transformations)
-
-
-class CentroidDistances(FeatureTransformation):
+class CentroidDistances(BaseFeatureTransformation):
     """ Computes features based on distance to centriods """
 
     def __init__(self, name=None, replace=False):
-        FeatureTransformation.__init__(self)
+        super(CentroidDistances, self).__init__()
         self.centroids_distances = []
         if name is None:
             self.name = "Centroids"
         self.replace = replace
         self.centroids = None
 
-    def fit(self, train_x, _=None):
+    def fit(self, X, y=None):
 
-        af = AffinityPropagation().fit(train_x)
+        af = AffinityPropagation().fit(X)
         cluster_centers_indices = af.cluster_centers_indices_
-        self.centroids = train_x[cluster_centers_indices, :]
+        self.centroids = X[cluster_centers_indices, :]
 
         return self
 
@@ -256,12 +172,3 @@ class CentroidDistances(FeatureTransformation):
             return np.hstack(self.centroids_distances)
 
         return np.hstack([X, np.hstack(self.centroids_distances)])
-
-
-def _replace_inf(X):
-    if np.sum(np.isinf(X)) == 0:
-        return X
-    print(X[np.isinf(X)])
-    MAX_VALUE = 1e30
-    X[np.isinf(X)] = MAX_VALUE * np.sign(X[np.isinf(X)])
-    return X

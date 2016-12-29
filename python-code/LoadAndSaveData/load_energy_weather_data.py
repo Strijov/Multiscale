@@ -11,7 +11,7 @@ from datetime import timedelta
 from .raw_time_series import TsStruct
 
 DATASET = "EnergyWeather"
-DIRNAME = "../code/data/EnergyWeatherTS"
+DIRNAME = "{}/../../code/data/EnergyWeatherTS".format(os.path.dirname(os.path.abspath(__file__)))
 
 
 def load_ts():

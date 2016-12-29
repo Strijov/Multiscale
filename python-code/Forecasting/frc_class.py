@@ -181,7 +181,8 @@ class PipelineModel(Pipeline):
 
         return file_name
 
-    def load_model(self, file_name):
+    @staticmethod
+    def load_model(file_name):
         """
         Loads the model from the specified file
 
@@ -192,9 +193,9 @@ class PipelineModel(Pipeline):
         """
 
         with open(file_name, "rb") as f:
-            self = dill.load(f)
+            model = dill.load(f)
 
-        return self
+        return model
 
     def print_pipeline_pars(self):
         """ Formatted print for pipeline model  """
@@ -304,5 +305,3 @@ def cv_train(raw_model, X, Y, hyperpars, n_cvs):
 
 def mean_squared_error_(f, y):
     return np.mean(np.power(f - y, 2))
-
-
