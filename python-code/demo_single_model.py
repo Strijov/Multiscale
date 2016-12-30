@@ -1,13 +1,14 @@
 from __future__ import division
 from __future__ import print_function
 
-import os
 import pandas as pd
-from RegressionMatrix import regression_matrix
 from sklearn.linear_model import Lasso
-from LoadAndSaveData import load_time_series
-from Forecasting import frc_class, LSTM
+
 import my_plots
+from Forecasting import frc_class
+from LoadAndSaveData import load_time_series
+from RegressionMatrix import regression_matrix
+from competition import GRU_RNN as my_custom
 
 
 def main(frc_model=None, generator=None, selector=None):
@@ -20,15 +21,24 @@ def main(frc_model=None, generator=None, selector=None):
     load_raw = True  # not os.path.exists(os.path.join("ProcessedData", "EnergyWeather_orig_train.pkl"))
     ts_struct_list = load_time_series.load_all_time_series(datasets='EnergyWeather', load_raw=load_raw, name_pattern="")
 
+    number_of_epoch = 100
+    batch_size = 50
     if frc_model is None:
-        frc_model = frc_class.CustomModel(Lasso, name="Lasso", alpha=0.01) # LSTM.LSTM() #frc_class.IdenitityFrc() #LinearRegression()
+        frc_model = frc_class.CustomModel(my_custom.GRU_Rnn, number_of_epoch, batch_size)
+        #frc_class.CustomModel(Lasso, name="Lasso", alpha=0.01)
+        ##LSTM.LSTM()
+        #frc_class.IdenitityFrc() #LinearRegression()
+        #frc_class.CustomModel(Lasso, name="Lasso", alpha=0.01)
+
     # Create regression model
     model = frc_class.PipelineModel(gen_mdl=generator, sel_mdl=selector, frc_mdl=frc_model)
+
 
     results = []
     res_text = []
     for ts in ts_struct_list:
         data = regression_matrix.RegMatrix(ts)
+
         # Create regression matrix
         data.create_matrix(nsteps=1, norm_flag=True)
 
