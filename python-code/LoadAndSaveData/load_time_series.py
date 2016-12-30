@@ -10,7 +10,7 @@ from sklearn.externals import joblib
 from .raw_time_series import TsStruct
 
 from . import load_energy_weather_data
-DIRNAME = '../data/ProcessedData' # directory to store data (.pkl) in
+DIRNAME = "{}/../../data/ProcessedData".format(os.path.dirname(os.path.abspath(__file__)))
 
 # Define a dict of func names for data loading
 LOAD_FUNCS_DICT = {'EnergyWeather': load_energy_weather_data,
